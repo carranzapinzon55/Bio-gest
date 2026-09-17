@@ -1,0 +1,154 @@
+
+/* ESTILO DEL BODY */
+body {
+    background-color: #faf7f7e0;
+    color: #070707d7;
+    display: flex;
+    flex-direction: column;
+    align-items: center;       /* Centra horizontalmente todos los elementos */
+    justify-content: center;   /* Centra verticalmente en la pantalla */
+    min-height: 100vh;         /* Ocupa toda la altura de la ventana */
+    margin: 0;
+    padding: 20px;
+}
+
+/* ESTILO DEL HEADER */
+header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    margin-bottom: 25px;
+}
+
+/* CONTENEDOR EXCLUSIVO PARA EL LOGO Y EL TEXTO */
+.logo-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;       /* Fuerza a que la imagen y el h1 estén estrictamente centrados uno debajo del otro */
+    text-align: center;
+}
+
+header img {
+    width: 40%;
+    max-width: 150px;
+    height: auto;
+    margin-bottom: 8px;
+}
+
+.chelsea-market-regular {
+    font-family: "Chelsea Market", system-ui;
+    font-weight: 400;
+    font-style: normal;
+}
+
+header h1 {
+    font-size: 30px;
+    margin: 0;
+}
+
+
+/*CONTENEDOR DE INICIO DE SESION*/
+.contenedor-login{
+    background:#ffffff;
+    width: 100%;
+    max-width: 500px;
+    padding: 40px 45px 45px 50px;
+    border-radius: 10px;
+    border: 1px solid #94909091;
+    box-shadow: 0px  4px 15px #8b83839f;
+}
+
+/*CONTENEDOR DEL DE HEADER DE SESION*/
+.contenedor-header{
+    text-align: center;
+    margin-bottom: 25px;
+}
+
+.contenedor-header h2{
+    font-size: 25px;
+    margin-bottom: 5px;
+}
+
+.contenedor-header h4{
+    font-size: 16px;
+}
+
+/*INPUT DE CORREO ELECTRÓNICO Y CONTRASEÑA*/
+
+.input-contenedor{
+    position: relative;
+    margin-bottom: 18px; /*SE POSICIONA LOS ICONOS DE LOS INPUTS*/
+}
+
+.input-contenedor input{
+    width: 90%;
+    padding: 12px;
+    border: 1px solid #94909091;
+    border-radius: 8px;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.3s;
+}
+
+
+/*ESTILO ENLACE DE CONTRASEÑA OLVIDADA*/
+.contraseña-olvidada {
+  text-align: right;
+  margin-bottom: 20px;
+}
+
+.contraseña-olvidada a {
+  font-size: 13px;
+  color: #1b1b1b;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.contraseña-olvidada a:hover {
+  text-decoration: underline;
+}
+
+/*ESTILO BOTON DE INICIAR SESIÓN*/
+.btn-submit {
+  width: 100%;
+  padding: 12px;
+  background-color: #222523;    
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.btn-submit:hover {
+  background-color: #2e302f;    
+}
+
+
+/*ESTILO DEL DIVISOR*/
+.divisor {
+  border: none;
+  border-top: 1px solid #e1e8ed;
+  margin: 25px 0 20px 0;
+}
+
+/*ESTILO DEL LINK DEL REGISTRO*/
+.registro-link {
+  text-align: center;
+  font-size: 14px;
+  color: #1d1e1f;
+  margin-bottom: 25px;
+}
+
+.registro-link a {
+  color: #151615;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.registro-link a:hover {
+  text-decoration: underline;
+}
