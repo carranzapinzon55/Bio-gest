@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tenebrios Gold</title>
+    <!-- Librería de íconos -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="./assent/css/index_style.css">
+</head>
+<body>
+
+    <!-- ENCABEZADO -->
+    <header class="main-header">
+        <div class="logo-area">
+
+            <!-- Placeholder para visualización actual -->
+            <div class="placeholder-box logo-img logo-placeholder">
+                <img src="./assent/img/Logo.jpeg" alt="Logo Tenebrios Gold" class="logo-img">
+            </div>
+            <div class="brand-text">
+                <h1>TENEBRIOS GOLD</h1>
+                <p>Alimentos vivos de calidad</p>
+            </div>
+        </div>
+        
+        <div class="search-bar">
+            <input type="text" placeholder="Buscar productos...">
+            <button><i class="fas fa-search"></i></button>
+        </div>
+
+        <div class="user-actions">
+            <div class="action-item">
+                <i class="far fa-user"></i>
+                <span>Inicio sesión</span>
+            </div>
+            <div class="action-item cart-btn">
+                <i class="fas fa-shopping-cart"></i>
+                <span class="cart-count">0</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- NAVEGACIÓN -->
+    <nav class="main-nav">
+        <ul>
+            <li><a href="#">Inicio</a></li>
+            <li><a href="#">Productos</a></li>
+            <li><a href="#">¿Quiénes somos?</a></li>
+            <li><a href="#">Envíos</a></li>
+            <li><a href="#">Contacto</a></li>
+        </ul>
+    </nav>
+
+    <!-- CARRUSEL 1 - Principal -->
+    <section class="carousel-container main-carousel" id="carousel1">
+        <div class="carousel-track">
+            <!-- Primer Slide con el logo -->
+            <div class="carousel-slide active">
+                <div class="banner-content logo-banner">
+                    <img src="" alt="Tenebrios Gold Logo">
+                </div>
+            </div>
+            <!-- Otros slides de ejemplo -->
+            <div class="carousel-slide"><div class="placeholder-box banner">Banner Promocional 2</div></div>
+            <div class="carousel-slide"><div class="placeholder-box banner">Banner Promocional 3</div></div>
+        </div>
+        <button class="carousel-btn prev"><i class="fas fa-chevron-left"></i></button>
+        <button class="carousel-btn next"><i class="fas fa-chevron-right"></i></button>
+        <div class="carousel-dots">
+            <span class="dot active"></span>
+            <span class="dot"></span>
+            <span class="dot"></span>
+        </div>
+    </section>
+
+    <!-- CARACTERÍSTICAS -->
+    <section class="features">
+        <div class="feature-card">
+            <i class="fas fa-leaf"></i>
+            <p>Productos vivos<br>y frescos</p>
+        </div>
+        <div class="feature-card">
+            <i class="fas fa-truck"></i>
+            <p>Envíos seguros<br>a toda la ciudad</p>
+        </div>
+        <div class="feature-card">
+            <i class="fas fa-shield-alt"></i>
+            <p>Calidad garantizada<br>y controlada</p>
+        </div>
+        <div class="feature-card">
+            <i class="fas fa-headset"></i>
+            <p>Atención al cliente<br>personalizada</p>
+        </div>
+    </section>
+
+    <!-- CARRUSEL 2 - Secundario -->
+    <section class="carousel-container secondary-carousel" id="carousel2">
+        <div class="carousel-track">
+            <div class="carousel-slide active"><div class="placeholder-box banner">Oferta Especial 1</div></div>
+            <div class="carousel-slide"><div class="placeholder-box banner">Oferta Especial 2</div></div>
+            <div class="carousel-slide"><div class="placeholder-box banner">Oferta Especial 3</div></div>
+        </div>
+        <button class="carousel-btn prev"><i class="fas fa-chevron-left"></i></button>
+        <button class="carousel-btn next"><i class="fas fa-chevron-right"></i></button>
+        <div class="carousel-dots">
+            <span class="dot active"></span>
+            <span class="dot"></span>
+            <span class="dot"></span>
+        </div>
+    </section>
+
+    <!-- CATEGORÍAS POPULARES -->
+<section class="categories">
+    <h2>Categorías populares</h2>
+    <div class="categories-grid">
+        <div class="cat-card">
+            <img src="./assent/img/Tenebrios_img.png" alt="Tenebrios" class="cat-img">
+            <h3>Tenebrios</h3>
+        </div>
+        <div class="cat-card">
+            <img src="./assent/img/Zophobas_img.png" alt="Zophobas" class="cat-img">
+            <h3>Zophobas</h3>
+        </div>
+        <div class="cat-card">
+            <img src="./assent/img/Dubias_img.png" alt="Cucarachas Dubia" class="cat-img">
+            <h3>Cucarachas Dubia</h3>
+        </div>
+        <div class="cat-card">
+            <img src="./assent/img/Combos_img.png" alt="Combo alimentos" class="cat-img">
+            <h3>Combo alimentos</h3>
+        </div>
+    </div>
+</section>
+
+    <!-- NEWSLETTER -->
+    <section class="newsletter">
+        <div class="news-left">
+            <div class="placeholder-box small-square"><img src="./assent/img/pro.jfif" alt="Vuelvete pro"></div>
+            <div class="news-text">
+                <h3>Recibe novedades y promociones</h3>
+                <p>Suscríbete para recibir ofertas exclusivas</p>
+            </div>
+        </div>
+        <div class="news-form">
+            <input type="email" placeholder="Tu correo electrónico">
+            <button>Suscribirme</button>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="main-footer">
+        <div class="footer-col brand-col">
+            <!-- AQUÍ SE ENLAZA TU LOGO REAL EN EL FOOTER -->
+            <!-- <img src="ruta/a/tu/logo.png" alt="Logo Tenebrios Gold" class="footer-logo"> -->
+             <div class="placeholder-box small-square footer-logo-placeholder">
+                  <img src="./assent/img/Logo.jpeg" alt="Logo Tenebrios Gold" class="footer-logo">
+             </div>
+            <div>
+                <h4>TENEBRIOS GOLD</h4>
+                <p>Alimentos vivo de calidad</p>
+            </div>
+        </div>
+        <div class="footer-col info-col">
+            <h4>Información</h4>
+            <ul>
+                <li><a href="#">¿Quiénes somos?</a></li>
+                <li><a href="#">Envíos</a></li>
+                <li><a href="#">Contacto</a></li>
+                <li><a href="#">Políticas de privacidad</a></li>
+            </ul>
+        </div>
+        <div class="footer-col social-col">
+            <h4>Síguenos</h4>
+            <div class="social-icons">
+                <i class="fab fa-facebook"></i>
+                <i class="fab fa-instagram"></i>
+                <i class="far fa-handshake"></i>
+            </div>
+        </div>
+    </footer>
+
+    <script src="./assent/javascript/index_script.js"></script>
+</body>
+</html>
