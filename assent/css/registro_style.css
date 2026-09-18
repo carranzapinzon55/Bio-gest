@@ -1,0 +1,234 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    background-color: #f4f6f5;
+    color: #2c3e50;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+/*CONTENEDOR PRINCIPAL TARJETA GRANDE*/
+.contenedor-pagina{
+    display: flex;
+    width: 100%;
+    max-width: 1100px;
+    background-color: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+    border: 1px solid #e1e8ed;
+    overflow: hidden;
+}
+
+/*ESTILO PANEL IZQUIERDO LOGO,SLOGAN,TENEBRIOS*/
+.panel-izquierdo{
+    width: 42%;
+    background-color: #eef2ed; /* Verde muy claro corporativo */
+    padding: 50px 30px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    text-align: center;
+    position: relative;
+}
+
+
+/* ESTILO LOGO*/
+.logo-img {
+    width: 110px;
+    height: auto;
+    margin-bottom: 15px;
+}
+
+.logo-contenedor h1 {
+    font-size: 32px;
+    color: #3b5343;
+    font-weight: 800;
+    letter-spacing: 1px;
+}
+
+.slogan{
+    font-size: 14px;
+    color: #617968;
+    margin-top: 5px;
+    margin-bottom: 40px;
+}
+
+/*PANEL DERECHO (FORMULARIO)*/
+.panel-derecho {
+    width: 58%;
+    padding: 40px 50px;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.header-tarjeta h2 {
+    font-size: 24px;
+    color: #2c3e50;
+    margin-bottom: 5px;
+}
+
+.header-tarjeta p {
+    font-size: 13px;
+    color: #7f8c8d;
+    margin-bottom: 25px;
+}
+
+/*INPUTS GROUP CAMPOS DEL FORMULARIO*/
+.input-form {
+    margin-bottom: 15px;
+}
+
+.input-form label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: #34495e;
+    margin-bottom: 6px;
+}
+
+.input-campo {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.input-campo i:not(.toggle-password):not(.select-arrow) {
+    position: absolute;
+    left: 14px;
+    color: #95a5a6;
+    font-size: 15px;
+}
+
+.input-campo input, 
+.input-campo select {
+    width: 100%;
+    padding: 11px 15px 11px 40px;
+    border: 1px solid #dcdde1;
+    border-radius: 8px;
+    font-size: 13px;
+    color: #2c3e50;
+    outline: none;
+    background-color: #fafbfc;
+    transition: border-color 0.3s;
+}
+
+.input-campo input:focus, 
+.input-campo select:focus {
+    border-color: #557A61;
+    background-color: #fff;
+}
+
+/* Select personalizado */
+.input-campo select {
+    appearance: none;
+    cursor: pointer;
+}
+
+.select-arrow {
+    position: absolute;
+    right: 15px;
+    color: #7f8c8d;
+    font-size: 12px;
+    pointer-events: none;
+}
+
+
+/* Icono del ojo para contraseña */
+.toggle-password {
+    position: absolute;
+    right: 15px;
+    color: #95a5a6;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+/* Botón Registrarse */
+.btn-registrar {
+    width: 100%;
+    padding: 12px;
+    background-color: #557A61; /* Verde BIO-GEST */
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 10px;
+    transition: background-color 0.3s;
+}
+
+.btn-registrar:hover {
+    background-color: #44634e;
+}
+
+/* Enlaces inferiores */
+.login-redirect {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 13px;
+    color: #7f8c8d;
+    position: relative;
+}
+
+.login-redirect::before {
+    content: "";
+    position: absolute;
+    top: -10px;
+    left: 0;
+    width: 100%;
+    height: 1px;
+    background-color: #ecf0f1;
+}
+
+.login-redirect a {
+    color: #557A61;
+    font-weight: 600;
+    text-decoration: none;
+    margin-left: 5px;
+}
+
+.login-redirect a:hover {
+    text-decoration: underline;
+}
+
+.back-home {
+    margin-top: 25px;
+    font-size: 13px;
+}
+
+.back-home a {
+    color: #7f8c8d;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 500;
+}
+
+.back-home a:hover {
+    color: #2c3e50;
+}
+
+/* Diseño responsivo para pantallas pequeñas */
+@media (max-width: 768px) {
+    .page-container {
+        flex-direction: column;
+    }
+    .left-panel {
+        width: 100%;
+        padding: 30px 20px;
+    }
+    .right-panel {
+        width: 100%;
+        padding: 30px 20px;
+    }
+}
