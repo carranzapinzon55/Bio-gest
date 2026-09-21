@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tenebrios 100 unidades - Bio-gest</title>
+    <!-- CSS global/compartido y CSS de esta vista -->
+    <link rel="stylesheet" href="../assent/css/index_style.css">
+    <link rel="stylesheet" href="../assent/css/detalle_producto_style.css">
+</head>
+<body>
+
+   <header class="main-header">
+    <!-- Fila Superior: Logo, Buscador y Acciones -->
+    <div class="header-top">
+        
+        <!-- Logo con imagen + título y subtítulo -->
+        <div class="logo-container">
+            <a href="../index.html" class="logo-link">
+                <img src="../assent/img/Logo.jpeg" alt="Tenebrios Gold" class="logo-img">
+                <div class="logo-text">
+                    <span class="brand-title">TENEBRIOS GOLD</span>
+                    <span class="brand-subtitle">Alimentos vivos de calidad</span>
+                </div>
+            </a>
+        </div>
+
+        <!-- Barra de Búsqueda -->
+        <div class="search-container">
+            <input type="text" placeholder="Buscar productos...">
+            <button type="submit" class="search-btn">🔍</button>
+        </div>
+
+        <!-- Iniciar Sesión y Carrito -->
+        <div class="header-user-actions">
+            <a href="login.html" class="user-link">
+                👤 Iniciar sesión
+            </a>
+            <a href="carrito.html" class="cart-btn">
+                🛒 <span id="cart-count">0</span>
+            </a>
+        </div>
+
+    </div>
+
+    <!-- Fila Inferior: Menú de Navegación Centrado -->
+    <nav class="main-nav">
+        <ul>
+            <li><a href="../index.html">Inicio</a></li>
+            <li><a href="catalogo.html" class="active">Productos</a></li>
+            <li><a href="nosotros.html">¿Quiénes somos?</a></li>
+            <li><a href="envios.html">Envíos</a></li>
+            <li><a href="contacto.html">Contacto</a></li>
+        </ul>
+    </nav>
+</header>
+    <!-- CONTENIDO PRINCIPAL DETALLE DE PRODUCTO -->
+    <main class="contenedor-principal">
+        
+        <!-- BREADCRUMBS (Miga de pan) -->
+        <nav class="breadcrumbs">
+            <a href="../index.html">Inicio</a> &gt; 
+            <a href="catalogo.html">Productos</a> &gt; 
+            <a href="#">Tenebrios</a> &gt; 
+            <span>Tenebrios 100 unidades</span>
+        </nav>
+
+        <section class="producto-detalle-grid">
+            
+            <!-- COLUMNA IZQUIERDA: GALERÍA DE IMÁGENES Y ACORDEONES -->
+            <div class="columna-izquierda">
+                
+                <!-- Visor de Imágenes -->
+                <div class="galeria-producto">
+                    <div class="imagen-principal">
+                        <img id="img-destacada" src="../assent/img/Tenebrios_img.png" alt="Tenebrios 100 unidades">
+                    </div>
+                    <div class="miniaturas-galeria">
+                        <img src="../assent/img/Tenebrios_img.png" class="miniatura activa" onclick="cambiarImagen(this)">
+                        <img src="../assent/img/Zophobas_img.png" class="miniatura" onclick="cambiarImagen(this)">
+                        <img src="../assent/img/Dubias_img.png" class="miniatura" onclick="cambiarImagen(this)">
+                        <img src="../assent/img/Combos_img.png" class="miniatura" onclick="cambiarImagen(this)">
+                        <img src="../assent/img/Tenebrios_img.png" class="miniatura" onclick="cambiarImagen(this)">
+                    </div>
+                </div>
+
+                <!-- Acordeones de Información -->
+                <div class="seccion-acordeones">
+                    <details class="acordeon-item" open>
+                        <summary>Descripción del producto <span class="flecha">▼</span></summary>
+                        <div class="acordeon-contenido">
+                            <p>El Tenebrio molitor es una excelente fuente de proteína de alta calidad y grasas saludables para tus mascotas. Proviene de un sistema de cría controlado tecnológicamente para garantizar óptima nutrición e higiene.</p>
+                        </div>
+                    </details>
+
+                    <details class="acordeon-item">
+                        <summary>Información nutricional <span class="flecha">▼</span></summary>
+                        <div class="acordeon-contenido">
+                            <ul>
+                                <li><strong>Proteína cruda:</strong> 51%</li>
+                                <li><strong>Grasa natural:</strong> 29%</li>
+                                <li><strong>Fibra:</strong> 8%</li>
+                                <li><strong>Humedad:</strong> 58%</li>
+                            </ul>
+                        </div>
+                    </details>
+
+                    <details class="acordeon-item">
+                        <summary>Envíos y devoluciones <span class="flecha">▼</span></summary>
+                        <div class="acordeon-contenido">
+                            <p>Despachos nacionales en empaques de transporte seguro con ventilación. Garantía de llegada del 100% vivo en envíos express.</p>
+                        </div>
+                    </details>
+                </div>
+
+            </div>
+
+            <!-- COLUMNA DERECHA: INFORMACIÓN Y COMPRA -->
+            <div class="columna-derecha">
+                
+                <h1 class="titulo-producto">Tenebrios 100 unidades</h1>
+                
+                <div class="precio-producto">$ 8.000</div>
+                
+                <div class="valoracion-resenas">
+                    <span class="estrellas">★★★★★</span>
+                    <span class="contador-resenas">(12 reseñas)</span>
+                </div>
+
+                <p class="descripcion-corta">
+                    Alimento vivo ideal para reptiles, aves, peces y otros animales insectívoros.
+                </p>
+
+                <!-- Selector de Presentaciones -->
+                <div class="grupo-opciones">
+                    <label class="opcion-label">Presentación</label>
+                    <div class="selector-presentacion">
+                        <button class="btn-opcion activo" onclick="seleccionarPresentacion(this)">100 unidades</button>
+                        <button class="btn-opcion" onclick="seleccionarPresentacion(this)">250 unidades</button>
+                        <button class="btn-opcion" onclick="seleccionarPresentacion(this)">500 unidades</button>
+                        <button class="btn-opcion" onclick="seleccionarPresentacion(this)">1000 unidades</button>
+                    </div>
+                </div>
+
+                <!-- Selector de Cantidad -->
+                <div class="grupo-opciones">
+                    <label class="opcion-label">Cantidad</label>
+                    <div class="selector-cantidad">
+                        <button type="button" class="btn-cantidad" onclick="cambiarCantidad(-1)">-</button>
+                        <input type="number" id="input-cantidad" value="1" min="1" readonly>
+                        <button type="button" class="btn-cantidad" onclick="cambiarCantidad(1)">+</button>
+                    </div>
+                </div>
+
+                <!-- Botones de Acción -->
+                <div class="acciones-compra">
+                    <button class="btn-agregar-carrito">Agregar al carrito</button>
+                    <button class="btn-comprar-ahora">Comprar ahora</button>
+                </div>
+
+                <!-- Garantía -->
+                <div class="garantia-compra">
+                    <span class="icono-escudo">🛡️</span>
+                    <span>Compra segura y protegida</span>
+                </div>
+
+            </div>
+
+        </section>
+
+    </main>
+
+    <!-- FOOTER COMPARTIDO -->
+    <footer class="main-footer">
+        <div class="footer-container">
+            <p>&copy; 2026 BIO-GEST. Todos los derechos reservados.</p>
+        </div>
+    </footer>
+
+    <script src="../assent/javascript/detalle_producto_script.js"></script>
+</body>
+</html>

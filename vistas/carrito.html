@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carrito de compras - Bio-gest</title>
+    <link rel="stylesheet" href="../assent/css/carrito_style.css">
+</head>
+<body>
+
+    <!-- HEADER UNIFICADO -->
+    <header class="main-header">
+        <div class="header-top">
+            <div class="logo-container">
+                <a href="../index.html" class="logo-link">
+                    <img src="../assent/img/Logo.jpeg" alt="Tenebrios Gold" class="logo-img">
+                    <div class="logo-text">
+                        <span class="brand-title">TENEBRIOS GOLD</span>
+                        <span class="brand-subtitle">Alimentos vivos de calidad</span>
+                    </div>
+                </a>
+            </div>
+
+            <div class="search-container">
+                <input type="text" placeholder="Buscar productos...">
+                <button type="submit" class="search-btn">🔍</button>
+            </div>
+
+            <div class="header-user-actions">
+                <a href="login.html" class="user-link">👤 Iniciar sesión</a>
+                <a href="carrito.html" class="cart-btn">🛒 <span id="cart-count">2</span></a>
+            </div>
+        </div>
+
+        <nav class="main-nav">
+            <ul>
+                <li><a href="../index.html">Inicio</a></li>
+                <li><a href="catalogo.html">Productos</a></li>
+                <li><a href="nosotros.html">¿Quiénes somos?</a></li>
+                <li><a href="envios.html">Envíos</a></li>
+                <li><a href="contacto.html">Contacto</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <!-- CONTENIDO PRINCIPAL -->
+    <main class="contenedor-principal">
+        <h1 class="titulo-pagina">Carrito de compras</h1>
+
+        <div class="carrito-grid">
+            
+            <!-- COLUMNA IZQUIERDA: LISTA DE PRODUCTOS -->
+            <div class="columna-productos">
+                <div class="tabla-carrito">
+                    <div class="tabla-header">
+                        <span class="col-prod">Producto</span>
+                        <span class="col-precio">Precio</span>
+                        <span class="col-cant">Cantidad</span>
+                        <span class="col-sub">Subtotal</span>
+                        <span class="col-accion"></span>
+                    </div>
+
+                    <!-- Fila Producto 1 -->
+                    <div class="fila-producto" data-precio="8000">
+                        <div class="col-prod info-prod">
+                            <img src="../assent/img/Tenebrios_img.png" alt="Tenebrios 100 unidades" class="prod-thumb">
+                            <span class="prod-nombre">Tenebrios 100 unidades</span>
+                        </div>
+                        <div class="col-precio">$ 8.000</div>
+                        <div class="col-cant">
+                            <div class="selector-cantidad">
+                                <button type="button" class="btn-cant" onclick="actualizarCantidad(this, -1)">-</button>
+                                <input type="number" class="input-cant" value="1" min="1" readonly>
+                                <button type="button" class="btn-cant" onclick="actualizarCantidad(this, 1)">+</button>
+                            </div>
+                        </div>
+                        <div class="col-sub subtotal-item">$ 8.000</div>
+                        <div class="col-accion">
+                            <button class="btn-eliminar" onclick="eliminarProducto(this)" title="Eliminar producto">🗑️</button>
+                        </div>
+                    </div>
+
+                    <!-- Fila Producto 2 -->
+                    <div class="fila-producto" data-precio="18000">
+                        <div class="col-prod info-prod">
+                            <img src="../assent/img/Zophobas_img.png" alt="Zophobas 250 unidades" class="prod-thumb">
+                            <span class="prod-nombre">Zophobas 250 unidades</span>
+                        </div>
+                        <div class="col-precio">$ 18.000</div>
+                        <div class="col-cant">
+                            <div class="selector-cantidad">
+                                <button type="button" class="btn-cant" onclick="actualizarCantidad(this, -1)">-</button>
+                                <input type="number" class="input-cant" value="1" min="1" readonly>
+                                <button type="button" class="btn-cant" onclick="actualizarCantidad(this, 1)">+</button>
+                            </div>
+                        </div>
+                        <div class="col-sub subtotal-item">$ 18.000</div>
+                        <div class="col-accion">
+                            <button class="btn-eliminar" onclick="eliminarProducto(this)" title="Eliminar producto">🗑️</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="acciones-inferiores">
+                    <a href="catalogo.html" class="btn-seguir-comprando">Seguir comprando</a>
+                </div>
+            </div>
+
+            <!-- COLUMNA DERECHA: RESUMEN DEL PEDIDO -->
+            <div class="columna-resumen">
+                <div class="card-resumen">
+                    <h2 class="titulo-resumen">Resumen del pedido</h2>
+                    
+                    <div class="linea-resumen">
+                        <span>Subtotal</span>
+                        <span id="resumen-subtotal">$ 26.000</span>
+                    </div>
+
+                    <div class="linea-resumen">
+                        <span>Envío</span>
+                        <span id="resumen-envio">$ 6.000</span>
+                    </div>
+
+                    <hr class="divisor-resumen">
+
+                    <div class="linea-resumen total">
+                        <span>Total</span>
+                        <span id="resumen-total">$ 32.000</span>
+                    </div>
+
+                    <button class="btn-finalizar-compra">Finalizar compra</button>
+
+                    <div class="metodos-pago">
+                        <span class="label-pago">Aceptamos:</span>
+                        <div class="iconos-pago">
+                            <div class="box-pago" title="Nequi">💳</div>
+                            <div class="box-pago" title="Daviplata">📱</div>
+                            <div class="box-pago" title="PSE">🏦</div>
+                            <div class="box-pago" title="Efectivo / Tarjeta">💵</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="main-footer">
+        <div class="footer-container">
+            <p>&copy; 2026 BIO-GEST. Todos los derechos reservados.</p>
+        </div>
+    </footer>
+
+    <script src="../assent/javascript/carrito_script.js"></script>
+</body>
+</html>

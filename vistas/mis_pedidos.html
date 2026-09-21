@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mis Pedidos - Tenebrios Gold</title>
+    <link rel="stylesheet" href="../assent/css/mi_cuenta_style.css">
+</head>
+<body>
+
+    <!-- HEADER UNIFICADO -->
+    <header class="main-header">
+        <div class="header-top">
+            <div class="logo-container">
+                <a href="../index.html" class="logo-link">
+                    <img src="../assent/img/Logo.jpeg" alt="Tenebrios Gold" class="logo-img">
+                    <div class="logo-text">
+                        <span class="brand-title">TENEBRIOS GOLD</span>
+                        <span class="brand-subtitle">Alimentos vivos de calidad</span>
+                    </div>
+                </a>
+            </div>
+
+            <div class="search-container">
+                <input type="text" placeholder="Buscar productos...">
+                <button type="submit" class="search-btn">🔍</button>
+            </div>
+
+            <div class="header-user-actions">
+                <a href="mi_cuenta.html" class="user-link active-user">👤 Mi cuenta</a>
+                <a href="carrito.html" class="cart-btn">🛒 <span id="cart-count">0</span></a>
+            </div>
+        </div>
+
+        <nav class="main-nav">
+            <ul>
+                <li><a href="../index.html">Inicio</a></li>
+                <li><a href="catalogo.html">Productos</a></li>
+                <li><a href="nosotros.html">¿Quiénes somos?</a></li>
+                <li><a href="envios.html">Envíos</a></li>
+                <li><a href="contacto.html">Contacto</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <!-- CONTENIDO PRINCIPAL: PANEL DE ZONA PRIVADA -->
+    <main class="contenedor-principal">
+        <div class="layout-cuenta">
+            
+            <!-- MENÚ LATERAL DE NAVEGACIÓN PRIVADA -->
+            <aside class="sidebar-cuenta">
+                <nav class="menu-cuenta">
+                    <a href="mi_cuenta.html" class="item-menu">Mi cuenta</a>
+                    <a href="mis_pedidos.html" class="item-menu activo">Mis pedidos</a>
+                    <a href="editar_perfil.html" class="item-menu">Mis datos</a>
+                    <a href="direcciones.html" class="item-menu">Direcciones</a>
+                    <a href="#" id="btn-cerrar-sesion" class="item-menu cerrar-sesion">Cerrar sesión</a>
+                </nav>
+            </aside>
+
+            <!-- SECCIÓN CENTRAL DE CONTENIDO -->
+            <section class="contenido-cuenta">
+                <h1 class="titulo-seccion">Mis pedidos</h1>
+
+                <div class="card-tabla">
+                    <table class="tabla-pedidos">
+                        <thead>
+                            <tr>
+                                <th>Pedido</th>
+                                <th>Fecha</th>
+                                <th>Total</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="id-pedido">#TG0001</td>
+                                <td>20/05/2024</td>
+                                <td class="precio-total">$ 32.000</td>
+                                <td><span class="badge-estado enviado">Enviado</span></td>
+                                <td><button class="btn-detalle" onclick="verDetallePedido('#TG0001')">Ver detalle</button></td>
+                            </tr>
+                            <tr>
+                                <td class="id-pedido">#TG0002</td>
+                                <td>28/05/2024</td>
+                                <td class="precio-total">$ 45.000</td>
+                                <td><span class="badge-estado entregado">Entregado</span></td>
+                                <td><button class="btn-detalle" onclick="verDetallePedido('#TG0002')">Ver detalle</button></td>
+                            </tr>
+                            <tr>
+                                <td class="id-pedido">#TG0003</td>
+                                <td>06/06/2024</td>
+                                <td class="precio-total">$ 18.000</td>
+                                <td><span class="badge-estado proceso">En proceso</span></td>
+                                <td><button class="btn-detalle" onclick="verDetallePedido('#TG0003')">Ver detalle</button></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+        </div>
+    </main>
+
+    <!-- FOOTER MULTICOLUMNA -->
+    <footer class="main-footer">
+        <div class="footer-grid">
+            <div class="footer-brand">
+                <div class="logo-container">
+                    <img src="../assent/img/Logo.jpeg" alt="Tenebrios Gold" class="logo-img">
+                    <span class="brand-title">TENEBRIOS GOLD</span>
+                </div>
+            </div>
+
+            <div class="footer-col">
+                <h4>Información</h4>
+                <ul>
+                    <li><a href="nosotros.html">¿Quiénes somos?</a></li>
+                    <li><a href="envios.html">Envíos</a></li>
+                    <li><a href="preguntas_frecuentes.html">Preguntas frecuentes</a></li>
+                    <li><a href="contacto.html">Contacto</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-col">
+                <h4>Mi cuenta</h4>
+                <ul>
+                    <li><a href="mis_pedidos.html">Mis pedidos</a></li>
+                    <li><a href="editar_perfil.html">Mis datos</a></li>
+                    <li><a href="direcciones.html">Direcciones</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-col">
+                <h4>Síguenos</h4>
+                <div class="redes-sociales">
+                    <a href="#" class="icon-social" title="Facebook">f</a>
+                    <a href="#" class="icon-social" title="Instagram">📷</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer-bottom">
+            <p>&copy; 2026 BIO-GEST. Todos los derechos reservados.</p>
+        </div>
+    </footer>
+
+    <script src="../assent/javascript/mi_cuenta_script.js"></script>
+</body>
+</html>

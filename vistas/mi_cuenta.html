@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi Cuenta - Tenebrios Gold</title>
+    <link rel="stylesheet" href="../assent/css/mi_cuenta_style.css">
+</head>
+<body>
+
+    <header class="main-header">
+        <div class="header-top">
+            <div class="logo-container">
+                <a href="../index.html" class="logo-link">
+                    <img src="../assent/img/Logo.jpeg" alt="Tenebrios Gold" class="logo-img">
+                    <div class="logo-text">
+                        <span class="brand-title">TENEBRIOS GOLD</span>
+                        <span class="brand-subtitle">Alimentos vivos de calidad</span>
+                    </div>
+                </a>
+            </div>
+            <div class="search-container">
+                <input type="text" placeholder="Buscar productos...">
+                <button type="submit" class="search-btn">🔍</button>
+            </div>
+            <div class="header-user-actions">
+                <a href="mi_cuenta.html" class="user-link active-user">👤 Mi cuenta</a>
+                <a href="carrito.html" class="cart-btn">🛒 <span id="cart-count">0</span></a>
+            </div>
+        </div>
+        <nav class="main-nav">
+            <ul>
+                <li><a href="../index.html">Inicio</a></li>
+                <li><a href="catalogo.html">Productos</a></li>
+                <li><a href="nosotros.html">¿Quiénes somos?</a></li>
+                <li><a href="envios.html">Envíos</a></li>
+                <li><a href="contacto.html">Contacto</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main class="contenedor-principal">
+        <div class="layout-cuenta">
+            <aside class="sidebar-cuenta">
+                <nav class="menu-cuenta">
+                    <a href="mi_cuenta.html" class="item-menu activo">Mi cuenta</a>
+                    <a href="mis_pedidos.html" class="item-menu">Mis pedidos</a>
+                    <a href="editar_perfil.html" class="item-menu">Mis datos</a>
+                    <a href="direcciones.html" class="item-menu">Direcciones</a>
+                    <a href="#" id="btn-cerrar-sesion" class="item-menu cerrar-sesion">Cerrar sesión</a>
+                </nav>
+            </aside>
+
+            <section class="contenido-cuenta">
+                <h1 class="titulo-seccion">Hola, Carlos Mendoza</h1>
+                <p class="subtitulo-bienvenida">Desde el panel de control de tu cuenta puedes ver tus pedidos recientes, gestionar tus direcciones y editar tus datos de acceso.</p>
+
+                <div class="grid-resumen-cuenta">
+                    <div class="card-resumen-dashboard">
+                        <h3>Último Pedido</h3>
+                        <p class="dato-destacado">#TG0003 - En proceso</p>
+                        <p class="dato-secundario">Total: $ 18.000 (06/06/2024)</p>
+                        <a href="mis_pedidos.html" class="btn-link">Ver todos los pedidos &rarr;</a>
+                    </div>
+
+                    <div class="card-resumen-dashboard">
+                        <h3>Dirección Principal</h3>
+                        <p class="dato-destacado">Casa</p>
+                        <p class="dato-secundario">Calle 45 # 12 - 34, Apto 201 (Bogotá)</p>
+                        <a href="direcciones.html" class="btn-link">Gestionar direcciones &rarr;</a>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <footer class="main-footer">
+        <div class="footer-bottom">
+            <p>&copy; 2026 BIO-GEST. Todos los derechos reservados.</p>
+        </div>
+    </footer>
+
+    <script src="../assent/javascript/mi_cuenta_script.js"></script>
+</body>
+</html>

@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Finalizar compra - Bio-gest</title>
+    <link rel="stylesheet" href="../assent/css/checkout_style.css">
+</head>
+<body>
+
+    <!-- HEADER UNIFICADO -->
+    <header class="main-header">
+        <div class="header-top">
+            <div class="logo-container">
+                <a href="../index.html" class="logo-link">
+                    <img src="../assent/img/Logo.jpeg" alt="Tenebrios Gold" class="logo-img">
+                    <div class="logo-text">
+                        <span class="brand-title">TENEBRIOS GOLD</span>
+                        <span class="brand-subtitle">Alimentos vivos de calidad</span>
+                    </div>
+                </a>
+            </div>
+
+            <div class="search-container">
+                <input type="text" placeholder="Buscar productos...">
+                <button type="submit" class="search-btn">🔍</button>
+            </div>
+
+            <div class="header-user-actions">
+                <a href="login.html" class="user-link">👤 Iniciar sesión</a>
+                <a href="carrito.html" class="cart-btn">🛒 <span id="cart-count">2</span></a>
+            </div>
+        </div>
+
+        <nav class="main-nav">
+            <ul>
+                <li><a href="../index.html">Inicio</a></li>
+                <li><a href="catalogo.html">Productos</a></li>
+                <li><a href="nosotros.html">¿Quiénes somos?</a></li>
+                <li><a href="envios.html">Envíos</a></li>
+                <li><a href="preguntas_frecuentes.html">Preguntas frecuentes</a></li>
+                <li><a href="contacto.html">Contacto</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <!-- CONTENIDO PRINCIPAL -->
+    <main class="contenedor-principal">
+        <h1 class="titulo-pagina">Finalizar compra</h1>
+
+        <!-- PASOS DEL CHECKOUT -->
+        <div class="pasos-checkout">
+            <div class="paso activo">
+                <span class="numero-paso">1</span>
+                <span class="texto-paso">Envío</span>
+            </div>
+            <span class="separador-paso">&gt;</span>
+            <div class="paso">
+                <span class="numero-paso">2</span>
+                <span class="texto-paso">Pago</span>
+            </div>
+            <span class="separador-paso">&gt;</span>
+            <div class="paso">
+                <span class="numero-paso">3</span>
+                <span class="texto-paso">Confirmación</span>
+            </div>
+        </div>
+
+        <!-- GRID PRINCIPAL -->
+        <div class="checkout-grid">
+            
+            <!-- COLUMNA IZQUIERDA: FORMULARIO DE ENVÍO -->
+            <div class="columna-formulario">
+                <form id="form-checkout" class="form-envio" novalidate>
+                    <h2 class="subtitulo-seccion">Información de envío</h2>
+
+                    <div class="campo-grupo">
+                        <label for="nombre">Nombre completo</label>
+                        <input type="text" id="nombre" name="nombre" required>
+                    </div>
+
+                    <div class="campo-grupo">
+                        <label for="direccion">Dirección</label>
+                        <input type="text" id="direccion" name="direccion" required>
+                    </div>
+
+                    <div class="campo-doble">
+                        <div class="campo-grupo">
+                            <label for="ciudad">Ciudad</label>
+                            <input type="text" id="ciudad" name="ciudad" required>
+                        </div>
+                        <div class="campo-grupo">
+                            <label for="departamento">Departamento</label>
+                            <input type="text" id="departamento" name="departamento" required>
+                        </div>
+                    </div>
+
+                    <div class="campo-grupo">
+                        <label for="telefono">Teléfono</label>
+                        <input type="tel" id="telefono" name="telefono" required>
+                    </div>
+
+                    <div class="campo-grupo">
+                        <label for="email">Correo electrónico</label>
+                        <input type="email" id="email" name="email" required>
+                    </div>
+                </form>
+            </div>
+
+            <!-- COLUMNA DERECHA: RESUMEN DEL PEDIDO -->
+            <div class="columna-resumen">
+                <div class="card-resumen">
+                    <h2 class="titulo-resumen">Resumen del pedido</h2>
+
+                    <div class="lista-items-resumen">
+                        <div class="item-resumen">
+                            <span>Tenebrios 100 unidades</span>
+                            <span class="precio-item">$ 8.000</span>
+                        </div>
+                        <div class="item-resumen">
+                            <span>Zophobas 250 unidades</span>
+                            <span class="precio-item">$ 18.000</span>
+                        </div>
+                        <div class="item-resumen">
+                            <span>Envío</span>
+                            <span class="precio-item">$ 6.000</span>
+                        </div>
+                    </div>
+
+                    <hr class="divisor-resumen">
+
+                    <div class="linea-total">
+                        <span>Total</span>
+                        <span class="monto-total">$ 32.000</span>
+                    </div>
+
+                    <button type="button" id="btn-continuar-pago" class="btn-continuar-pago">Continuar al pago</button>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="main-footer">
+        <div class="footer-container">
+            <p>&copy; 2026 BIO-GEST. Todos los derechos reservados.</p>
+        </div>
+    </footer>
+
+    <script src="../assent/javascript/checkout_script.js"></script>
+</body>
+</html>
