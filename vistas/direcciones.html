@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Direcciones - Tenebrios Gold</title>
+    <link rel="stylesheet" href="../assent/css/mi_cuenta_style.css">
+</head>
+<body>
+
+    <header class="main-header">
+        <div class="header-top">
+            <div class="logo-container">
+                <a href="../index.html" class="logo-link">
+                    <img src="../assent/img/Logo.jpeg" alt="Tenebrios Gold" class="logo-img">
+                    <div class="logo-text">
+                        <span class="brand-title">TENEBRIOS GOLD</span>
+                        <span class="brand-subtitle">Alimentos vivos de calidad</span>
+                    </div>
+                </a>
+            </div>
+            <div class="search-container">
+                <input type="text" placeholder="Buscar productos...">
+                <button type="submit" class="search-btn">🔍</button>
+            </div>
+            <div class="header-user-actions">
+                <a href="mi_cuenta.html" class="user-link">👤 Mi cuenta</a>
+                <a href="carrito.html" class="cart-btn">🛒 <span id="cart-count">0</span></a>
+            </div>
+        </div>
+        <nav class="main-nav">
+            <ul>
+                <li><a href="../index.html">Inicio</a></li>
+                <li><a href="catalogo.html">Productos</a></li>
+                <li><a href="nosotros.html">¿Quiénes somos?</a></li>
+                <li><a href="envios.html">Envíos</a></li>
+                <li><a href="contacto.html">Contacto</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main class="contenedor-principal">
+        <div class="layout-cuenta">
+            <aside class="sidebar-cuenta">
+                <nav class="menu-cuenta">
+                    <a href="mi_cuenta.html" class="item-menu">Mi cuenta</a>
+                    <a href="mis_pedidos.html" class="item-menu">Mis pedidos</a>
+                    <a href="editar_perfil.html" class="item-menu">Mis datos</a>
+                    <a href="direcciones.html" class="item-menu activo">Direcciones</a>
+                    <a href="#" id="btn-cerrar-sesion" class="item-menu cerrar-sesion">Cerrar sesión</a>
+                </nav>
+            </aside>
+
+            <section class="contenido-cuenta">
+                <div class="header-seccion-btn">
+                    <h1 class="titulo-seccion">Mis direcciones de envío</h1>
+                    <button class="btn-secundario" onclick="toggleFormDireccion()">+ Agregar nueva dirección</button>
+                </div>
+
+                <!-- Formulario Oculto para Agregar -->
+                <div id="card-nueva-direccion" class="card-formulario oculto">
+                    <h3 class="subtitulo-form">Nueva dirección</h3>
+                    <form id="form-direccion">
+                        <div class="campo-grupo">
+                            <label for="dir-nombre">Nombre de la ubicación (Ej: Casa, Trabajo)</label>
+                            <input type="text" id="dir-nombre" placeholder="Ej: Casa" required>
+                        </div>
+                        <div class="campo-grupo">
+                            <label for="dir-calle">Dirección completa</label>
+                            <input type="text" id="dir-calle" placeholder="Calle 123 # 45 - 67" required>
+                        </div>
+                        <div class="campo-doble">
+                            <div class="campo-grupo">
+                                <label for="dir-ciudad">Ciudad</label>
+                                <input type="text" id="dir-ciudad" placeholder="Bogotá" required>
+                            </div>
+                            <div class="campo-grupo">
+                                <label for="dir-depto">Departamento</label>
+                                <input type="text" id="dir-depto" placeholder="Cundinamarca" required>
+                            </div>
+                        </div>
+                        <div class="acciones-form">
+                            <button type="submit" class="btn-guardar">Guardar dirección</button>
+                            <button type="button" class="btn-cancelar" onclick="toggleFormDireccion()">Cancelar</button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Lista de Tarjetas de Direcciones -->
+                <div class="grid-direcciones">
+                    <div class="card-direccion principal">
+                        <span class="badge-principal">Principal</span>
+                        <h3>Casa</h3>
+                        <p>Calle 45 # 12 - 34, Apto 201</p>
+                        <p>Bogotá, Cundinamarca</p>
+                        <p>Tel: 3101234567</p>
+                        <div class="acciones-card">
+                            <button class="btn-link">Editar</button>
+                            <button class="btn-link peligro" onclick="eliminarDireccion(this)">Eliminar</button>
+                        </div>
+                    </div>
+
+                    <div class="card-direccion">
+                        <h3>Trabajo / Finca</h3>
+                        <p>Carrera 7 # 100 - 20, Oficina 502</p>
+                        <p>Bogotá, Cundinamarca</p>
+                        <p>Tel: 3209876543</p>
+                        <div class="acciones-card">
+                            <button class="btn-link">Establecer como principal</button>
+                            <button class="btn-link peligro" onclick="eliminarDireccion(this)">Eliminar</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <footer class="main-footer">
+        <div class="footer-bottom">
+            <p>&copy; 2026 BIO-GEST. Todos los derechos reservados.</p>
+        </div>
+    </footer>
+
+    <script src="../assent/javascript/mi_cuenta_script.js"></script>
+</body>
+</html>

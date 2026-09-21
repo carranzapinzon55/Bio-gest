@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Catálogo de Productos - Tenebrios Gold</title>
+    <!-- Librería de íconos FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Estilos CSS (Ruta corregida para la carpeta 'vistas') -->
+    <link rel="stylesheet" href="../assent/css/catologo_style.css">
+</head>
+<body>
+
+    <!-- ENCABEZADO PRINCIPAL -->
+    <header class="main-header">
+        <div class="logo-area">
+            <div class="placeholder-box logo-img logo-placeholder">
+                <a href="../index.html">
+                    <img src="../assent/img/Logo.jpeg" alt="Logo Tenebrios Gold" class="logo-img">
+                </a>
+            </div>
+            <div class="brand-text">
+                <h1>TENEBRIOS GOLD</h1>
+                <p>Alimentos vivos de calidad</p>
+            </div>
+        </div>
+        
+        <div class="search-bar">
+            <input type="text" placeholder="Buscar productos...">
+            <button type="button"><i class="fas fa-search"></i></button>
+        </div>
+
+        <div class="user-actions">
+            <div class="action-item">
+                <i class="far fa-user"></i>
+                <span>Inicio sesión</span>
+            </div>
+            <div class="action-item cart-btn">
+                <i class="fas fa-shopping-cart"></i>
+                <span class="cart-count">0</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- BARRA DE NAVEGACIÓN -->
+    <nav class="main-nav">
+        <ul>
+            <li><a href="../index.html">Inicio</a></li>
+            <li><a href="catalogo.html" class="active">Productos</a></li>
+            <li><a href="#">¿Quiénes somos?</a></li>
+            <li><a href="#">Envíos</a></li>
+            <li><a href="#">Contacto</a></li>
+        </ul>
+    </nav>
+
+    <!-- CONTENIDO PRINCIPAL / CATÁLOGO -->
+    <main class="catalog-container">
+        
+        <!-- BARRA LATERAL DE FILTROS -->
+        <aside class="filters-sidebar">
+            <h3>Filtros</h3>
+            
+            <div class="filter-group">
+                <h4>Categorías</h4>
+                <ul class="filter-list">
+                    <li><label><input type="checkbox" name="cat" value="tenebrios" checked> Tenebrios</label></li>
+                    <li><label><input type="checkbox" name="cat" value="zophobas"> Zophobas</label></li>
+                    <li><label><input type="checkbox" name="cat" value="dubias"> Cucarachas Dubia</label></li>
+                    <li><label><input type="checkbox" name="cat" value="combos"> Combos y Promociones</label></li>
+                </ul>
+            </div>
+
+            <div class="filter-group">
+                <h4>Precio Máximo</h4>
+                <input type="range" id="price-range" min="5000" max="100000" step="5000" value="100000">
+                <span id="price-label">$100.000 COP</span>
+            </div>
+
+            <button type="button" class="btn-apply-filters">Aplicar Filtros</button>
+        </aside>
+
+        <!-- GRILLA DE PRODUCTOS -->
+        <section class="products-section">
+            <div class="catalog-header">
+                <h2>Todos los Productos</h2>
+                <div class="sort-options">
+                    <label for="sort-select">Ordenar por:</label>
+                    <select id="sort-select">
+                        <option value="popular">Más populares</option>
+                        <option value="low-high">Precio: Menor a Mayor</option>
+                        <option value="high-low">Precio: Mayor a Menor</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="products-grid">
+                
+                <!-- Producto 1 -->
+                <article class="product-card">
+                    <div class="product-img">
+                        <img src="../assent/img/Tenebrios_img.png" alt="Tenebrios">
+                    </div>
+                    <div class="product-details">
+                        <h3>Tenebrios (100g)</h3>
+                        <p class="description">Alimento vivo de alto valor proteico para mascotas exóticas.</p>
+                        <span class="price">$15.000 COP</span>
+                        <button class="btn-add-cart"><i class="fas fa-cart-plus"></i> Añadir</button>
+                    </div>
+                </article>
+
+                <!-- Producto 2 -->
+                <article class="product-card">
+                    <div class="product-img">
+                        <img src="../assent/img/Zophobas_img.png" alt="Zophobas">
+                    </div>
+                    <div class="product-details">
+                        <h3>Zophobas (100g)</h3>
+                        <p class="description">Larva gigante de gran aporte calórico ideal para reptiles y aves.</p>
+                        <span class="price">$18.000 COP</span>
+                        <button class="btn-add-cart"><i class="fas fa-cart-plus"></i> Añadir</button>
+                    </div>
+                </article>
+
+                <!-- Producto 3 -->
+                <article class="product-card">
+                    <div class="product-img">
+                        <img src="../assent/img/Dubias_img.png" alt="Cucarachas Dubia">
+                    </div>
+                    <div class="product-details">
+                        <h3>Cucarachas Dubia</h3>
+                        <p class="description">Excelente digestibilidad y alto contenido en calcio.</p>
+                        <span class="price">$22.000 COP</span>
+                        <button class="btn-add-cart"><i class="fas fa-cart-plus"></i> Añadir</button>
+                    </div>
+                </article>
+
+                <!-- Producto 4 -->
+                <article class="product-card">
+                    <div class="product-img">
+                        <img src="../assent/img/Combos_img.png" alt="Combo alimentos">
+                    </div>
+                    <div class="product-details">
+                        <h3>Combo Alimentos</h3>
+                        <p class="description">Mezcla variada de alimentos vivos para una nutrición balanceada.</p>
+                        <span class="price">$35.000 COP</span>
+                        <button class="btn-add-cart"><i class="fas fa-cart-plus"></i> Añadir</button>
+                    </div>
+                </article>
+
+            </div>
+        </section>
+
+    </main>
+
+    <!-- BOLETÍN / NEWSLETTER -->
+    <section class="newsletter">
+        <div class="news-left">
+            <div class="placeholder-box small-square">
+                <img src="../assent/img/pro.jfif" alt="Vuélvete pro">
+            </div>
+            <div class="news-text">
+                <h3>Recibe novedades y promociones</h3>
+                <p>Suscríbete para recibir ofertas exclusivas</p>
+            </div>
+        </div>
+        <div class="news-form">
+            <input type="email" placeholder="Tu correo electrónico">
+            <button type="button">Suscribirme</button>
+        </div>
+    </section>
+
+    <!-- PIE DE PÁGINA -->
+    <footer class="main-footer">
+        <div class="footer-col brand-col">
+            <div class="placeholder-box small-square footer-logo-placeholder">
+                <img src="../assent/img/Logo.jpeg" alt="Logo Tenebrios Gold" class="footer-logo">
+            </div>
+            <div>
+                <h4>TENEBRIOS GOLD</h4>
+                <p>Alimentos vivos de calidad</p>
+            </div>
+        </div>
+        <div class="footer-col info-col">
+            <h4>Información</h4>
+            <ul>
+                <li><a href="#">¿Quiénes somos?</a></li>
+                <li><a href="#">Envíos</a></li>
+                <li><a href="#">Contacto</a></li>
+                <li><a href="#">Políticas de privacidad</a></li>
+            </ul>
+        </div>
+        <div class="footer-col social-col">
+            <h4>Síguenos</h4>
+            <div class="social-icons">
+                <i class="fab fa-facebook"></i>
+                <i class="fab fa-instagram"></i>
+                <i class="far fa-handshake"></i>
+            </div>
+        </div>
+    </footer>
+
+    <!-- SCRIPT JAVASCRIPT -->
+    <script src="../assent/javascript/catalogo_script.js"></script>
+</body>
+</html>
