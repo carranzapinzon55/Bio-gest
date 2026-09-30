@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bio-Gest | Panel de Administrador</title>
+    <!-- Íconos de FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Estilos locales -->
+    <link rel="stylesheet" href="../../assent/css/admin.css">
+</head>
+<body>
+
+    <!-- BARRA LATERAL (SIDEBAR) -->
+    <aside class="sidebar">
+        <div class="brand">
+            <h2>Tenebrios Gold</h2>
+            <p>panel de administrador</p>
+        </div>
+        <ul class="menu">
+            <li class="active"><a href="inicio.html"><i class="fa-solid fa-house"></i> Inicio</a></li>
+            <li><a href="usuarios.html"><i class="fa-solid fa-users"></i> Usuarios</a></li>
+            <li><a href="roles.html"><i class="fa-solid fa-shield-halved"></i> Roles y permisos</a></li>
+            <li><a href="productos.html"><i class="fa-solid fa-box"></i> Productos</a></li>
+            <li><a href="promociones.html"><i class="fa-solid fa-bullhorn"></i> Promociones</a></li>
+            <li><a href="pedidos.html"><i class="fa-solid fa-cart-shopping"></i> Pedidos</a></li>
+            <li><a href="inventario.html"><i class="fa-solid fa-clipboard-list"></i> Inventario</a></li>
+            <li><a href="chats.html"><i class="fa-solid fa-comments"></i> Chats</a></li>
+            <li><a href="estadisticas.html"><i class="fa-solid fa-chart-line"></i> Estadísticas</a></li>
+            <li><a href="ajustes.html"><i class="fa-solid fa-gear"></i> Ajustes</a></li>
+        </ul>
+    </aside>
+
+    <!-- CONTENIDO PRINCIPAL -->
+    <main class="main-content">
+
+        <!-- HEADER SUPERIOR -->
+        <header class="top-header">
+            <div class="search-bar">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" placeholder="Buscar...">
+            </div>
+            <div class="user-profile">
+                <i class="fa-solid fa-bell notifications"></i>
+                <div class="profile-info">
+                    <i class="fa-circle-user fa-solid"></i>
+                    <span>Administrador</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- TÍTULO Y BIENVENIDA -->
+        <section class="welcome-title">
+            <h1>Bienvenido, administrador</h1>
+            <p>Gestiona todo el sistema de TENEBRIOS GOLD desde aquí</p>
+        </section>
+
+        <!-- TARJETAS DE MÉTRICAS (KPIs) -->
+        <section class="kpi-grid">
+            <div class="kpi-card">
+                <i class="fa-solid fa-user-group kpi-icon"></i>
+                <div class="kpi-details">
+                    <h3>total de usuarios</h3>
+                    <div class="kpi-value">18</div>
+                    <span class="kpi-trend up"><i class="fa-solid fa-arrow-up"></i> 12% vs. mes anterior</span>
+                </div>
+            </div>
+            <div class="kpi-card">
+                <i class="fa-solid fa-boxes-packing kpi-icon"></i>
+                <div class="kpi-details">
+                    <h3>Pedidos pendientes</h3>
+                    <div class="kpi-value">7</div>
+                    <span class="kpi-trend up"><i class="fa-solid fa-arrow-up"></i> 5% vs. mes anterior</span>
+                </div>
+            </div>
+            <div class="kpi-card">
+                <i class="fa-solid fa-truck-fast kpi-icon"></i>
+                <div class="kpi-details">
+                    <h3>pedidos realizados</h3>
+                    <div class="kpi-value">18</div>
+                    <span class="kpi-subtext">este mes</span>
+                </div>
+            </div>
+            <div class="kpi-card">
+                <i class="fa-solid fa-sack-dollar kpi-icon"></i>
+                <div class="kpi-details">
+                    <h3>Ingresos del mes</h3>
+                    <div class="kpi-value">$120.000.000</div>
+                    <span class="kpi-trend up"><i class="fa-solid fa-arrow-up"></i> 12% vs. mes anterior</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- REJILLA DE WIDGETS Y TABLAS -->
+        <section class="dashboard-grid">
+
+            <!-- WIDGET 1: USUARIOS -->
+            <div class="widget-card">
+                <div class="widget-header">
+                    <h2>Gestión de usuarios</h2>
+                    <a href="usuarios.html">Ver todos</a>
+                </div>
+                <table class="custom-table">
+                    <thead>
+                        <tr><th>ID</th><th>Nombre</th><th>Rol</th><th>Estado</th><th>Acciones</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>USR-001</td><td>María López</td><td>Administrador</td><td><span class="badge badge-active">Active</span></td><td><button class="btn-action"><i class="fa-solid fa-pen"></i></button></td></tr>
+                        <tr><td>USR-002</td><td>Carlos Ramírez</td><td>Vendedor</td><td><span class="badge badge-active">Active</span></td><td><button class="btn-action"><i class="fa-solid fa-pen"></i></button></td></tr>
+                        <tr><td>USR-003</td><td>Laura Torres</td><td>Cliente</td><td><span class="badge badge-active">Active</span></td><td><button class="btn-action"><i class="fa-solid fa-pen"></i></button></td></tr>
+                        <tr><td>USR-004</td><td>Andrés Gómez</td><td>Inventario</td><td><span class="badge badge-active">Active</span></td><td><button class="btn-action"><i class="fa-solid fa-pen"></i></button></td></tr>
+                        <tr><td>USR-005</td><td>Sofía Farias</td><td>Cliente</td><td><span class="badge badge-active">Active</span></td><td><button class="btn-action"><i class="fa-solid fa-pen"></i></button></td></tr>
+                    </tbody>
+                </table>
+                <div class="pagination">
+                    <span>&lt;</span><span class="active">1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>&gt;</span>
+                </div>
+            </div>
+
+            <!-- WIDGET 2: ROLES -->
+            <div class="widget-card">
+                <div class="widget-header">
+                    <h2>Roles y permisos</h2>
+                    <a href="roles.html">Ver todos</a>
+                </div>
+                <table class="custom-table">
+                    <thead>
+                        <tr><th>ID</th><th>Rol</th><th>Usuarios</th><th>Acciones</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>ROL-001</td><td>Administrador</td><td>3</td><td><button class="btn-action"><i class="fa-solid fa-pen"></i></button></td></tr>
+                        <tr><td>ROL-002</td><td>Vendedor</td><td>3</td><td><button class="btn-action"><i class="fa-solid fa-pen"></i></button></td></tr>
+                        <tr><td>ROL-003</td><td>Cliente</td><td>10</td><td><button class="btn-action"><i class="fa-solid fa-pen"></i></button></td></tr>
+                        <tr><td>ROL-004</td><td>Inventario</td><td>2</td><td><button class="btn-action"><i class="fa-solid fa-pen"></i></button></td></tr>
+                    </tbody>
+                </table>
+                <button class="btn-add">+ Crear rol</button>
+            </div>
+
+            <!-- WIDGET 3: PRODUCTOS -->
+            <div class="widget-card">
+                <div class="widget-header">
+                    <h2>Productos</h2>
+                    <a href="productos.html">Ver todos</a>
+                </div>
+                <table class="custom-table">
+                    <thead>
+                        <tr><th>ID</th><th>Producto</th><th>Precio</th><th>Estado</th><th>Acciones</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>PROD-001</td><td>Tenebrios 100 un</td><td>$25.000</td><td><span class="badge badge-active">Activo</span></td><td><button class="btn-action"><i class="fa-solid fa-pen"></i></button></td></tr>
+                        <tr><td>PROD-002</td><td>Zophobas 250 un</td><td>$16.000</td><td><span class="badge badge-active">Activo</span></td><td><button class="btn-action"><i class="fa-solid fa-pen"></i></button></td></tr>
+                        <tr><td>PROD-003</td><td>Grillos 150 un</td><td>$9.000</td><td><span class="badge badge-active">Activo</span></td><td><button class="btn-action"><i class="fa-solid fa-pen"></i></button></td></tr>
+                        <tr><td>PROD-004</td><td>Cucaracha Dubia 100 un</td><td>$12.000</td><td><span class="badge badge-active">Activo</span></td><td><button class="btn-action"><i class="fa-solid fa-pen"></i></button></td></tr>
+                    </tbody>
+                </table>
+                <button class="btn-add">+ Agregar producto</button>
+            </div>
+
+            <!-- WIDGET 4: PROMOCIONES -->
+            <div class="widget-card">
+                <div class="widget-header">
+                    <h2>Promociones activas</h2>
+                    <a href="promociones.html">Ver todos</a>
+                </div>
+                <table class="custom-table">
+                    <thead>
+                        <tr><th>ID</th><th>Producto</th><th>Descuento</th><th>Estado</th><th>Acciones</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>PROM-001</td><td>Tenebrios 150 un</td><td>10%</td><td><span class="badge badge-active">Activo</span></td><td><button class="btn-action"><i class="fa-solid fa-pen"></i></button></td></tr>
+                        <tr><td>PROM-002</td><td>Zophobas 250 un</td><td>15%</td><td><span class="badge badge-active">Activo</span></td><td><button class="btn-action"><i class="fa-solid fa-pen"></i></button></td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- WIDGET 5: PEDIDOS RECIENTES -->
+            <div class="widget-card">
+                <div class="widget-header">
+                    <h2>Pedidos recientes</h2>
+                    <a href="pedidos.html">Ver todos</a>
+                </div>
+                <table class="custom-table">
+                    <thead>
+                        <tr><th>ID</th><th>Cliente</th><th>Fecha</th><th>Estado</th><th>Total</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>PED-1008</td><td>Mario López</td><td>25/08/2025</td><td><span class="badge badge-warning">En proceso</span></td><td>$34.000</td></tr>
+                        <tr><td>PED-1007</td><td>Carlos Ramírez</td><td>25/08/2025</td><td><span class="badge badge-info">Enviado</span></td><td>$32.000</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- WIDGET 6: INVENTARIO -->
+            <div class="widget-card">
+                <div class="widget-header">
+                    <h2>Inventario</h2>
+                    <a href="inventario.html">Ver todos</a>
+                </div>
+                <table class="custom-table">
+                    <thead>
+                        <tr><th>ID</th><th>Producto</th><th>Stock</th><th>Mínimo</th><th>Estado</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>INV-001</td><td>Tenebrios 100 un</td><td>3</td><td>10</td><td><span class="badge badge-danger">Bajo</span></td></tr>
+                        <tr><td>INV-002</td><td>Zophobas 250 un</td><td>3</td><td>15</td><td><span class="badge badge-warning">Medio</span></td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+        </section>
+
+    </main>
+
+</body>
+</html>

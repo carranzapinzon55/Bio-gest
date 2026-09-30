@@ -1,21 +1,20 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Inicio de sesión</title>
+    <title>Inicio de sesión - BIO-GEST</title>
     <link rel="stylesheet" href="../assent/css/login_style.css" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Chelsea+Market&family=IBM+Plex+Serif:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;1,100;1,200;1,300;1,400;1,500;1,600;1,700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Chelsea+Market&family=IBM+Plex+Serif:wght@100;400;700&display=swap"
       rel="stylesheet"/>
-
-      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   </head>
 
   <body>
-    <!--LOGO Y TIULO DE TENEBRIOS-->
+    <!--LOGO Y TITULO-->
     <header>
       <div class="logo-container">
         <img src="../assent/img/LOGO PNG.png" alt="logo de tenebrios gold" />
@@ -26,7 +25,11 @@
     <main>
       <!--CONTENEDOR DE INICIO DE SESION-->
       <div class="contenedor-login">
-        <form>
+        
+        <!-- Mensaje dinámico de respuesta de la API -->
+        <div id="mensaje" style="display:none; padding: 10px; margin-bottom: 15px; border-radius: 5px; text-align: center; font-size: 0.9rem;"></div>
+
+        <form id="form-login">
           <!--HEADER DEL INICIO DE SESION-->
           <div class="contenedor-header">
             <h2>Inicio de sesión</h2>
@@ -36,14 +39,14 @@
           <!--INPUT DE CORREO ELECTRONICO-->
           <div class="input-contenedor">
             <i class="fas fa-envelope"></i>
-            <input type="email" placeholder="Correo electrónico" required />
+            <input type="email" id="correo" placeholder="Correo electrónico" required />
           </div>
 
           <!--INPUT DE CONTRASEÑA-->
           <div class="input-contenedor">
             <i class="fas fa-lock"></i>
-            <input type="password" placeholder="contraseña" required />
-            <i class="fas fa-eye"></i>
+            <input type="password" id="contrasena" placeholder="Contraseña" required />
+            <i class="fas fa-eye" id="togglePassword" style="cursor: pointer;"></i>
           </div>
 
           <!--ENLACE DE CONTRASEÑA OLVIDADA -->
@@ -59,10 +62,11 @@
         <!--SECCION DE REGISTRO DE LA CUENTA-->
         <div class="registro-link">
           <span>¿No tienes una cuenta?</span>
-          <a href="registro.html">Registrate</a>
+          <a href="registro.html">Regístrate</a>
         </div>
       </div>
     </main>
+    
     <script src="../assent/javascript/login_script.js"></script>
   </body>
 </html>

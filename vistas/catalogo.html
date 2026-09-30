@@ -6,7 +6,7 @@
     <title>Catálogo de Productos - Tenebrios Gold</title>
     <!-- Librería de íconos FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Estilos CSS (Ruta corregida para la carpeta 'vistas') -->
+    <!-- Estilos CSS -->
     <link rel="stylesheet" href="../assent/css/catologo_style.css">
 </head>
 <body>
@@ -26,18 +26,18 @@
         </div>
         
         <div class="search-bar">
-            <input type="text" placeholder="Buscar productos...">
+            <input type="text" id="input-busqueda" placeholder="Buscar productos...">
             <button type="button"><i class="fas fa-search"></i></button>
         </div>
 
         <div class="user-actions">
-            <div class="action-item">
+            <div class="action-item" onclick="window.location.href='login.html'">
                 <i class="far fa-user"></i>
                 <span>Inicio sesión</span>
             </div>
             <div class="action-item cart-btn">
                 <i class="fas fa-shopping-cart"></i>
-                <span class="cart-count">0</span>
+                <span class="cart-count" id="cart-count">0</span>
             </div>
         </div>
     </header>
@@ -63,17 +63,16 @@
             <div class="filter-group">
                 <h4>Categorías</h4>
                 <ul class="filter-list">
-                    <li><label><input type="checkbox" name="cat" value="tenebrios" checked> Tenebrios</label></li>
-                    <li><label><input type="checkbox" name="cat" value="zophobas"> Zophobas</label></li>
-                    <li><label><input type="checkbox" name="cat" value="dubias"> Cucarachas Dubia</label></li>
-                    <li><label><input type="checkbox" name="cat" value="combos"> Combos y Promociones</label></li>
+                    <li><label><input type="checkbox" name="cat" value="1" checked> Paquetes de Larvas</label></li>
+                    <li><label><input type="checkbox" name="cat" value="2"> Abono Orgánico</label></li>
+                    <li><label><input type="checkbox" name="cat" value="3"> Kits de Cría</label></li>
                 </ul>
             </div>
 
             <div class="filter-group">
                 <h4>Precio Máximo</h4>
-                <input type="range" id="price-range" min="5000" max="100000" step="5000" value="100000">
-                <span id="price-label">$100.000 COP</span>
+                <input type="range" id="price-range" min="30000" max="500000" step="10000" value="500000" oninput="document.getElementById('price-label').textContent = new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(this.value)">
+                <span id="price-label">$500.000 COP</span>
             </div>
 
             <button type="button" class="btn-apply-filters">Aplicar Filtros</button>
@@ -93,60 +92,9 @@
                 </div>
             </div>
 
-            <div class="products-grid">
-                
-                <!-- Producto 1 -->
-                <article class="product-card">
-                    <div class="product-img">
-                        <img src="../assent/img/Tenebrios_img.png" alt="Tenebrios">
-                    </div>
-                    <div class="product-details">
-                        <h3>Tenebrios (100g)</h3>
-                        <p class="description">Alimento vivo de alto valor proteico para mascotas exóticas.</p>
-                        <span class="price">$15.000 COP</span>
-                        <button class="btn-add-cart"><i class="fas fa-cart-plus"></i> Añadir</button>
-                    </div>
-                </article>
-
-                <!-- Producto 2 -->
-                <article class="product-card">
-                    <div class="product-img">
-                        <img src="../assent/img/Zophobas_img.png" alt="Zophobas">
-                    </div>
-                    <div class="product-details">
-                        <h3>Zophobas (100g)</h3>
-                        <p class="description">Larva gigante de gran aporte calórico ideal para reptiles y aves.</p>
-                        <span class="price">$18.000 COP</span>
-                        <button class="btn-add-cart"><i class="fas fa-cart-plus"></i> Añadir</button>
-                    </div>
-                </article>
-
-                <!-- Producto 3 -->
-                <article class="product-card">
-                    <div class="product-img">
-                        <img src="../assent/img/Dubias_img.png" alt="Cucarachas Dubia">
-                    </div>
-                    <div class="product-details">
-                        <h3>Cucarachas Dubia</h3>
-                        <p class="description">Excelente digestibilidad y alto contenido en calcio.</p>
-                        <span class="price">$22.000 COP</span>
-                        <button class="btn-add-cart"><i class="fas fa-cart-plus"></i> Añadir</button>
-                    </div>
-                </article>
-
-                <!-- Producto 4 -->
-                <article class="product-card">
-                    <div class="product-img">
-                        <img src="../assent/img/Combos_img.png" alt="Combo alimentos">
-                    </div>
-                    <div class="product-details">
-                        <h3>Combo Alimentos</h3>
-                        <p class="description">Mezcla variada de alimentos vivos para una nutrición balanceada.</p>
-                        <span class="price">$35.000 COP</span>
-                        <button class="btn-add-cart"><i class="fas fa-cart-plus"></i> Añadir</button>
-                    </div>
-                </article>
-
+            <!-- El contenedor se llena dinámicamente mediante JS -->
+            <div class="products-grid" id="grid-productos">
+                <p style="text-align: center; grid-column: 1/-1; padding: 40px; color: #666;">Cargando catálogo desde la base de datos...</p>
             </div>
         </section>
 
@@ -156,7 +104,7 @@
     <section class="newsletter">
         <div class="news-left">
             <div class="placeholder-box small-square">
-                <img src="../assent/img/pro.jfif" alt="Vuélvete pro">
+                <img src="../assent/img/pro.jfif" alt="Vuélvete pro" onerror="this.src='../assent/img/Logo.jpeg';">
             </div>
             <div class="news-text">
                 <h3>Recibe novedades y promociones</h3>
