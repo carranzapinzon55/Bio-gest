@@ -3,57 +3,59 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tenebrios 100 unidades - Bio-gest</title>
+    <title>Detalle de Producto - BIO-GEST</title>
     <!-- CSS global/compartido y CSS de esta vista -->
     <link rel="stylesheet" href="../assent/css/index_style.css">
     <link rel="stylesheet" href="../assent/css/detalle_producto_style.css">
 </head>
 <body>
 
-   <header class="main-header">
-    <!-- Fila Superior: Logo, Buscador y Acciones -->
-    <div class="header-top">
-        
-        <!-- Logo con imagen + título y subtítulo -->
-        <div class="logo-container">
-            <a href="../index.html" class="logo-link">
-                <img src="../assent/img/Logo.jpeg" alt="Tenebrios Gold" class="logo-img">
-                <div class="logo-text">
-                    <span class="brand-title">TENEBRIOS GOLD</span>
-                    <span class="brand-subtitle">Alimentos vivos de calidad</span>
-                </div>
-            </a>
+    <!-- HEADER UNIFICADO -->
+    <header class="main-header">
+        <!-- Fila Superior: Logo, Buscador y Acciones -->
+        <div class="header-top">
+            
+            <!-- Logo con imagen + título y subtítulo -->
+            <div class="logo-container">
+                <a href="../index.html" class="logo-link">
+                    <img src="../assent/img/LOGO PNG.png" alt="Tenebrios Gold" class="logo-img">
+                    <div class="logo-text">
+                        <span class="brand-title">TENEBRIOS GOLD</span>
+                        <span class="brand-subtitle">Alimentos vivos de calidad</span>
+                    </div>
+                </a>
+            </div>
+
+            <!-- Barra de Búsqueda -->
+            <div class="search-container">
+                <input type="text" placeholder="Buscar productos...">
+                <button type="submit" class="search-btn">🔍</button>
+            </div>
+
+            <!-- Iniciar Sesión y Carrito -->
+            <div class="header-user-actions">
+                <a href="login.html" class="user-link">
+                    👤 Iniciar sesión
+                </a>
+                <a href="carrito.html" class="cart-btn">
+                    🛒 <span id="cart-count">0</span>
+                </a>
+            </div>
+
         </div>
 
-        <!-- Barra de Búsqueda -->
-        <div class="search-container">
-            <input type="text" placeholder="Buscar productos...">
-            <button type="submit" class="search-btn">🔍</button>
-        </div>
+        <!-- Fila Inferior: Menú de Navegación Centrado -->
+        <nav class="main-nav">
+            <ul>
+                <li><a href="../index.html">Inicio</a></li>
+                <li><a href="catalogo.html" class="active">Productos</a></li>
+                <li><a href="nosotros.html">¿Quiénes somos?</a></li>
+                <li><a href="envios.html">Envíos</a></li>
+                <li><a href="contacto.html">Contacto</a></li>
+            </ul>
+        </nav>
+    </header>
 
-        <!-- Iniciar Sesión y Carrito -->
-        <div class="header-user-actions">
-            <a href="login.html" class="user-link">
-                👤 Iniciar sesión
-            </a>
-            <a href="carrito.html" class="cart-btn">
-                🛒 <span id="cart-count">0</span>
-            </a>
-        </div>
-
-    </div>
-
-    <!-- Fila Inferior: Menú de Navegación Centrado -->
-    <nav class="main-nav">
-        <ul>
-            <li><a href="../index.html">Inicio</a></li>
-            <li><a href="catalogo.html" class="active">Productos</a></li>
-            <li><a href="nosotros.html">¿Quiénes somos?</a></li>
-            <li><a href="envios.html">Envíos</a></li>
-            <li><a href="contacto.html">Contacto</a></li>
-        </ul>
-    </nav>
-</header>
     <!-- CONTENIDO PRINCIPAL DETALLE DE PRODUCTO -->
     <main class="contenedor-principal">
         
@@ -61,8 +63,7 @@
         <nav class="breadcrumbs">
             <a href="../index.html">Inicio</a> &gt; 
             <a href="catalogo.html">Productos</a> &gt; 
-            <a href="#">Tenebrios</a> &gt; 
-            <span>Tenebrios 100 unidades</span>
+            <span id="breadcrumb-nombre">Cargando producto...</span>
         </nav>
 
         <section class="producto-detalle-grid">
@@ -73,14 +74,13 @@
                 <!-- Visor de Imágenes -->
                 <div class="galeria-producto">
                     <div class="imagen-principal">
-                        <img id="img-destacada" src="../assent/img/Tenebrios_img.png" alt="Tenebrios 100 unidades">
+                        <img id="img-destacada" src="../assent/img/Tenebrios_img.png" alt="Producto">
                     </div>
                     <div class="miniaturas-galeria">
                         <img src="../assent/img/Tenebrios_img.png" class="miniatura activa" onclick="cambiarImagen(this)">
                         <img src="../assent/img/Zophobas_img.png" class="miniatura" onclick="cambiarImagen(this)">
                         <img src="../assent/img/Dubias_img.png" class="miniatura" onclick="cambiarImagen(this)">
                         <img src="../assent/img/Combos_img.png" class="miniatura" onclick="cambiarImagen(this)">
-                        <img src="../assent/img/Tenebrios_img.png" class="miniatura" onclick="cambiarImagen(this)">
                     </div>
                 </div>
 
@@ -88,8 +88,8 @@
                 <div class="seccion-acordeones">
                     <details class="acordeon-item" open>
                         <summary>Descripción del producto <span class="flecha">▼</span></summary>
-                        <div class="acordeon-contenido">
-                            <p>El Tenebrio molitor es una excelente fuente de proteína de alta calidad y grasas saludables para tus mascotas. Proviene de un sistema de cría controlado tecnológicamente para garantizar óptima nutrición e higiene.</p>
+                        <div class="acordeon-contenido" id="descripcion-larga">
+                            <p>Cargando información detallada...</p>
                         </div>
                     </details>
 
@@ -118,17 +118,17 @@
             <!-- COLUMNA DERECHA: INFORMACIÓN Y COMPRA -->
             <div class="columna-derecha">
                 
-                <h1 class="titulo-producto">Tenebrios 100 unidades</h1>
+                <h1 class="titulo-producto" id="titulo-producto">Cargando producto...</h1>
                 
-                <div class="precio-producto">$ 8.000</div>
+                <div class="precio-producto" id="precio-producto">$ 0</div>
                 
                 <div class="valoracion-resenas">
                     <span class="estrellas">★★★★★</span>
                     <span class="contador-resenas">(12 reseñas)</span>
                 </div>
 
-                <p class="descripcion-corta">
-                    Alimento vivo ideal para reptiles, aves, peces y otros animales insectívoros.
+                <p class="descripcion-corta" id="descripcion-corta">
+                    Cargando descripción...
                 </p>
 
                 <!-- Selector de Presentaciones -->
