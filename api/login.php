@@ -1,13 +1,8 @@
 <?php
-header('Content-Type: application/json; charset=utf-8');
-
-// Subimos un nivel (../) para salir de 'api' e ingresar a 'config/conexion.php'
-require_once '../configuracion/conexion.php';
-
-
 // api/login.php
 session_start();
 header('Content-Type: application/json; charset=utf-8');
+require_once '../configuracion/conexion.php';
 
 $data = json_decode(file_get_contents("php://input"), true);
 
@@ -32,10 +27,6 @@ try {
 
     if ($usuario && password_verify($contrasena, $usuario['contrasena'])) {
         
-        // Actualizar último acceso
-        $updateStmt = $pdo->prepare("UPDATE usuario SET ultimo_acceso = NOW() WHERE id_usuario = :id");
-        $updateStmt->execute([':id' => $usuario['id_usuario']]);
-
         // Guardar sesión PHP
         $_SESSION['id_usuario'] = $usuario['id_usuario'];
         $_SESSION['nombre']     = $usuario['nombre'];

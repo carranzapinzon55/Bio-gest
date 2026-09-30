@@ -1,7 +1,8 @@
 <?php
+// api/registro.php
 header('Content-Type: application/json; charset=utf-8');
 
-// Subimos un nivel (../) para salir de 'api' e ingresar a 'config/conexion.php'
+// Cambiar la línea 4 por esta ruta:
 require_once '../configuracion/conexion.php';
 
 $data = json_decode(file_get_contents("php://input"), true);

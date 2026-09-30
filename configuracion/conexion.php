@@ -1,17 +1,16 @@
 <?php
 $host = "localhost";
 $user = "root";
-$password = ""; // Contraseña de XAMPP por defecto (vacía)
+$password = "";
 $database = "bio_gest";
 
 try {
     $conexion = new PDO("mysql:host=$host;dbname=$database;charset=utf8mb4", $user, $password);
     $conexion->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-    $conexion->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
+    
+    // Asignación para que funcionen tanto $conexion como $pdo
+    $pdo = $conexion;
 } catch (PDOException $e) {
-    die(json_encode([
-        "success" => false, 
-        "error" => "Error de conexión a la base de datos: " . $e->getMessage()
-    ]));
+    die(json_encode(["success" => false, "error" => $e->getMessage()]));
 }
 ?>

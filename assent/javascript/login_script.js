@@ -40,7 +40,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 localStorage.setItem('usuario_rol', datos.usuario.rol);
 
                 setTimeout(() => {
-                window.location.href = '/Bio-gest/vistas/catalogo.html';
+                    window.location.href = '/Bio-gest/vistas/catalogo.html';
                 }, 1500);
             }
         } catch (error) {
