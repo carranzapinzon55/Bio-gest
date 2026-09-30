@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tenebrios Gold - BIO-GEST</title>
+    <!-- Aquí se conecta el CSS -->
+    <link rel="stylesheet" href="../assent/css/productos_style.css">
+</head>
+<body>
+
+    <!-- HEADER -->
+    <header>
+        <div class="logo-container">
+            <div class="logo-placeholder">X</div>
+            TENEBRIOS GOLD
+        </div>
+        <input type="text" class="search-bar" placeholder="Buscar productos...">
+        <div class="header-actions">
+            <span style="cursor: pointer;">👤 Iniciar sesión</span>
+            <button class="cart-btn" id="btn-carrito">
+                🛒 <span id="cart-counter">0</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- NAVEGACIÓN -->
+    <nav>
+        <a onclick="cambiarSeccion('inicio')">Inicio</a>
+        <a class="active" id="nav-productos" onclick="cambiarSeccion('productos')">Productos</a>
+        <a id="nav-quienes-somos" onclick="cambiarSeccion('quienes-somos')">¿Quiénes somos?</a>
+        <a>Envíos</a>
+        <a>Preguntas frecuentes</a>
+        <a>Contacto</a>
+    </nav>
+
+    <!-- SECCIÓN: PRODUCTOS -->
+    <main id="sec-productos" class="container active">
+        <h2>Todos los productos</h2>
+        
+        <div class="products-layout">
+            <!-- LATERAL IZQUIERDO: FILTROS -->
+            <aside class="sidebar">
+                <h3>Categorías</h3>
+                <ul>
+                    <li>Todos</li>
+                    <li>Tenebrios</li>
+                    <li>Zophobas</li>
+                    <li>Grillos</li>
+                    <li>Cucarachas Dubia</li>
+                    <li>Combos</li>
+                </ul>
+
+                <div class="filter-section">
+                    <h3>Filtros</h3>
+                    <h4>Presentación</h4>
+                    <div class="checkbox-group">
+                        <label><input type="checkbox"> 100 unidades</label>
+                        <label><input type="checkbox"> 250 unidades</label>
+                        <label><input type="checkbox"> 500 unidades</label>
+                        <label><input type="checkbox"> 1000 unidades</label>
+                    </div>
+
+                    <h4>Precio</h4>
+                    <div class="price-inputs">
+                        <input type="number" placeholder="$ Minimo">
+                        <input type="number" placeholder="$ Maximo">
+                    </div>
+                    <button class="btn-apply">Aplicar filtros</button>
+                </div>
+            </aside>
+
+            <!-- ZONA DE GRILLA DE PRODUCTOS -->
+            <section class="products-content">
+                <div class="products-header">
+                    <span id="product-count-text">Mostrando 8 productos</span>
+                    <div>
+                        <label>Ordenar por: </label>
+                        <select>
+                            <option>Más recientes</option>
+                            <option>Menor precio</option>
+                            <option>Mayor precio</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Aquí el JavaScript inyectará las tarjetas de los productos -->
+                <div class="product-grid" id="product-grid">
+                    <!-- Contenido dinámico -->
+                </div>
+
+                <!-- PAGINACIÓN -->
+                <div class="pagination">
+                    <span>&lt;</span>
+                    <span class="active-page">1</span>
+                    <span>2</span>
+                    <span>3</span>
+                    <span>&gt;</span>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- SECCIÓN: QUIÉNES SOMOS -->
+    <main id="sec-quienes-somos" class="container about-section">
+        <h2>¿Quiénes Somos?</h2>
+        <p>
+            En <strong>Tenebrios Gold</strong> somos una empresa biotecnológica dedicada a la producción y comercialización de alimento vivo de la más alta calidad. 
+        </p>
+        <p>
+            Entendemos que la nutrición es la base de la salud. Por ello, criamos especies como tenebrios, zophobas, grillos y cucarachas dubia bajo estrictos estándares de higiene, alimentación balanceada y controles de temperatura. 
+            Nuestro compromiso es proveer a tus mascotas exóticas, reptiles, anfibios y aves, una fuente de proteína limpia, confiable y llena de vitalidad.
+        </p>
+    </main>
+
+    <!-- TOAST DE NOTIFICACIÓN -->
+    <div id="toast">¡Producto agregado al carrito exitosamente!</div>
+
+    <!-- Aquí se conecta el JavaScript, justo antes de cerrar el body -->
+    <script src="../assent/javascript/productos_script.js"></script>
+</body>
+</html>
