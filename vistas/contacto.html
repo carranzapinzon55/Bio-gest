@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contacto - Tenebrios Gold</title>
+    <link rel="stylesheet" href="../assent/css/mi_cuenta_style.css">
+</head>
+<body>
+
+   <header class="main-header">
+    <div class="header-top">
+        <div class="logo-container">
+            <a href="../index.html" class="logo-link">
+                <img src="../assent/img/Logo.jpeg" alt="Tenebrios Gold" class="logo-img">
+                <div class="logo-text">
+                    <span class="brand-title">TENEBRIOS GOLD</span>
+                    <span class="brand-subtitle">Alimentos vivos de calidad</span>
+                </div>
+            </a>
+        </div>
+        <div class="search-container">
+            <input type="text" placeholder="Buscar productos...">
+            <button type="submit" class="search-btn">🔍</button>
+        </div>
+        <div class="header-user-actions">
+            <!-- ID dinámico para el usuario -->
+            <a href="login.html" id="header-user-link" class="user-link">👤 Iniciar sesión</a>
+            <a href="carrito.html" class="cart-btn">🛒 <span id="cart-count">0</span></a>
+        </div>
+    </div>
+
+    <!-- Menú de navegación completo -->
+    <nav class="main-nav">
+        <ul>
+            <li><a href="../index.html">Inicio</a></li>
+            <li><a href="catalogo.html">Productos</a></li>
+            <li><a href="nosotros.html">¿Quiénes somos?</a></li>
+            <li><a href="envios.html">Envíos y Políticas</a></li>
+            <li><a href="faq.html">Preguntas Frecuentes</a></li>
+            <li><a href="contacto.html">Contacto</a></li>
+        </ul>
+    </nav>
+</header>
+
+    <main class="contenedor-principal">
+        <h1 class="titulo-seccion">Estamos para ayudarte</h1>
+        <p style="margin-bottom: 25px; color: #666;">Si tienes dudas sobre el producto, el proceso de cría o tu pedido, contáctanos a través de cualquiera de nuestros canales oficiales.</p>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 30px;">
+            
+            <!-- Canales Directos -->
+            <div style="background: #fff; padding: 30px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+                <h2>Información de Contacto</h2>
+                
+                <div style="margin: 20px 0;">
+                    <p><strong>📱 WhatsApp:</strong> <a href="https://wa.me/573243007206" target="_blank" style="color: #25d366; font-weight: bold; text-decoration: none;">+57 324 300 7206</a></p>
+                    <p style="margin-top: 10px;"><strong>📍 Ubicación:</strong> Bogotá, Colombia (Envíos a todo el país).</p>
+                    <p style="margin-top: 10px;"><strong>🕒 Horario de atención:</strong> Lunes a sábado, de 10:00 a.m. a 5:00 p.m.</p>
+                </div>
+
+                <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
+
+                <h3>Síguenos en Redes Sociales</h3>
+                <div style="display: flex; gap: 15px; margin-top: 15px;">
+                    <a href="#" style="text-decoration: none; color: #3b5998; font-weight: bold;">Facebook</a>
+                    <a href="#" style="text-decoration: none; color: #e1306c; font-weight: bold;">Instagram</a>
+                    <a href="#" style="text-decoration: none; color: #000; font-weight: bold;">TikTok</a>
+                </div>
+            </div>
+
+            <!-- Formulario de Mensaje -->
+            <div style="background: #fff; padding: 30px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+                <h2>Envíanos un mensaje</h2>
+                <form id="form-contacto" style="display: flex; flex-direction: column; gap: 15px; margin-top: 15px;">
+                    <div class="campo-grupo">
+                        <label for="c-nombre">Nombre completo</label>
+                        <input type="text" id="c-nombre" placeholder="Tu nombre" required style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
+                    </div>
+                    <div class="campo-grupo">
+                        <label for="c-correo">Correo electrónico</label>
+                        <input type="email" id="c-correo" placeholder="correo@ejemplo.com" required style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
+                    </div>
+                    <div class="campo-grupo">
+                        <label for="c-telefono">Teléfono / WhatsApp</label>
+                        <input type="tel" id="c-telefono" placeholder="3001234567" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
+                    </div>
+                    <div class="campo-grupo">
+                        <label for="c-mensaje">Mensaje</label>
+                        <textarea id="c-mensaje" rows="4" placeholder="Escribe tu consulta aquí..." required style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px;"></textarea>
+                    </div>
+                    <button type="submit" class="btn-guardar" style="padding: 12px; background: #e6a100; border: none; font-weight: bold; cursor: pointer; border-radius: 4px;">Enviar Mensaje</button>
+                </form>
+            </div>
+
+        </div>
+    </main>
+
+    <footer class="main-footer">
+        <div class="footer-bottom">
+            <p>&copy; 2026 BIO-GEST. Todos los derechos reservados.</p>
+        </div>
+    </footer>
+
+    <script>
+        document.getElementById('form-contacto').addEventListener('submit', function(e) {
+            e.preventDefault();
+            alert('¡Gracias por contactarnos! Te responderemos a la brevedad.');
+            this.reset();
+        });
+    </script>
+    <script src="../assent/javascript/header_footer.js"></script>
+</body>
+</html>
