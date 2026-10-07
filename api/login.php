@@ -15,7 +15,6 @@ if (empty($correo) || empty($contrasena)) {
 }
 
 try {
-    // Buscar usuario y obtener su nombre de rol
     $sql = "SELECT u.*, r.nombre_rol 
             FROM usuario u 
             JOIN rol r ON u.id_rol = r.id_rol 
@@ -23,11 +22,10 @@ try {
             
     $stmt = $pdo->prepare($sql);
     $stmt->execute([':correo' => $correo]);
-    $usuario = $stmt->fetch();
+    $usuario = $stmt->fetch(PDO::FETCH_ASSOC); // Fetch asociativo explícito
 
     if ($usuario && password_verify($contrasena, $usuario['contrasena'])) {
         
-        // Guardar sesión PHP
         $_SESSION['id_usuario'] = $usuario['id_usuario'];
         $_SESSION['nombre']     = $usuario['nombre'];
         $_SESSION['apellido']   = $usuario['apellido'];
