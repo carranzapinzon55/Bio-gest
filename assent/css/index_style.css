@@ -9,8 +9,8 @@
     --text-light: #ffffff;         
     --text-muted: #777777;         
     --border-color: #eaeaea;
-    --nav-bg: #232425; /* COLOR DE NAVEGACIÓN */ 
-    --nav-text: #c99b45; /* COLOR DE TEXTO DE NAVEGACIÓN */
+    --nav-bg: #151515; /* COLOR DE NAVEGACIÓN */ 
+    --nav-text: #ffffff; /* COLOR DE TEXTO DE NAVEGACIÓN */
        
 }
 
@@ -157,11 +157,13 @@ a {
     font-weight: 500;
     transition: color 0.2s ease;
 }
-/* #mainNav a{
-    color: var(--nav-text);
-} */
 
-.main-nav a:hover { color: var(--primary-gold); }
+/* STYLE DE ANIMACION DEL BOTON DE NAVEGACIÓN */
+.main-nav a.active,
+.main-nav a:hover {
+    color: var(--primary-gold);
+    border-bottom: 2px solid var(--primary-gold);
+}
 
 /* CARRUSELES */
 .carousel-container {

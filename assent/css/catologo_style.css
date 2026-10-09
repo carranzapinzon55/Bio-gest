@@ -1,3 +1,19 @@
+:root {
+    --primary-gold: #e4b353;       
+    --primary-gold-hover: #c99b45; 
+    --dark-bg: #151515;            
+    --light-bg: #f8f9fa;           
+    --card-bg: #ffffff;            
+    --text-dark: #333333;          
+    --text-light: #ffffff;         
+    --text-muted: #777777;         
+    --border-color: #eaeaea;
+    --nav-bg: #151515; /* COLOR DE NAVEGACIÓN */ 
+    --nav-text: #ffffff; /* COLOR DE TEXTO DE NAVEGACIÓN */
+}
+
+
+
 /* --- RESET GENERAL --- */
 * {
     margin: 0;
@@ -18,70 +34,101 @@ img {
     display: block;
 }
 
+/* STYLE DEL LOGO*/
+.logo-img {   
+    height: 70px;                          
+    width: auto;                          
+    object-fit: contain;
+    background-color: transparent !important; 
+    border: none !important;
+    border-radius: 0 !important;
+    padding: 0 !important;
+}
+
+
 /* --- ENCABEZADO (HEADER) --- */
 .main-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 15px 5%;
-    background-color: #fff;
-    border-bottom: 1px solid #e0e0e0;
+    padding: 15px 40px;
+    background-color: var(--dark-bg);
+    color: var(--text-light);
 }
-
 .logo-area {
     display: flex;
     align-items: center;
-    gap: 12px;
-
+    gap: 15px;
 }
+.brand-text h1 { font-size: 1.2rem; color: var(--text-light); }
+.brand-text p { font-size: 0.8rem; color: var(--primary-gold); font-weight: bold; }
 
-.logo-placeholder {
-    width: 60px;
-    height: 60px;
-    overflow: hidden;
-}
-
-.logo-img {
-    width: 100px;
-    height: 70px;
-    object-fit: contain;
-}
-
-.brand-text h1 {
-    font-size: 1.2rem;
-    font-weight: bold;
-    letter-spacing: 1px;
-}
-
-.brand-text p {
-    font-size: 0.8rem;
-    color: #666;
-}
-
-/* BARRA DE BÚSQUEDA */
 .search-bar {
     display: flex;
-    align-items: center;
-    width: 40%;
-    border: 1px solid #ccc;
-    border-radius: 4px;
+    background-color: var(--card-bg);
+    border-radius: 25px;
     overflow: hidden;
+    width: 350px;
 }
-
 .search-bar input {
-    width: 100%;
-    padding: 8px 12px;
     border: none;
+    padding: 10px 15px;
     outline: none;
+    width: 100%;
+    background-color: transparent;
+    color: var(--text-dark);
+}
+.search-bar button {
+    background-color: var(--primary-gold);
+    color: var(--dark-bg);
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+}
+.search-bar button:hover { background-color: var(--primary-gold-hover); }
+
+.user-actions {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+}
+.action-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    color: var(--text-light);
+    transition: color 0.2s ease;
+}
+.action-item:hover, .action-item a:hover { color: var(--primary-gold); }
+.action-item a { color: var(--text-light); transition: color 0.2s ease; }
+
+.cart-btn {
+    background-color: transparent;
+    color: var(--primary-gold);
+    border: 1px solid var(--primary-gold);
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-weight: bold;
+}
+.cart-btn:hover {
+    background-color: var(--primary-gold);
+    color: var(--dark-bg);
+}
+.cart-count {
+    background-color: var(--text-light);
+    color: var(--dark-bg);
+    border-radius: 50%;
+    padding: 2px 6px;
+    font-size: 0.8rem;
+    margin-left: 5px;
 }
 
-.search-bar button {
-    background-color: transparent;
-    border: none;
-    padding: 8px 15px;
-    cursor: pointer;
-    color: #555;
-}
+
+.main-nav a:hover { color: var(--primary-gold); }
+
 
 /* ACCIONES DE USUARIO */
 .user-actions {
@@ -97,17 +144,19 @@ img {
     cursor: pointer;
     font-size: 0.9rem;
 }
-
 .cart-btn {
-    position: relative;
-    border: 1px solid #ccc;
+    background-color: transparent;
+    color: var(--primary-gold);
+    border: 1px solid var(--primary-gold);
     padding: 6px 12px;
-    border-radius: 4px;
+    border-radius: 20px;
+    font-weight: bold;
 }
 
-.cart-count {
-    background-color: #333;
-    color: #fff;
+
+.cart-count { /* STYLE DE CARRITO DE COMPRAS*/
+    background-color: #ffffff;
+    color: #000000;
     font-size: 0.75rem;
     padding: 2px 6px;
     border-radius: 50%;
@@ -115,7 +164,7 @@ img {
 
 /* --- NAVEGACIÓN --- */
 .main-nav {
-    background-color: #f9f9f9;
+    background-color: var(--nav-bg);
     border-bottom: 1px solid #e0e0e0;
 }
 
@@ -129,15 +178,16 @@ img {
     display: block;
     padding: 12px 20px;
     text-decoration: none;
-    color: #333;
+    color: var(--nav-text);
     font-weight: bold;
     font-size: 0.95rem;
 }
 
+/* STYLE DE ANIMACION DEL BOTON DE NAVEGACIÓN */
 .main-nav a.active,
 .main-nav a:hover {
-    color: #000;
-    border-bottom: 2px solid #000;
+    color: var(--primary-gold);
+    border-bottom: 2px solid var(--primary-gold);
 }
 
 /* --- ESTRUCTURA DEL CATÁLOGO --- */
