@@ -1,3 +1,4 @@
+
 (function () {
     function actualizarSesionGlobal() {
         // Detectar si el archivo está en la carpeta /vistas/
