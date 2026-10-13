@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de Alimento Vivo - Tenebrius Gold</title>
+    <link rel="stylesheet" href="../assent/css/calculadora_style.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+</head>
+<body>
+
+    <div class="calculator-container">
+        <!-- Header -->
+        <div class="calc-header">
+            <div class="calc-header-icon">🧮</div>
+            <div class="calc-header-text">
+                <h1>Calculadora de alimento vivo</h1>
+                <p>Calcula la cantidad estimada de alimento vivo que tu mascota necesita, según sus características.</p>
+            </div>
+        </div>
+
+        <div id="validationAlert" class="validation-alert"></div>
+
+        <div class="calc-grid">
+            <!-- PANEL IZQUIERDO: FORMULARIO -->
+            <div class="panel">
+                <div class="panel-title">
+                    <span>1. Selecciona tu mascota</span>
+                </div>
+
+                <div class="form-group">
+                    <label for="speciesSelect">Especie</label>
+                    <div class="input-with-icon">
+                        <span class="input-icon">🦎</span>
+                        <select id="speciesSelect">
+                            <option value="Reptil">Reptil</option>
+                            <option value="Anfibio">Anfibio</option>
+                            <option value="Ave">Ave</option>
+                            <option value="Arácnido">Arácnido</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="petTypeSelect">Tipo de mascota</label>
+                    <div class="input-with-icon">
+                        <span class="input-icon">🐉</span>
+                        <select id="petTypeSelect">
+                            <option value="Gecko leopardo">Gecko leopardo</option>
+                            <option value="Bearded Dragon">Bearded Dragon</option>
+                            <option value="Camaleón">Camaleón</option>
+                            <option value="Rana cornuda">Rana cornuda</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="weightInput">Peso de la mascota (g)</label>
+                        <div class="input-with-icon">
+                            <span class="input-icon">⚖️</span>
+                            <input type="number" id="weightInput" placeholder="50" min="1" value="50">
+                            <span class="input-suffix">g</span>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="ageSelect">Edad</label>
+                        <div class="input-with-icon">
+                            <span class="input-icon">📅</span>
+                            <select id="ageSelect">
+                                <option value="Juvenil">Juvenil / Cachorro</option>
+                                <option value="Adulto" selected>Adulto</option>
+                                <option value="Senior">Senior</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel-title" style="margin-top: 20px;">
+                    <span>2. Frecuencia de alimentación</span>
+                </div>
+
+                <div class="form-group">
+                    <label for="frequencySelect">¿Cuántas veces al día alimentas a tu mascota?</label>
+                    <div class="input-with-icon">
+                        <span class="input-icon">🕒</span>
+                        <select id="frequencySelect">
+                            <option value="1">1 vez al día</option>
+                            <option value="2" selected>2 veces al día</option>
+                            <option value="3">3 veces al día</option>
+                        </select>
+                    </div>
+                </div>
+
+                <button class="btn-calculate" id="calculateBtn">
+                    <span>🧮</span> Calcular cantidad
+                </button>
+            </div>
+
+            <!-- PANEL DERECHO: RESULTADOS -->
+            <div class="panel">
+                <div class="panel-title">
+                    <span>⭐ Resultado</span>
+                </div>
+
+                <div class="result-card">
+                    <div class="result-info">
+                        <h3>Cantidad diaria recomendada</h3>
+                        <div class="result-value" id="dailyTotalDisplay">5 - 7 <span>gr de alimento vivo (aprox.)</span></div>
+                    </div>
+                    <div class="result-illustration">🥣🐛</div>
+                </div>
+
+                <div class="breakdown-title">
+                    <span>📍 Desglose por comida</span>
+                </div>
+                <div class="breakdown-grid" id="breakdownGrid">
+                    <div class="breakdown-box">
+                        <div class="time">☀️ Mañana</div>
+                        <div class="amount" id="meal1">2.5 - 3.5 g</div>
+                    </div>
+                    <div class="breakdown-box">
+                        <div class="time">🌙 Tarde</div>
+                        <div class="amount" id="meal2">2.5 - 3.5 g</div>
+                    </div>
+                </div>
+
+                <div class="breakdown-title">
+                    <span>💡 Recomendaciones</span>
+                </div>
+                <ul class="recommendations-list">
+                    <li>Asegúrate de ofrecer alimento vivo de buena calidad y debidamente gut-loaded (nutrido).</li>
+                    <li>Mantén siempre agua fresca y limpia disponible en el terrario.</li>
+                    <li>La cantidad puede variar según la actividad y metabolismo particular de tu mascota.</li>
+                </ul>
+
+                <button class="btn-secondary" id="savePetBtn">
+                    <span>💾</span> Guardar en mi mascota
+                </button>
+            </div>
+        </div>
+
+        <!-- Pie de página -->
+        <div class="footer-notice">
+            <span>ℹ️</span>
+            <span>Esta calculadora ofrece una estimación general. Si tienes dudas, consulta a un veterinario especializado en reptiles y animales exóticos.</span>
+        </div>
+    </div>
+
+
+</body>
+</html>
