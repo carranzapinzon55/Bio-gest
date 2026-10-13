@@ -1,5 +1,6 @@
+
 <?php
-session_start();
+/*session_start();
 header('Content-Type: application/json; charset=utf-8');
 
 // Comprobar cualquier variante de clave de sesión común
@@ -58,5 +59,5 @@ try {
         "success" => false,
         "message" => "Error en la consulta: " . $e->getMessage()
     ]);
-}
+}*/
 ?>

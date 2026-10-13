@@ -1,0 +1,92 @@
+/* ============================================================
+   ESTILOS DE LA PÁGINA DE ENVÍOS Y POLÍTICAS - BIO-GEST
+   ============================================================ */
+
+.seccion-envios {
+    background: #ffffff;
+    padding: 40px;
+    border-radius: 8px;
+    border: 1px solid #e0e0e0;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+    margin-bottom: 40px;
+}
+
+.titulo-seccion {
+    font-size: 2rem;
+    color: #111827;
+    margin-bottom: 10px;
+    font-weight: bold;
+}
+
+.subtitulo-envios {
+    font-size: 1.05rem;
+    color: #4b5563;
+    margin-bottom: 30px;
+    line-height: 1.6;
+}
+
+/* Cuadrícula de tarifas destacadas */
+.grid-tarifas {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+    margin-bottom: 40px;
+}
+
+.card-tarifa {
+    background: #fdf8f0;
+    border: 1px solid #fde68a;
+    border-radius: 8px;
+    padding: 25px;
+    text-align: center;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+}
+
+.card-tarifa h3 {
+    font-size: 1.2rem;
+    color: #1f2937;
+    margin-bottom: 10px;
+}
+
+.precio-tarifa {
+    font-size: 1.6rem;
+    font-weight: bold;
+    color: #d97706;
+    margin-bottom: 8px;
+}
+
+.tiempo-tarifa {
+    font-size: 0.9rem;
+    color: #6b7280;
+}
+
+/* Bloques de políticas */
+.politica-bloque {
+    margin-bottom: 25px;
+    border-bottom: 1px solid #f3f4f6;
+    padding-bottom: 20px;
+}
+
+.politica-bloque:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+.politica-bloque h2 {
+    font-size: 1.2rem;
+    color: #1f2937;
+    margin-bottom: 10px;
+    font-weight: bold;
+}
+
+.politica-bloque p {
+    font-size: 0.95rem;
+    color: #4b5563;
+    line-height: 1.6;
+    margin-bottom: 8px;
+}
+
+.politica-bloque strong {
+    color: #111827;
+}

@@ -184,7 +184,7 @@ if (togglePassword && inputPassword) {
             inputPassword.type = "password";
             togglePassword.classList.remove("fa-eye-slash");
             togglePassword.classList.add("fa-eye");
-        }
+        }   
     });
 }
 
