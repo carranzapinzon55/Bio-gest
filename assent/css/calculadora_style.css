@@ -2,8 +2,8 @@
             --bg-main: #fbf9f4;
             --card-bg: #ffffff;
             --border-color: #f0e6d2;
-            --primary-gold: #c28e38;
-            --primary-gold-hover: #a8792c;
+            --primary-gold: #e4b353;
+            --primary-gold-hover: #c99b45;
             --text-main: #2d2a26;
             --text-muted: #6b655c;
             --input-bg: #fdfdfc;
@@ -12,7 +12,24 @@
             --alert-text: #8a621f;
         }
 
-        * {
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Arial, sans-serif;
+}
+
+body {
+    background-color: var(--light-bg);
+    color: var(--text-dark);
+}
+
+a {
+    text-decoration: none;
+    color: inherit;
+}
+
+   /*      * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
@@ -27,9 +44,132 @@
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-        }
+        } */
 
-        .calculator-container {
+        /* CAJAS PLACEHOLDER */
+/* HEADER BASE OSCURO */
+.site-header {
+    background-color: #151515 !important;
+    color: #ffffff;
+    width: 100%;
+}
+
+.header-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 32px;
+    border-bottom: 1px solid #222;
+    background-color: #151515;
+}
+
+/* Control del logo para que no deforme el header si no carga */
+.brand-logo-area {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+}
+
+.brand-logo-img {
+    height: 45px;
+    max-width: 150px;
+    object-fit: contain;
+}
+
+.brand-texts h2 {
+    font-size: 18px;
+    font-weight: 700;
+    color: #ffffff;
+    margin: 0;
+}
+
+.brand-texts p {
+    font-size: 11px;
+    color: #e4b353;
+    font-weight: 600;
+    margin: 0;
+}
+
+/* Buscador */
+.header-search-bar {
+    flex: 1;
+    max-width: 450px;
+    display: flex;
+    background: #ffffff;
+    border-radius: 30px;
+    overflow: hidden;
+    margin: 0 20px;
+}
+
+.header-search-bar input {
+    flex: 1;
+    padding: 10px 16px;
+    border: none;
+    outline: none;
+    font-size: 13px;
+    color: #333;
+}
+
+.header-search-bar button {
+    background: #c28e38;
+    border: none;
+    padding: 0 20px;
+    cursor: pointer;
+    color: #151515;
+}
+
+/* Acciones usuario/carrito */
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.user-login {
+    color: #ffffff;
+    text-decoration: none;
+    font-size: 13px;
+    white-space: nowrap;
+}
+
+.cart-badge {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #1e1e1e;
+    border: 1px solid #c28e38;
+    padding: 6px 14px;
+    border-radius: 20px;
+    color: #ffffff;
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+/* Navegación secundaria */
+.header-nav {
+    display: flex;
+    justify-content: center;
+    gap: 28px;
+    padding: 12px 32px;
+    background-color: #161616;
+}
+
+.header-nav a {
+    color: #cccccc;
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.header-nav a.active,
+.header-nav a:hover {
+    color: #e4b353;
+    font-weight: 600;
+}
+
+ .calculator-container {
             width: 100%;
             max-width: 1000px;
             background: var(--card-bg);
