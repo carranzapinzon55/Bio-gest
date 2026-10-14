@@ -5,42 +5,52 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Contacto - Tenebrios Gold</title>
     <link rel="stylesheet" href="../assent/css/mi_cuenta_style.css">
-</head>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <body>
 
-   <header class="main-header">
+<header class="main-header">
     <div class="header-top">
+        <!-- Logo y Nombre -->
         <div class="logo-container">
             <a href="../index.html" class="logo-link">
-                <img src="../assent/img/Logo.jpeg" alt="Tenebrios Gold" class="logo-img">
+                <img src="../assent/img/LOGO PNG.png" alt="Tenebrios Gold" class="logo-img">
                 <div class="logo-text">
                     <span class="brand-title">TENEBRIOS GOLD</span>
                     <span class="brand-subtitle">Alimentos vivos de calidad</span>
                 </div>
             </a>
         </div>
+
+        <!-- Buscador -->
         <div class="search-container">
             <input type="text" placeholder="Buscar productos...">
-            <button type="submit" class="search-btn">🔍</button>
+            <button type="submit" class="search-btn" aria-label="Buscar">
+                <i class="fa-solid fa-magnifying-glass"></i>
+            </button>
         </div>
+
+        <!-- Acciones de Usuario con FontAwesome -->
         <div class="header-user-actions">
-            <!-- ID dinámico para el usuario -->
-            <a href="login.html" id="header-user-link" class="user-link">👤 Iniciar sesión</a>
-            <a href="carrito.html" class="cart-btn">🛒 <span id="cart-count">0</span></a>
+            <a href="login.html" id="header-user-link" class="user-link">
+                <i class="fa-regular fa-user"></i> Iniciar sesión
+            </a>
+            <a href="carrito.html" class="cart-btn">
+                <i class="fa-solid fa-cart-shopping"></i>
+                <span id="cart-count">0</span>
+            </a>
         </div>
     </div>
 
-    <!-- Menú de navegación completo -->
+    <!-- Navegación -->
     <nav class="main-nav">
         <ul>
-            <li><a href="../index.html">Inicio</a></li>
+            <li><a href="../index.html" class="active">Inicio</a></li>
             <li><a href="catalogo.html">Productos</a></li>
             <li><a href="nosotros.html">¿Quiénes somos?</a></li>
             <li><a href="contacto.html">Contacto</a></li>
         </ul>
     </nav>
 </header>
-
     <main class="contenedor-principal">
         <h1 class="titulo-seccion">Estamos para ayudarte</h1>
         <p style="margin-bottom: 25px; color: #666;">Si tienes dudas sobre el producto, el proceso de cría o tu pedido, contáctanos a través de cualquiera de nuestros canales oficiales.</p>
