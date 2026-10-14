@@ -29,23 +29,6 @@ a {
     color: inherit;
 }
 
-   /*      * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Plus Jakarta Sans', sans-serif;
-        }
-
-        body {
-            background-color: var(--bg-main);
-            color: var(--text-main);
-            padding: 24px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-        } */
-
         /* CAJAS PLACEHOLDER */
 /* HEADER BASE OSCURO */
 .site-header {
@@ -153,11 +136,11 @@ a {
     justify-content: center;
     gap: 28px;
     padding: 12px 32px;
-    background-color: #161616;
+    background-color: #151515;
 }
 
 .header-nav a {
-    color: #cccccc;
+    color: #ffffff;
     text-decoration: none;
     font-size: 13px;
     font-weight: 500;
