@@ -225,6 +225,13 @@ a {
 }
 .dot.active { background-color: var(--primary-gold); }
 
+.carousel-slide .banner img {
+    width: 100%;            /* Ocupa todo el ancho del contenedor */
+    height: 100%;           /* Ocupa todo el alto definido (350px) */
+    object-fit: contain;    /* Muestra toda la imagen sin recortar, ajustando proporciones */
+    background-color: #f0f0f0; /* Opcional: Un color de fondo gris muy suave para los espacios vacíos */
+}
+
 /* CARACTERÍSTICAS */
 .features {
     display: grid;
