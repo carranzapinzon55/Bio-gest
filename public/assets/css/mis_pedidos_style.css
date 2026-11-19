@@ -1,0 +1,441 @@
+/* ============================================================
+   ESTILOS ESPECÍFICOS: MIS PEDIDOS / PANEL DE CUENTA - TENEBRIOS GOLD
+   ============================================================ */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    background-color: #f8f9fa;
+    color: #333333;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+/* --- HEADER PRINCIPAL --- */
+.main-header {
+    background-color: #111111;
+    color: #ffffff;
+    width: 100%;
+    padding: 15px 30px;
+    border-bottom: 2px solid #222222;
+}
+
+.header-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.logo-container {
+    display: flex;
+    align-items: center;
+}
+
+.logo-link {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    gap: 12px;
+}
+
+.logo-img {
+    width: 50px;
+    height: auto;
+    object-fit: contain;
+}
+
+.logo-text {
+    display: flex;
+    flex-direction: column;
+}
+
+.brand-title {
+    color: #ffffff;
+    font-weight: bold;
+    font-size: 1.1rem;
+    letter-spacing: 0.5px;
+}
+
+.brand-subtitle {
+    color: #e6a100;
+    font-size: 0.8rem;
+}
+
+.search-container {
+    display: flex;
+    align-items: center;
+    background: #ffffff;
+    border-radius: 30px;
+    overflow: hidden;
+    width: 100%;
+    max-width: 450px;
+}
+
+.search-container input {
+    flex: 1;
+    padding: 10px 20px;
+    border: none;
+    outline: none;
+    font-size: 0.95rem;
+    color: #333333;
+    background: transparent;
+}
+
+.search-btn {
+    background-color: #e6a100;
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    color: #111111;
+    font-size: 1rem;
+    transition: background 0.3s ease;
+}
+
+.search-btn:hover {
+    background-color: #d49300;
+}
+
+.header-user-actions {
+    display: flex;
+    align-items: center;
+    gap: 25px;
+}
+
+.user-link {
+    color: #ffffff;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.95rem;
+    transition: color 0.3s ease;
+}
+
+.user-link:hover {
+    color: #e6a100;
+}
+
+.cart-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background-color: transparent;
+    border: 1px solid #e6a100;
+    color: #ffffff;
+    padding: 8px 16px;
+    border-radius: 20px;
+    text-decoration: none;
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+}
+
+.cart-btn:hover {
+    background-color: #e6a100;
+    color: #111111;
+}
+
+#cart-count {
+    font-weight: bold;
+}
+
+/* --- NAVEGACIÓN --- */
+.main-nav {
+    margin-top: 15px;
+    padding-top: 10px;
+    border-top: 1px solid #222222;
+    display: flex;
+    justify-content: center;
+}
+
+.main-nav ul {
+    list-style: none;
+    display: flex;
+    gap: 35px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.main-nav a {
+    color: #cccccc;
+    text-decoration: none;
+    font-size: 1rem;
+    font-weight: 500;
+    transition: color 0.3s ease;
+}
+
+.main-nav a:hover,
+.main-nav a.activo {
+    color: #e6a100;
+    font-weight: bold;
+}
+
+/* --- CONTENEDOR Y LAYOUT DE CUENTA --- */
+.contenedor-principal {
+    max-width: 1200px;
+    width: 90%;
+    margin: 40px auto;
+    flex: 1;
+}
+
+.layout-cuenta {
+    display: grid;
+    grid-template-columns: 260px 1fr;
+    gap: 30px;
+    align-items: start;
+}
+
+@media (max-width: 768px) {
+    .layout-cuenta {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Sidebar / Menú Lateral */
+.sidebar-cuenta {
+    background: #ffffff;
+    border-radius: 10px;
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+    overflow: hidden;
+}
+
+.menu-cuenta {
+    display: flex;
+    flex-direction: column;
+}
+
+.item-menu {
+    padding: 15px 20px;
+    color: #4b5563;
+    text-decoration: none;
+    font-size: 0.95rem;
+    font-weight: 500;
+    border-bottom: 1px solid #f3f4f6;
+    transition: all 0.2s ease;
+}
+
+.item-menu:last-child {
+    border-bottom: none;
+}
+
+.item-menu:hover {
+    background-color: #fdf8f0;
+    color: #e6a100;
+    padding-left: 25px;
+}
+
+.item-menu.activo {
+    background-color: #fdf8f0;
+    color: #e6a100;
+    border-left: 4px solid #e6a100;
+    font-weight: bold;
+}
+
+.item-menu.cerrar-sesion {
+    color: #dc2626;
+}
+
+.item-menu.cerrar-sesion:hover {
+    background-color: #fef2f2;
+    color: #b91c1c;
+}
+
+/* Contenido Central */
+.contenido-cuenta {
+    background: #ffffff;
+    border-radius: 10px;
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+    padding: 30px;
+}
+
+.titulo-seccion {
+    font-size: 1.6rem;
+    color: #111111;
+    margin-bottom: 25px;
+    font-weight: bold;
+    border-bottom: 2px solid #f3f4f6;
+    padding-bottom: 12px;
+}
+
+/* --- TABLA DE PEDIDOS --- */
+.card-tabla {
+    overflow-x: auto;
+}
+
+.tabla-pedidos {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+    margin-top: 10px;
+}
+
+.tabla-pedidos th {
+    background-color: #fdf8f0;
+    color: #1f2937;
+    padding: 14px 16px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    border-bottom: 2px solid #e5e7eb;
+}
+
+.tabla-pedidos td {
+    padding: 14px 16px;
+    color: #4b5563;
+    font-size: 0.95rem;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.tabla-pedidos tbody tr:hover {
+    background-color: #fafafa;
+}
+
+.id-pedido {
+    font-weight: bold;
+    color: #111111;
+}
+
+.precio-total {
+    font-weight: bold;
+    color: #059669;
+}
+
+/* Badges de Estado */
+.badge-estado {
+    display: inline-block;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-align: center;
+}
+
+.badge-estado.enviado {
+    background-color: #dbeafe;
+    color: #1e40af;
+}
+
+.badge-estado.entregado {
+    background-color: #d1fae5;
+    color: #065f46;
+}
+
+.badge-estado.enproceso, .badge-estado.proceso {
+    background-color: #fef3c7;
+    color: #92400e;
+}
+
+.badge-estado.completado {
+    background-color: #d1fae5;
+    color: #065f46;
+}
+
+/* Botón de detalle */
+.btn-detalle {
+    background-color: #111111;
+    color: #ffffff;
+    border: none;
+    padding: 7px 14px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.btn-detalle:hover {
+    background-color: #e6a100;
+    color: #111111;
+}
+
+/* --- FOOTER --- */
+.main-footer {
+    background-color: #111111;
+    color: #9ca3af;
+    padding: 40px 30px 20px;
+    margin-top: auto;
+}
+
+.footer-grid {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 30px;
+    margin-bottom: 30px;
+}
+
+.footer-brand .logo-container {
+    gap: 10px;
+}
+
+.footer-brand .brand-title {
+    font-size: 1rem;
+}
+
+.footer-col h4 {
+    color: #ffffff;
+    font-size: 1.05rem;
+    margin-bottom: 15px;
+    font-weight: 600;
+}
+
+.footer-col ul {
+    list-style: none;
+}
+
+.footer-col ul li {
+    margin-bottom: 8px;
+}
+
+.footer-col ul li a {
+    color: #9ca3af;
+    text-decoration: none;
+    transition: color 0.2s ease;
+    font-size: 0.9rem;
+}
+
+.footer-col ul li a:hover {
+    color: #e6a100;
+}
+
+.redes-sociales {
+    display: flex;
+    gap: 12px;
+}
+
+.icon-social {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    background-color: #222222;
+    color: #ffffff;
+    border-radius: 50%;
+    text-decoration: none;
+    transition: background 0.2s ease, color 0.2s ease;
+    font-weight: bold;
+}
+
+.icon-social:hover {
+    background-color: #e6a100;
+    color: #111111;
+}
+
+.footer-bottom {
+    max-width: 1200px;
+    margin: 0 auto;
+    border-top: 1px solid #222222;
+    padding-top: 20px;
+    text-align: center;
+    font-size: 0.85rem;
+    color: #6b7280;
+}
