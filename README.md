@@ -1,57 +1,91 @@
-# BIO-GEST (Tenebrios Gold)
+# BIO-GEST
 
-## Descripción del proyecto
-**BIO-GEST** es una plataforma integral de comercio electrónico y gestión operativa desarrollada para **Tenebrios Gold**, una empresa dedicada a la producción y comercialización de alimentos vivos para animales, con enfoque especializado en el cultivo y distribución de *Tenebrio molitor* (gusanos de la harina).
+## 1. Nombre y descripción de BIO-GEST
 
-El sistema nace para centralizar y digitalizar los procesos comerciales y administrativos del negocio, superando el manejo disperso de pedidos, existencias y reportes. A través de una interfaz web moderna alineada con la identidad visual de la marca (negro `#151515` y dorado `#e4b353`) y una aplicación móvil conectada en tiempo real, **BIO-GEST** conecta la tienda orientada al cliente con el panel de control del administrador.
+### ¿Qué es BIO-GEST?
 
-De esta manera, los clientes pueden explorar el catálogo de productos, gestionar su carrito de compras, consultar su historial y realizar pedidos de forma ágil, mientras que el equipo administrativo controla el inventario, las entradas y salidas de mercancía, las alertas de bajo stock, las promociones, los estados de cada pedido y la generación de reportes de ventas.
+**BIO-GEST** es un sistema web integral de gestión empresarial y comercio electrónico desarrollado con **Laravel**, **MySQL** y una **API REST**, complementado con una aplicación móvil desarrollada en **Kotlin** para dispositivos Android.
 
----
+El proyecto fue creado para la microempresa **Tenebrios Gold**, dedicada a la producción, comercialización y distribución de alimento vivo, larvas de *Tenebrio molitor* y pie de cría para diferentes sectores como la avicultura, la pesca, la alimentación animal y la investigación.
 
-## Objetivo general
-Optimizar y centralizar la gestión comercial, de inventario y de pedidos de **Tenebrios Gold** mediante una solución tecnológica multiplataforma compuesta por una aplicación web en Laravel, una base de datos relacional en MySQL y una aplicación móvil Android comunicada a través de una API REST.
+### Problemática identificada
 
----
+Antes de BIO-GEST, gran parte de los procesos operativos y comerciales se realizaban de forma manual mediante:
 
-## Módulos y funcionalidades principales
+- Comunicación y gestión de ventas a través de **WhatsApp**.
+- Control manual del inventario.
+- Seguimiento limitado de los pedidos.
+- Procesos administrativos sin automatización.
+- Falta de reportes centralizados para la toma de decisiones.
+- Atención repetitiva de preguntas frecuentes por parte de los clientes.
 
-### 1. Tienda Web y Experiencia del Cliente
-- **Catálogo de productos:** visualización de presentaciones y productos de alimento vivo disponibles para la compra.
-- **Gestión de cuenta y pedidos:** registro e inicio de sesión de clientes, realización de compras en línea y consulta del historial de pedidos con seguimiento de estado.
-- **Atención y soporte:** canales de contacto con el administrador y soporte automatizado.
+### Solución propuesta
 
-### 2. Panel Administrativo Web
-- **Gestión de productos (CRUD):** registro, consulta, edición y desactivación/eliminación de productos con validaciones de datos.
-- **Control de inventario:** consulta de existencias en tiempo real, trazabilidad de entradas y salidas, y alertas por bajo nivel de stock.
-- **Gestión de pedidos:** visualización detallada de órdenes (número de pedido, cliente, fecha, productos, cantidades, valor total y estado) y actualización de su ciclo de estado (por ejemplo, *Pendiente*, en proceso, entregado).
-- **Promociones:** administración de ofertas y promociones vigentes en la plataforma.
-- **Módulo de reportes:** filtrado de ventas por rango de fechas, resumen de totales por producto, visualización de estados de pedidos y exportación de reportes en formato **CSV** compatible con Excel.
+BIO-GEST centraliza la operación de Tenebrios Gold mediante:
 
-### 3. API REST y Aplicación Móvil Android
-- **API REST en Laravel:** servicios en formato JSON protegidos mediante autenticación por token para consultar y actualizar productos y pedidos de forma segura.
-- **Aplicación móvil en Kotlin:** aplicación Android conectada al mismo backend y base de datos MySQL que la web, permitiendo iniciar sesión, consultar registros en tiempo real y ejecutar operaciones administrativas con interoperabilidad inmediata.
+✅ Gestión digital del catálogo de productos.
 
----
+✅ Control de inventario en tiempo real.
 
-## Integrantes y responsabilidades
-- **Luis:** Scrum Master y coordinación técnica del backend, base de datos MySQL y API REST.
-- **Dayanna:** Desarrollo de interfaz web, operaciones CRUD, validaciones y módulo de reportes.
-- **Evelyn:** Desarrollo de la aplicación móvil Android y pruebas de interoperabilidad.
-- **Ian:** Documentación técnica (`docs/` y `README.md`), arquitectura documental y preparación de la sustentación.
+✅ Registro y seguimiento de pedidos mediante estados definidos.
 
----
+✅ Plataforma de comercio electrónico para clientes.
 
-## Tecnologías utilizadas
-- **Backend y Web:** PHP, Laravel (Blade, rutas web y API, middleware de roles y protección CSRF)
-- **Base de datos:** MySQL (migraciones, seeders, restricciones de integridad, procedimientos, funciones y triggers)
-- **API REST:** Endpoints RESTful en JSON con autenticación por token.
-- **Aplicación móvil:** Android Studio, Kotlin, Retrofit y Gson.
-- **Control de versiones:** Git y GitHub.
+✅ Calculadora de alimento para estimar requerimientos de consumo.
+
+✅ Chatbot para atención de preguntas frecuentes, políticas y procesos de reembolso.
+
+✅ Generación de reportes para apoyo en la toma de decisiones.
+
+✅ Integración mediante API REST para aplicaciones externas.
+
+✅ Aplicación móvil Android conectada a la plataforma principal.
 
 ---
 
-## Requisitos para ejecutar el proyecto
+## 2. Objetivo del proyecto
+
+### Objetivo General
+
+Desarrollar una plataforma web y móvil para automatizar la gestión comercial y operativa de **Tenebrios Gold**, optimizando los procesos de ventas, inventario, pedidos y atención al cliente mediante herramientas digitales integradas.
+
+### Objetivos Específicos
+
+- Automatizar la administración del catálogo de productos.
+- Centralizar la gestión de clientes y ventas.
+- Implementar control de inventario en tiempo real.
+- Gestionar pedidos mediante estados de seguimiento predefinidos.
+- Generar reportes administrativos y operativos.
+- Exponer funcionalidades mediante una API REST segura y escalable.
+- Integrar una aplicación móvil Android para el consumo de los servicios de la plataforma.
+- Reducir la dependencia de procesos manuales realizados por WhatsApp.
+- Facilitar la atención al cliente mediante herramientas automatizadas como el chatbot.
+- Mejorar la trazabilidad de productos, pedidos y movimientos del negocio.
+
+---
+
+## 3. Integrantes y responsabilidades
+
+| Integrante | Rol Scrum | Responsabilidades |
+|------------|-----------|-------------------|
+| Evelyn Nicole Gaviria | Product Owner | Definición de requisitos, validación de funcionalidades, priorización del Product Backlog y comunicación con los interesados. |
+| Luis Angel Carranza | Scrum Master | Coordinación del equipo, seguimiento de actividades, gestión de impedimentos y cumplimiento de la metodología Scrum. |
+| Ian Felipe Jimenez | Backend Developer | Desarrollo de funcionalidades Laravel, diseño de API REST, lógica de negocio, base de datos e integración de servicios. |
+| Dayanna Boada | Frontend & Mobile Developer | Desarrollo de interfaces web y móvil, experiencia de usuario, consumo de API REST e integración Android. |
+
+> **Nota:** La distribución de responsabilidades puede ajustarse según la evolución del proyecto y las necesidades del equipo de desarrollo.
+
+---
+
+## 4. Tecnologías utilizadas
+
+### Backend
+
+- PHP 8.x
+- Laravel
+- Eloquent ORM
+- API REST
+- Composer
 - Servidor local con PHP, Composer y MySQL (por ejemplo, Laragon o XAMPP).
 - Git para el control de versiones.
 - Android Studio y SDK de Android (para ejecutar el cliente móvil ubicado en `mobile/`).
