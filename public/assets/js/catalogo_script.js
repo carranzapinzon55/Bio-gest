@@ -199,9 +199,9 @@ function renderizarProductos(productos) {
         const descripcion = producto.descripcion || 'Sin descripción disponible.';
 
         // Ajuste automático de rutas de imágenes
-        let imagenRuta = producto.imagen || '../assent/img/Logo.jpeg';
-        if (!imagenRuta.startsWith('../') && !imagenRuta.startsWith('http')) {
-            imagenRuta = `../assent/img/${imagenRuta}`;
+        let imagenRuta = producto.imagen || '/assets/img/Logo.jpeg';
+        if (!imagenRuta.startsWith('/') && !imagenRuta.startsWith('http')) {
+            imagenRuta = `/assets/img/${imagenRuta}`;
         }
 
         const tarjeta = document.createElement('div');
@@ -209,7 +209,7 @@ function renderizarProductos(productos) {
 
         tarjeta.innerHTML = `
             <div class="product-img product-image" onclick="verDetalle(${id})" style="cursor: pointer;">
-                <img src="${imagenRuta}" alt="${nombre}" onerror="this.src='../assent/img/Logo.jpeg';">
+                <img src="${imagenRuta}" alt="${nombre}" onerror="this.src='/assets/img/Logo.jpeg';">
             </div>
             <div class="product-details product-info">
                 <h3 class="product-title" onclick="verDetalle(${id})" style="cursor: pointer;">${nombre}</h3>

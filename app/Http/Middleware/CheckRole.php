@@ -8,12 +8,50 @@ use Symfony\Component\HttpFoundation\Response;
 
 class CheckRole
 {
-    public function handle(Request $request, Closure $next, string $rolEsperado): Response
+    /**
+     * Handle an incoming request.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  \Closure  $next
+     * @param  string  ...$roles
+     * @return \Symfony\Component\HttpFoundation\Response
+     */
+    public function handle(Request $request, Closure $next, ...$roles): Response
     {
         $user = $request->user();
+        $isApi = $request->is('api/*') || $request->expectsJson();
 
-        if (!$user || (!$user->esAdmin() && optional($user->rol)->nombre_rol !== $rolEsperado)) {
-            abort(403, 'No tienes permisos para acceder a esta sección de BIO-GEST.');
+        if (!$user) {
+            return $isApi
+                ? response()->json([
+                    'success' => false,
+                    'message' => 'No autenticado. Token de acceso no proporcionado o inválido.'
+                ], 401)
+                : redirect()->route('login');
+        }
+
+        // Obtener el nombre del rol del usuario autenticado
+        $nombreRol = optional($user->rol)->nombre_rol ?? ($user->id_rol === 1 ? 'Administrador' : 'Cliente');
+
+        // Procesar roles permitidos (admite parámetros múltiples o separados por comas)
+        $allowedRoles = [];
+        foreach ($roles as $role) {
+            foreach (explode(',', $role) as $r) {
+                $trimmed = trim($r);
+                if ($trimmed !== '') {
+                    $allowedRoles[] = strtolower($trimmed);
+                }
+            }
+        }
+
+        // Si se especificaron roles y el rol del usuario no coincide
+        if (!empty($allowedRoles) && !in_array(strtolower($nombreRol), $allowedRoles)) {
+            return $isApi
+                ? response()->json([
+                    'success' => false,
+                    'message' => 'Acceso denegado. Se requiere uno de los siguientes roles: ' . implode(', ', $roles) . '.'
+                ], 403)
+                : abort(403, 'No tienes permisos suficientes para acceder a este módulo.');
         }
 
         return $next($request);
