@@ -12,7 +12,10 @@ use App\Http\Controllers\Client\PedidoClienteController;
 use App\Http\Controllers\Client\PerfilController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\ProductoAdminController;
+use App\Http\Controllers\Admin\InventarioAdminController;
 use App\Http\Controllers\Admin\PedidoAdminController;
+use App\Http\Controllers\Admin\UsuarioAdminController;
+use App\Http\Controllers\ReporteController;
 
 /*
 |--------------------------------------------------------------------------
@@ -50,6 +53,13 @@ Route::middleware('guest')->group(function () {
 });
 
 Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth')->name('logout');
+
+Route::get('/auth/session-status', function () {
+    if (!auth()->check()) {
+        return response()->json(['active' => false, 'redirect' => route('login')]);
+    }
+    return response()->json(['active' => true]);
+})->name('auth.session.status');
 
 /*
 |--------------------------------------------------------------------------
@@ -91,12 +101,27 @@ Route::middleware(['auth'])->group(function () {
 Route::middleware(['auth', 'role:Administrador'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/inicio', [DashboardController::class, 'index'])->name('inicio');
 
-    // Gestión de Productos e Inventario Dinámico
+    // Gestión de Usuarios (Conectado con Base de Datos MySQL)
+    Route::get('/usuarios', [UsuarioAdminController::class, 'index'])->name('usuarios.index');
+    Route::post('/usuarios', [UsuarioAdminController::class, 'store'])->name('usuarios.store');
+    Route::put('/usuarios/{id_usuario}', [UsuarioAdminController::class, 'update'])->name('usuarios.update');
+    Route::patch('/usuarios/{id_usuario}/estado', [UsuarioAdminController::class, 'toggleEstado'])->name('usuarios.estado');
+    Route::delete('/usuarios/{id_usuario}', [UsuarioAdminController::class, 'destroy'])->name('usuarios.destroy');
+
+    // Gestión de Productos (CRUD)
     Route::resource('productos', ProductoAdminController::class)->except(['show']);
     Route::post('productos/{id_producto}/stock', [ProductoAdminController::class, 'ajustarStock'])->name('productos.stock');
+
+    // Gestión de Inventario (Existencias y Movimientos)
+    Route::get('inventario', [InventarioAdminController::class, 'index'])->name('inventario.index');
+    Route::post('inventario/movimiento', [InventarioAdminController::class, 'registrarMovimiento'])->name('inventario.movimiento');
 
     // Gestión y Seguimiento de Estados de Pedidos
     Route::get('pedidos', [PedidoAdminController::class, 'index'])->name('pedidos.index');
     Route::get('pedidos/{id_pedido}', [PedidoAdminController::class, 'show'])->name('pedidos.show');
     Route::patch('pedidos/{id_pedido}/estado', [PedidoAdminController::class, 'actualizarEstado'])->name('pedidos.estado');
+
+    // Módulo de Reportes de Ventas y Exportación CSV
+    Route::get('reportes/ventas', [ReporteController::class, 'ventas'])->name('reportes.ventas');
+    Route::get('reportes/ventas/exportar-csv', [ReporteController::class, 'exportarVentasCsv'])->name('reportes.ventas.csv');
 });

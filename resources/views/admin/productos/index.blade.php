@@ -1,112 +1,143 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Productos e Inventario | Panel Admin</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="{{ asset('assets/css/admin.css') }}">
-    <style>
-        .sidebar { background-color: #151515; color: #ffffff; border-right: 2px solid #e4b353; }
-        .sidebar .brand { border-bottom: 1px solid #2d2d2d; }
-        .sidebar .brand h2 { color: #e4b353; }
-        .sidebar .brand p { color: #aaaaaa; }
-        .sidebar .menu li a { color: #e2e8f0; }
-        .sidebar .menu li.active a, .sidebar .menu li a:hover {
-            background-color: #e4b353; color: #151515; font-weight: 700;
-        }
-    </style>
-</head>
-<body>
-    <aside class="sidebar">
-        <div class="brand">
-            <h2>Tenebrios Gold</h2>
-            <p>panel de administrador</p>
+@extends('layouts.app')
+
+@section('title', 'Gestión de Productos | BIO-GEST Tenebrios Gold')
+@section('header_title', 'Gestión de Productos (CRUD)')
+
+@section('content')
+    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:15px; margin-bottom:20px;">
+        <div>
+            <h1 style="margin:0; font-size:1.45rem; color:#151515;">Catálogo Administrativo de Productos</h1>
+            <p style="margin:4px 0 0 0; color:#64748b; font-size:0.9rem;">Registra, edita, ajusta precios o desactiva productos de la tienda</p>
         </div>
-        <ul class="menu">
-            <li><a href="{{ route('admin.inicio') }}"><i class="fa-solid fa-house"></i> Inicio</a></li>
-            <li class="active"><a href="{{ route('admin.productos.index') }}"><i class="fa-solid fa-box"></i> Productos e Inventario</a></li>
-            <li><a href="{{ route('admin.pedidos.index') }}"><i class="fa-solid fa-cart-shopping"></i> Pedidos</a></li>
-            <li><a href="{{ route('home') }}"><i class="fa-solid fa-store"></i> Ver Tienda Pública</a></li>
-            <li>
-                <form action="{{ route('logout') }}" method="POST" style="padding: 12px 20px;">
-                    @csrf
-                    <button type="submit" style="background:none; border:none; color:#f87171; cursor:pointer; font-weight:600;">
-                        <i class="fa-solid fa-right-from-bracket"></i> Cerrar sesión
-                    </button>
-                </form>
-            </li>
-        </ul>
-    </aside>
-
-    <main class="main-content">
-        <header class="top-header" style="margin-bottom:25px;">
-            <div style="font-size:1.4rem; font-weight:700; color:#151515;">Gestión de Productos e Inventario</div>
-            <div class="user-profile">
-                <span>{{ auth()->user()->nombre_completo ?? 'Administrador' }}</span>
-            </div>
-        </header>
-
-        @if(session('success'))
-            <div style="background:#dcfce7; color:#15803d; padding:12px; border-radius:6px; margin-bottom:20px; font-weight:600;">
-                {{ session('success') }}
-            </div>
-        @endif
-
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-            <h2 style="margin:0; color:#151515;">Listado de Productos</h2>
-            <a href="{{ route('admin.productos.create') }}" style="background:#151515; color:#e4b353; padding:10px 20px; border-radius:6px; text-decoration:none; font-weight:700;">
-                <i class="fas fa-plus"></i> Nuevo Producto
+        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+            <a href="{{ route('admin.inventario.index') }}" class="tg-btn-gold">
+                <i class="fa-solid fa-warehouse"></i> Ver Inventario y Kardex
+            </a>
+            <a href="{{ route('admin.productos.create') }}" class="tg-btn-dark">
+                <i class="fa-solid fa-plus"></i> Registrar Producto
             </a>
         </div>
+    </div>
 
-        <div class="widget-card" style="background:#fff; border-radius:8px; padding:20px; box-shadow:0 2px 8px rgba(0,0,0,0.06);">
-            <table class="custom-table" style="width:100%;">
+    <!-- Barra de Filtro Rápido -->
+    <div class="tg-card" style="padding:16px 20px;">
+        <form action="{{ route('admin.productos.index') }}" method="GET" style="display:flex; flex-wrap:wrap; gap:12px; align-items:flex-end;">
+            <div style="flex:1; min-width:200px;">
+                <label style="display:block; font-size:0.8rem; font-weight:700; color:#151515; margin-bottom:4px;">Buscar por nombre</label>
+                <input type="text" name="q" value="{{ request('q') }}" placeholder="Ej. Paquete 1.000 larvas..." style="width:100%; padding:9px 12px; border:1px solid #cbd5e1; border-radius:6px;">
+            </div>
+            <div style="min-width:180px;">
+                <label style="display:block; font-size:0.8rem; font-weight:700; color:#151515; margin-bottom:4px;">Categoría</label>
+                <select name="id_categoria" style="width:100%; padding:9px 12px; border:1px solid #cbd5e1; border-radius:6px;">
+                    <option value="">Todas las categorías</option>
+                    @foreach($categorias as $cat)
+                        <option value="{{ $cat->id_categoria }}" {{ (string) request('id_categoria') === (string) $cat->id_categoria ? 'selected' : '' }}>
+                            {{ $cat->nombre_categoria }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+            <div style="min-width:150px;">
+                <label style="display:block; font-size:0.8rem; font-weight:700; color:#151515; margin-bottom:4px;">Estado</label>
+                <select name="estado" style="width:100%; padding:9px 12px; border:1px solid #cbd5e1; border-radius:6px;">
+                    <option value="">Todos</option>
+                    <option value="Activo" {{ request('estado') === 'Activo' ? 'selected' : '' }}>Activo</option>
+                    <option value="Inactivo" {{ request('estado') === 'Inactivo' ? 'selected' : '' }}>Inactivo</option>
+                </select>
+            </div>
+            <div style="display:flex; gap:8px;">
+                <button type="submit" class="tg-btn-dark" style="padding:9px 16px;">
+                    <i class="fa-solid fa-filter"></i> Filtrar
+                </button>
+                @if(request()->hasAny(['q', 'id_categoria', 'estado']))
+                    <a href="{{ route('admin.productos.index') }}" style="padding:9px 14px; border:1px solid #cbd5e1; border-radius:6px; text-decoration:none; color:#475569; font-weight:600; font-size:0.88rem;">
+                        Limpiar
+                    </a>
+                @endif
+            </div>
+        </form>
+    </div>
+
+    <!-- Tabla de Productos -->
+    <div class="tg-card">
+        <div class="table-responsive">
+            <table class="custom-table">
                 <thead>
                     <tr>
-                        <th>ID</th>
+                        <th>Código</th>
                         <th>Producto</th>
                         <th>Categoría</th>
-                        <th>Precio</th>
-                        <th>Stock</th>
+                        <th>Precio (COP)</th>
+                        <th>Existencias</th>
                         <th>Estado</th>
-                        <th>Acciones</th>
+                        <th style="text-align:right;">Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach($productos as $prod)
+                    @forelse($productos as $prod)
+                        @php
+                            $stockMin = $prod->stock_minimo ?? 10;
+                        @endphp
                         <tr>
-                            <td>PROD-{{ str_pad($prod->id_producto, 3, '0', STR_PAD_LEFT) }}</td>
-                            <td><strong>{{ $prod->nombre_producto }}</strong></td>
-                            <td>{{ optional($prod->categoria)->nombre_categoria }}</td>
-                            <td>${{ number_format($prod->precio, 0, ',', '.') }}</td>
+                            <td style="font-weight:700; color:#151515;">PROD-{{ str_pad((string) $prod->id_producto, 3, '0', STR_PAD_LEFT) }}</td>
                             <td>
-                                <strong>{{ $prod->stock }}</strong>
-                                <form action="{{ route('admin.productos.stock', $prod->id_producto) }}" method="POST" style="display:inline-flex; align-items:center; gap:5px; margin-left:10px;">
-                                    @csrf
-                                    <input type="number" name="cantidad" value="10" min="1" style="width:50px; padding:3px; font-size:0.8rem;">
-                                    <button type="submit" name="tipo_movimiento" value="ENTRADA" style="background:#dcfce7; color:#15803d; border:1px solid #86efac; border-radius:3px; padding:2px 6px; cursor:pointer;" title="Sumar Stock">+</button>
-                                    <button type="submit" name="tipo_movimiento" value="SALIDA" style="background:#fee2e2; color:#b91c1c; border:1px solid #fca5a5; border-radius:3px; padding:2px 6px; cursor:pointer;" title="Restar Stock">-</button>
-                                </form>
+                                <div style="font-weight:700; color:#151515;">{{ $prod->nombre_producto }}</div>
+                                @if($prod->especies_recomendadas)
+                                    <div style="font-size:0.78rem; color:#64748b;">
+                                        <i class="fa-solid fa-paw" style="color:#e4b353;"></i> {{ \Illuminate\Support\Str::limit($prod->especies_recomendadas, 50) }}
+                                    </div>
+                                @endif
+                            </td>
+                            <td>{{ optional($prod->categoria)->nombre_categoria ?? 'Sin categoría' }}</td>
+                            <td style="font-weight:700; color:#151515;">${{ number_format($prod->precio, 0, ',', '.') }}</td>
+                            <td>
+                                <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                                    <span style="font-weight:800; font-size:0.95rem; color:{{ $prod->stock <= $stockMin ? '#b91c1c' : '#151515' }};">
+                                        {{ $prod->stock }} uds.
+                                    </span>
+                                    @if($prod->stock <= 0)
+                                        <span class="badge badge-danger">Agotado</span>
+                                    @elseif($prod->stock <= $stockMin)
+                                        <span class="badge badge-warning">Bajo (mín. {{ $stockMin }})</span>
+                                    @endif
+                                </div>
                             </td>
                             <td>
-                                <span class="badge {{ $prod->estado === 'Activo' ? 'badge-active' : 'badge-danger' }}">{{ $prod->estado }}</span>
+                                <span class="badge {{ $prod->estado === 'Activo' ? 'badge-active' : 'badge-danger' }}">
+                                    {{ $prod->estado }}
+                                </span>
                             </td>
-                            <td style="white-space:nowrap;">
-                                <a href="{{ route('admin.productos.edit', $prod->id_producto) }}" style="color:#0284c7; margin-right:12px; text-decoration:none; font-weight:600;"><i class="fas fa-edit"></i> Editar</a>
-                                <form action="{{ route('admin.productos.destroy', $prod->id_producto) }}" method="POST" style="display:inline;" onsubmit="return confirm('¿Desactivar este producto?');">
+                            <td style="text-align:right; white-space:nowrap;">
+                                <a href="{{ route('admin.productos.edit', $prod->id_producto) }}"
+                                   style="background:#151515; color:#e4b353; padding:6px 12px; border-radius:6px; text-decoration:none; font-size:0.82rem; font-weight:700; margin-right:6px; display:inline-block;">
+                                    <i class="fa-solid fa-pen-to-square"></i> Editar
+                                </a>
+
+                                <form action="{{ route('admin.productos.destroy', $prod->id_producto) }}" method="POST" style="display:inline;"
+                                      onsubmit="return confirm('¿Confirmas cambiar el estado de este producto?');">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" style="background:none; border:none; color:#ef4444; cursor:pointer; font-weight:600;">
-                                        <i class="fas fa-trash"></i> Desactivar
-                                    </button>
+                                    @if($prod->estado === 'Activo')
+                                        <button type="submit" style="background:#fee2e2; color:#b91c1c; border:1px solid #fca5a5; padding:6px 12px; border-radius:6px; cursor:pointer; font-size:0.82rem; font-weight:700;">
+                                            <i class="fa-solid fa-ban"></i> Desactivar
+                                        </button>
+                                    @else
+                                        <button type="submit" style="background:#dcfce7; color:#15803d; border:1px solid #86efac; padding:6px 12px; border-radius:6px; cursor:pointer; font-size:0.82rem; font-weight:700;">
+                                            <i class="fa-solid fa-rotate-left"></i> Activar
+                                        </button>
+                                    @endif
                                 </form>
                             </td>
                         </tr>
-                    @endforeach
+                    @empty
+                        <tr>
+                            <td colspan="7" style="text-align:center; padding:25px; color:#64748b;">
+                                No se encontraron productos registrados con los criterios seleccionados.
+                            </td>
+                        </tr>
+                    @endforelse
                 </tbody>
             </table>
         </div>
-    </main>
-</body>
-</html>
+    </div>
+@endsection

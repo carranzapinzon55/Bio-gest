@@ -1,100 +1,122 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Crear Producto | Panel Admin</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="{{ asset('assets/css/admin.css') }}">
-    <style>
-        .sidebar { background-color: #151515; color: #ffffff; border-right: 2px solid #e4b353; }
-        .sidebar .brand { border-bottom: 1px solid #2d2d2d; }
-        .sidebar .brand h2 { color: #e4b353; }
-        .sidebar .menu li a { color: #e2e8f0; }
-        .sidebar .menu li.active a, .sidebar .menu li a:hover {
-            background-color: #e4b353; color: #151515; font-weight: 700;
-        }
-    </style>
-</head>
-<body>
-    <aside class="sidebar">
-        <div class="brand">
-            <h2>Tenebrios Gold</h2>
-            <p>panel de administrador</p>
+@extends('layouts.app')
+
+@section('title', 'Registrar Producto | BIO-GEST Tenebrios Gold')
+@section('header_title', 'Registrar Nuevo Producto')
+
+@section('content')
+    <div style="max-width:900px; margin:0 auto;">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:18px;">
+            <h1 style="margin:0; font-size:1.4rem; color:#151515;">
+                <i class="fa-solid fa-box-open" style="color:#e4b353;"></i> Nuevo Producto en Catálogo
+            </h1>
+            <a href="{{ route('admin.productos.index') }}" class="tg-btn-dark" style="padding:8px 16px;">
+                <i class="fa-solid fa-arrow-left"></i> Volver al Listado
+            </a>
         </div>
-        <ul class="menu">
-            <li><a href="{{ route('admin.inicio') }}"><i class="fa-solid fa-house"></i> Inicio</a></li>
-            <li class="active"><a href="{{ route('admin.productos.index') }}"><i class="fa-solid fa-box"></i> Productos e Inventario</a></li>
-            <li><a href="{{ route('admin.pedidos.index') }}"><i class="fa-solid fa-cart-shopping"></i> Pedidos</a></li>
-        </ul>
-    </aside>
 
-    <main class="main-content">
-        <div style="max-width:800px; margin:0 auto; background:#fff; padding:30px; border-radius:8px; box-shadow:0 3px 12px rgba(0,0,0,0.06);">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; border-bottom:1px solid #eee; padding-bottom:12px;">
-                <h2 style="margin:0; color:#151515;">Registrar Nuevo Producto</h2>
-                <a href="{{ route('admin.productos.index') }}" style="color:#666; text-decoration:none;"><i class="fas fa-arrow-left"></i> Volver</a>
-            </div>
-
-            @if($errors->any())
-                <div style="background:#fee2e2; color:#b91c1c; padding:10px; border-radius:5px; margin-bottom:15px;">
-                    <ul style="margin:0; padding-left:20px;">
-                        @foreach($errors->all() as $err)
-                            <li>{{ $err }}</li>
-                        @endforeach
-                    </ul>
-                </div>
-            @endif
-
+        <div class="tg-card">
             <form action="{{ route('admin.productos.store') }}" method="POST">
                 @csrf
-                <div style="margin-bottom:15px;">
-                    <label style="display:block; font-weight:700; margin-bottom:4px; color:#333;">Categoría *</label>
-                    <select name="id_categoria" required style="width:100%; padding:10px; border:1px solid #ccc; border-radius:6px;">
-                        @foreach($categorias as $cat)
-                            <option value="{{ $cat->id_categoria }}">{{ $cat->nombre_categoria }}</option>
-                        @endforeach
-                    </select>
+
+                <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(250px, 1fr)); gap:18px; margin-bottom:18px;">
+                    <div>
+                        <label style="display:block; font-weight:700; margin-bottom:6px; color:#151515;">Categoría *</label>
+                        <select name="id_categoria" required style="width:100%; padding:10px 12px; border:1px solid #cbd5e1; border-radius:6px;">
+                            <option value="">-- Seleccionar categoría --</option>
+                            @foreach($categorias as $cat)
+                                <option value="{{ $cat->id_categoria }}" {{ old('id_categoria') == $cat->id_categoria ? 'selected' : '' }}>
+                                    {{ $cat->nombre_categoria }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div>
+                        <label style="display:block; font-weight:700; margin-bottom:6px; color:#151515;">Nombre del Producto *</label>
+                        <input type="text" name="nombre_producto" value="{{ old('nombre_producto') }}" required maxlength="150"
+                               placeholder="Ej. Paquete Recomendado – 2.000 larvas"
+                               style="width:100%; padding:10px 12px; border:1px solid #cbd5e1; border-radius:6px;">
+                    </div>
                 </div>
 
-                <div style="margin-bottom:15px;">
-                    <label style="display:block; font-weight:700; margin-bottom:4px; color:#333;">Nombre del Producto *</label>
-                    <input type="text" name="nombre_producto" value="{{ old('nombre_producto') }}" required style="width:100%; padding:10px; border:1px solid #ccc; border-radius:6px;">
-                </div>
+                <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:18px; margin-bottom:18px;">
+                    <div>
+                        <label style="display:block; font-weight:700; margin-bottom:6px; color:#151515;">Precio (COP) * <small style="color:#64748b;">(&gt; 0)</small></label>
+                        <input type="number" step="0.01" min="0.01" name="precio" value="{{ old('precio') }}" required
+                               placeholder="34900"
+                               style="width:100%; padding:10px 12px; border:1px solid #cbd5e1; border-radius:6px;">
+                    </div>
 
-                <div style="display:flex; gap:15px; margin-bottom:15px;">
-                    <div style="flex:1;">
-                        <label style="display:block; font-weight:700; margin-bottom:4px; color:#333;">Precio (COP) * (mayor a 0)</label>
-                        <input type="number" step="0.01" name="precio" value="{{ old('precio') }}" required style="width:100%; padding:10px; border:1px solid #ccc; border-radius:6px;">
+                    <div>
+                        <label style="display:block; font-weight:700; margin-bottom:6px; color:#151515;">Stock Inicial *</label>
+                        <input type="number" min="0" name="stock" value="{{ old('stock', 0) }}" required
+                               style="width:100%; padding:10px 12px; border:1px solid #cbd5e1; border-radius:6px;">
                     </div>
-                    <div style="flex:1;">
-                        <label style="display:block; font-weight:700; margin-bottom:4px; color:#333;">Stock Inicial * (mínimo 0)</label>
-                        <input type="number" name="stock" value="{{ old('stock', 0) }}" required style="width:100%; padding:10px; border:1px solid #ccc; border-radius:6px;">
+
+                    <div>
+                        <label style="display:block; font-weight:700; margin-bottom:6px; color:#151515;">Stock Mínimo (Alerta)</label>
+                        <input type="number" min="0" name="stock_minimo" value="{{ old('stock_minimo', 10) }}"
+                               style="width:100%; padding:10px 12px; border:1px solid #cbd5e1; border-radius:6px;">
                     </div>
-                    <div style="flex:1;">
-                        <label style="display:block; font-weight:700; margin-bottom:4px; color:#333;">Estado *</label>
-                        <select name="estado" style="width:100%; padding:10px; border:1px solid #ccc; border-radius:6px;">
-                            <option value="Activo">Activo</option>
-                            <option value="Inactivo">Inactivo</option>
+
+                    <div>
+                        <label style="display:block; font-weight:700; margin-bottom:6px; color:#151515;">Estado *</label>
+                        <select name="estado" required style="width:100%; padding:10px 12px; border:1px solid #cbd5e1; border-radius:6px;">
+                            <option value="Activo" {{ old('estado', 'Activo') === 'Activo' ? 'selected' : '' }}>Activo</option>
+                            <option value="Inactivo" {{ old('estado') === 'Inactivo' ? 'selected' : '' }}>Inactivo</option>
                         </select>
                     </div>
                 </div>
 
-                <div style="margin-bottom:15px;">
-                    <label style="display:block; font-weight:700; margin-bottom:4px; color:#333;">Descripción</label>
-                    <textarea name="descripcion" rows="3" style="width:100%; padding:10px; border:1px solid #ccc; border-radius:6px;">{{ old('descripcion') }}</textarea>
+                <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(250px, 1fr)); gap:18px; margin-bottom:18px;">
+                    <div>
+                        <label style="display:block; font-weight:700; margin-bottom:6px; color:#151515;">Especies Recomendadas</label>
+                        <input type="text" name="especies_recomendadas" value="{{ old('especies_recomendadas') }}" maxlength="255"
+                               placeholder="Ej. Aves, reptiles, erizos, peces..."
+                               style="width:100%; padding:10px 12px; border:1px solid #cbd5e1; border-radius:6px;">
+                    </div>
+
+                    <div>
+                        <label style="display:block; font-weight:700; margin-bottom:6px; color:#151515;">Archivo de Imagen (public/assets/img/)</label>
+                        <input type="text" name="imagen" value="{{ old('imagen', 'Tenebrios_img.png') }}" maxlength="255"
+                               placeholder="Ej. paquete_500.jpg"
+                               style="width:100%; padding:10px 12px; border:1px solid #cbd5e1; border-radius:6px;">
+                    </div>
                 </div>
 
-                <div style="margin-bottom:25px;">
-                    <label style="display:block; font-weight:700; margin-bottom:4px; color:#333;">Beneficios</label>
-                    <textarea name="beneficios" rows="2" style="width:100%; padding:10px; border:1px solid #ccc; border-radius:6px;">{{ old('beneficios') }}</textarea>
+                <div style="margin-bottom:18px;">
+                    <label style="display:block; font-weight:700; margin-bottom:6px; color:#151515;">Descripción Comercial</label>
+                    <textarea name="descripcion" rows="3" placeholder="Describe el contenido y ventajas del paquete..."
+                              style="width:100%; padding:10px 12px; border:1px solid #cbd5e1; border-radius:6px;">{{ old('descripcion') }}</textarea>
                 </div>
 
-                <button type="submit" style="background:#151515; color:#e4b353; border:none; padding:12px 25px; border-radius:6px; font-weight:700; cursor:pointer;">
-                    Guardar Producto
-                </button>
+                <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(250px, 1fr)); gap:18px; margin-bottom:18px;">
+                    <div>
+                        <label style="display:block; font-weight:700; margin-bottom:6px; color:#151515;">Beneficios Nutricionales / Productivos</label>
+                        <textarea name="beneficios" rows="2" style="width:100%; padding:10px 12px; border:1px solid #cbd5e1; border-radius:6px;">{{ old('beneficios') }}</textarea>
+                    </div>
+
+                    <div>
+                        <label style="display:block; font-weight:700; margin-bottom:6px; color:#151515;">Instrucciones de Conservación</label>
+                        <textarea name="instrucciones_conservacion" rows="2" style="width:100%; padding:10px 12px; border:1px solid #cbd5e1; border-radius:6px;">{{ old('instrucciones_conservacion') }}</textarea>
+                    </div>
+                </div>
+
+                <div style="margin-bottom:24px;">
+                    <label style="display:block; font-weight:700; margin-bottom:6px; color:#151515;">Política de Garantía y Reembolso</label>
+                    <input type="text" name="politica_reembolso" value="{{ old('politica_reembolso', 'Garantía 100% de llegada viva documentando desempaque.') }}"
+                           style="width:100%; padding:10px 12px; border:1px solid #cbd5e1; border-radius:6px;">
+                </div>
+
+                <div style="display:flex; justify-content:flex-end; gap:12px; border-top:1px solid #e2e8f0; padding-top:18px;">
+                    <a href="{{ route('admin.productos.index') }}" style="padding:11px 20px; border:1px solid #cbd5e1; border-radius:6px; text-decoration:none; color:#475569; font-weight:600;">
+                        Cancelar
+                    </a>
+                    <button type="submit" class="tg-btn-dark" style="padding:11px 26px;">
+                        <i class="fa-solid fa-floppy-disk"></i> Guardar Producto
+                    </button>
+                </div>
             </form>
         </div>
-    </main>
-</body>
-</html>
+    </div>
+@endsection

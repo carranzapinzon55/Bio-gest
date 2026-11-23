@@ -38,11 +38,11 @@ class CalculadoraController extends Controller
             ->get()
             ->first(function ($prod) use ($consumoMensual) {
                 if ($consumoMensual <= 500) return str_contains($prod->nombre_producto, '500');
-                if ($consumoMensual <= 1000) return str_contains($prod->nombre_producto, '1,000');
-                if ($consumoMensual <= 2000) return str_contains($prod->nombre_producto, '2,000');
-                if ($consumoMensual <= 5000) return str_contains($prod->nombre_producto, '5,000');
-                return str_contains($prod->nombre_producto, '10,000');
-            });
+                if ($consumoMensual <= 1000) return str_contains($prod->nombre_producto, '1.000') || str_contains($prod->nombre_producto, '1,000');
+                if ($consumoMensual <= 2000) return str_contains($prod->nombre_producto, '2.000') || str_contains($prod->nombre_producto, '2,000');
+                if ($consumoMensual <= 5000) return str_contains($prod->nombre_producto, '5.000') || str_contains($prod->nombre_producto, '5,000');
+                return str_contains($prod->nombre_producto, '10.000') || str_contains($prod->nombre_producto, '10,000');
+            }) ?? Producto::activos()->orderByDesc('precio')->first();
 
         return response()->json([
             'success'              => true,

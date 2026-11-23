@@ -8,17 +8,33 @@ use App\Models\MovimientoInventario;
 use App\Models\Producto;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
 class ProductoAdminController extends Controller
 {
     /**
-     * Listado administrativo de productos.
+     * Listado administrativo de productos con filtro opcional.
      */
-    public function index(): View
+    public function index(Request $request): View
     {
-        $productos  = Producto::with('categoria')->orderBy('id_producto')->get();
-        $categorias = Categoria::all();
+        $query = Producto::with('categoria')->orderBy('id_producto');
+
+        if ($request->filled('q')) {
+            $busqueda = $request->q;
+            $query->where('nombre_producto', 'like', "%{$busqueda}%");
+        }
+
+        if ($request->filled('id_categoria')) {
+            $query->where('id_categoria', $request->id_categoria);
+        }
+
+        if ($request->filled('estado')) {
+            $query->where('estado', $request->estado);
+        }
+
+        $productos  = $query->get();
+        $categorias = Categoria::orderBy('nombre_categoria')->get();
 
         return view('admin.productos.index', compact('productos', 'categorias'));
     }
@@ -28,50 +44,59 @@ class ProductoAdminController extends Controller
      */
     public function create(): View
     {
-        $categorias = Categoria::all();
+        $categorias = Categoria::orderBy('nombre_categoria')->get();
         return view('admin.productos.create', compact('categorias'));
     }
 
     /**
-     * Guardar un nuevo producto en la base de datos.
-     * Respeta la restricción CHECK: precio > 0 y stock >= 0.
+     * Guardar un nuevo producto en la base de datos con validaciones estrictas.
      */
     public function store(Request $request): RedirectResponse
     {
         $datos = $request->validate([
-            'id_categoria'               => ['required', 'exists:categoria,id_categoria'],
-            'nombre_producto'            => ['required', 'string', 'max:150'],
-            'descripcion'                => ['nullable', 'string'],
-            'beneficios'                 => ['nullable', 'string'],
-            'instrucciones_conservacion' => ['nullable', 'string'],
+            'id_categoria'               => ['required', 'integer', 'exists:categoria,id_categoria'],
+            'nombre_producto'            => ['required', 'string', 'min:3', 'max:150'],
+            'descripcion'                => ['nullable', 'string', 'max:2000'],
+            'beneficios'                 => ['nullable', 'string', 'max:2000'],
+            'instrucciones_conservacion' => ['nullable', 'string', 'max:1000'],
             'especies_recomendadas'      => ['nullable', 'string', 'max:255'],
-            'politica_reembolso'         => ['nullable', 'string'],
-            'precio'                     => ['required', 'numeric', 'gt:0'], // CHECK precio > 0
-            'stock'                      => ['required', 'integer', 'gte:0'], // CHECK stock >= 0
+            'politica_reembolso'         => ['nullable', 'string', 'max:1000'],
+            'precio'                     => ['required', 'numeric', 'gt:0'],
+            'stock'                      => ['required', 'integer', 'gte:0'],
             'stock_minimo'               => ['nullable', 'integer', 'gte:0'],
             'imagen'                     => ['nullable', 'string', 'max:255'],
             'estado'                     => ['required', 'in:Activo,Inactivo'],
         ], [
-            'precio.gt'  => 'El precio debe ser estrictamente mayor a 0.',
-            'stock.gte' => 'El stock debe ser mayor o igual a 0.',
+            'id_categoria.required'    => 'La categoría del producto es obligatoria.',
+            'id_categoria.exists'      => 'La categoría seleccionada no es válida.',
+            'nombre_producto.required' => 'El nombre del producto es obligatorio.',
+            'precio.required'          => 'El precio es obligatorio.',
+            'precio.gt'                => 'El precio debe ser estrictamente mayor a 0.',
+            'stock.required'           => 'El stock inicial es obligatorio.',
+            'stock.gte'                => 'El stock no puede ser negativo.',
+            'estado.in'                => 'El estado debe ser Activo o Inactivo.',
         ]);
 
         $datos['stock_minimo'] = $datos['stock_minimo'] ?? 10;
-        $producto = Producto::create($datos);
 
-        // Movimiento inicial si ingresa con existencias
-        if ($producto->stock > 0) {
-            MovimientoInventario::create([
-                'id_producto'     => $producto->id_producto,
-                'tipo_movimiento' => 'ENTRADA',
-                'cantidad'        => $producto->stock,
-                'observacion'     => 'Inventario inicial al crear producto (Panel Admin)',
-                'fecha_movimiento'=> now(),
-            ]);
-        }
+        $producto = DB::transaction(function () use ($datos) {
+            $nuevoProducto = Producto::create($datos);
+
+            if ($nuevoProducto->stock > 0) {
+                MovimientoInventario::create([
+                    'id_producto'      => $nuevoProducto->id_producto,
+                    'tipo_movimiento'  => 'ENTRADA',
+                    'cantidad'         => $nuevoProducto->stock,
+                    'observacion'      => 'Inventario inicial al registrar producto en panel administrativo',
+                    'fecha_movimiento' => now(),
+                ]);
+            }
+
+            return $nuevoProducto;
+        });
 
         return redirect()->route('admin.productos.index')
-            ->with('success', "Producto '{$producto->nombre_producto}' registrado con éxito.");
+            ->with('success', "Producto '{$producto->nombre_producto}' registrado exitosamente.");
     }
 
     /**
@@ -80,60 +105,86 @@ class ProductoAdminController extends Controller
     public function edit(int $producto): View
     {
         $productoModel = Producto::with('categoria')->findOrFail($producto);
-        $categorias    = Categoria::all();
+        $categorias    = Categoria::orderBy('nombre_categoria')->get();
 
         return view('admin.productos.edit', [
             'producto'   => $productoModel,
-            'categorias' => $categorias
+            'categorias' => $categorias,
         ]);
     }
 
     /**
-     * Actualizar producto en la base de datos.
-     * Respeta las restricciones CHECK y el trigger trg_auditoria_stock_producto.
+     * Actualizar producto en la base de datos registrando movimiento de inventario si cambia el stock.
      */
     public function update(Request $request, int $producto): RedirectResponse
     {
         $productoModel = Producto::findOrFail($producto);
 
         $datos = $request->validate([
-            'id_categoria'               => ['required', 'exists:categoria,id_categoria'],
-            'nombre_producto'            => ['required', 'string', 'max:150'],
-            'descripcion'                => ['nullable', 'string'],
-            'beneficios'                 => ['nullable', 'string'],
-            'instrucciones_conservacion' => ['nullable', 'string'],
+            'id_categoria'               => ['required', 'integer', 'exists:categoria,id_categoria'],
+            'nombre_producto'            => ['required', 'string', 'min:3', 'max:150'],
+            'descripcion'                => ['nullable', 'string', 'max:2000'],
+            'beneficios'                 => ['nullable', 'string', 'max:2000'],
+            'instrucciones_conservacion' => ['nullable', 'string', 'max:1000'],
             'especies_recomendadas'      => ['nullable', 'string', 'max:255'],
-            'politica_reembolso'         => ['nullable', 'string'],
-            'precio'                     => ['required', 'numeric', 'gt:0'], // CHECK precio > 0
-            'stock'                      => ['required', 'integer', 'gte:0'], // CHECK stock >= 0
+            'politica_reembolso'         => ['nullable', 'string', 'max:1000'],
+            'precio'                     => ['required', 'numeric', 'gt:0'],
+            'stock'                      => ['required', 'integer', 'gte:0'],
             'stock_minimo'               => ['nullable', 'integer', 'gte:0'],
             'imagen'                     => ['nullable', 'string', 'max:255'],
             'estado'                     => ['required', 'in:Activo,Inactivo'],
         ], [
             'precio.gt'  => 'El precio debe ser estrictamente mayor a 0.',
-            'stock.gte' => 'El stock debe ser mayor o igual a 0.',
+            'stock.gte'  => 'El stock debe ser mayor o igual a 0.',
         ]);
 
-        $productoModel->update($datos);
+        $datos['stock_minimo'] = $datos['stock_minimo'] ?? $productoModel->stock_minimo ?? 10;
+
+        DB::transaction(function () use ($productoModel, $datos) {
+            $stockAnterior = (int) $productoModel->stock;
+            $stockNuevo    = (int) $datos['stock'];
+            $conteoAntes   = MovimientoInventario::where('id_producto', $productoModel->id_producto)->count();
+
+            $productoModel->update($datos);
+
+            // Si el stock cambió y la BD no tiene activo el trigger automático, registrar el movimiento
+            if ($stockNuevo !== $stockAnterior) {
+                $conteoDespues = MovimientoInventario::where('id_producto', $productoModel->id_producto)->count();
+                if ($conteoDespues === $conteoAntes) {
+                    $tipo = $stockNuevo > $stockAnterior ? 'ENTRADA' : 'SALIDA';
+                    $diferencia = abs($stockNuevo - $stockAnterior);
+                    MovimientoInventario::create([
+                        'id_producto'      => $productoModel->id_producto,
+                        'tipo_movimiento'  => $tipo,
+                        'cantidad'         => $diferencia,
+                        'observacion'      => "Actualización de ficha de producto (Stock anterior: {$stockAnterior}, Nuevo: {$stockNuevo})",
+                        'fecha_movimiento' => now(),
+                    ]);
+                }
+            }
+        });
 
         return redirect()->route('admin.productos.index')
             ->with('success', "Producto '{$productoModel->nombre_producto}' actualizado correctamente.");
     }
 
     /**
-     * Desactivación lógica de un producto.
+     * Eliminar o desactivar/activar lógicamente un producto.
      */
     public function destroy(int $producto): RedirectResponse
     {
         $productoModel = Producto::findOrFail($producto);
-        $productoModel->update(['estado' => 'Inactivo']);
+        $nuevoEstado = $productoModel->estado === 'Activo' ? 'Inactivo' : 'Activo';
+        $productoModel->update(['estado' => $nuevoEstado]);
+
+        $accion = $nuevoEstado === 'Inactivo' ? 'desactivado' : 'reactivado';
 
         return redirect()->route('admin.productos.index')
-            ->with('success', "Producto '{$productoModel->nombre_producto}' desactivado (baja lógica).");
+            ->with('success', "El producto '{$productoModel->nombre_producto}' ha sido {$accion} correctamente.");
     }
 
     /**
-     * Ajustar stock manualmente desde el panel de control.
+     * Ajustar stock rápidamente desde listado de productos o inventario.
      */
     public function ajustarStock(Request $request, int $id_producto): RedirectResponse
     {
@@ -141,21 +192,49 @@ class ProductoAdminController extends Controller
             'tipo_movimiento' => ['required', 'in:ENTRADA,SALIDA,AJUSTE'],
             'cantidad'        => ['required', 'integer', 'min:1'],
             'observacion'     => ['nullable', 'string', 'max:255'],
+        ], [
+            'cantidad.min' => 'La cantidad del movimiento debe ser al menos 1.',
         ]);
 
         $producto = Producto::findOrFail($id_producto);
 
-        if ($datos['tipo_movimiento'] === 'ENTRADA') {
-            $producto->increment('stock', $datos['cantidad']);
-        } elseif ($datos['tipo_movimiento'] === 'SALIDA') {
-            if ($producto->stock < $datos['cantidad']) {
-                return back()->with('error', "No se puede retirar {$datos['cantidad']} unidades. Stock actual: {$producto->stock}.");
-            }
-            $producto->decrement('stock', $datos['cantidad']);
-        } else {
-            $producto->update(['stock' => $datos['cantidad']]);
+        if ($datos['tipo_movimiento'] === 'SALIDA' && $producto->stock < $datos['cantidad']) {
+            return back()->with('error', "Stock insuficiente para retirar {$datos['cantidad']} unidades de '{$producto->nombre_producto}'. Stock disponible: {$producto->stock}.");
         }
 
-        return back()->with('success', "Stock de {$producto->nombre_producto} actualizado.");
+        DB::transaction(function () use ($producto, $datos) {
+            $stockAnterior = (int) $producto->stock;
+            $conteoAntes   = MovimientoInventario::where('id_producto', $producto->id_producto)->count();
+
+            if ($datos['tipo_movimiento'] === 'ENTRADA') {
+                $producto->increment('stock', $datos['cantidad']);
+            } elseif ($datos['tipo_movimiento'] === 'SALIDA') {
+                $producto->decrement('stock', $datos['cantidad']);
+            } else {
+                $producto->update(['stock' => $datos['cantidad']]);
+            }
+
+            $producto->refresh();
+            $conteoDespues = MovimientoInventario::where('id_producto', $producto->id_producto)->count();
+
+            if ($conteoDespues === $conteoAntes) {
+                MovimientoInventario::create([
+                    'id_producto'      => $producto->id_producto,
+                    'tipo_movimiento'  => $datos['tipo_movimiento'],
+                    'cantidad'         => $datos['cantidad'],
+                    'observacion'      => $datos['observacion'] ?? "Movimiento manual ({$datos['tipo_movimiento']}) desde Panel Admin. Stock previo: {$stockAnterior}, nuevo: {$producto->stock}",
+                    'fecha_movimiento' => now(),
+                ]);
+            } elseif (!empty($datos['observacion'])) {
+                $ultimoMovimiento = MovimientoInventario::where('id_producto', $producto->id_producto)
+                    ->orderByDesc('id_movimiento')
+                    ->first();
+                if ($ultimoMovimiento) {
+                    $ultimoMovimiento->update(['observacion' => $datos['observacion']]);
+                }
+            }
+        });
+
+        return back()->with('success', "Movimiento de {$datos['tipo_movimiento']} aplicado. Nuevo stock de '{$producto->nombre_producto}': {$producto->fresh()->stock} unidades.");
     }
 }

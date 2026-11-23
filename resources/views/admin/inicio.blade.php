@@ -1,225 +1,137 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bio-Gest | Panel de Administrador - Tenebrios Gold</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="{{ asset('assets/css/admin.css') }}">
-    <style>
-        /* Acentos corporativos Tenebrios-Gold (#151515 y #e4b353) */
-        .sidebar { background-color: #151515; color: #ffffff; border-right: 2px solid #e4b353; }
-        .sidebar .brand { border-bottom: 1px solid #2d2d2d; }
-        .sidebar .brand h2 { color: #e4b353; }
-        .sidebar .brand p { color: #aaaaaa; }
-        .sidebar .menu li a { color: #e2e8f0; }
-        .sidebar .menu li.active a, .sidebar .menu li a:hover {
-            background-color: #e4b353;
-            color: #151515;
-            font-weight: 700;
-        }
-        .kpi-icon { color: #151515; background-color: rgba(228, 179, 83, 0.25); }
-    </style>
-</head>
-<body>
+@extends('layouts.app')
 
-    <!-- BARRA LATERAL (SIDEBAR) -->
-    <aside class="sidebar">
-        <div class="brand">
-            <h2>Tenebrios Gold</h2>
-            <p>panel de administrador</p>
+@section('title', 'Panel Principal | BIO-GEST Tenebrios Gold')
+@section('header_title', 'Dashboard General BIO-GEST')
+
+@section('content')
+    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:15px; margin-bottom:25px;">
+        <div>
+            <h1 style="margin:0; font-size:1.6rem; color:#151515;">Bienvenido, {{ auth()->user()->nombre ?? 'Administrador' }}</h1>
+            <p style="margin:4px 0 0 0; color:#64748b;">Control integral de productos, inventario, pedidos y reportes de TENEBRIOS GOLD</p>
         </div>
-        <ul class="menu">
-            <li class="active"><a href="{{ route('admin.inicio') }}"><i class="fa-solid fa-house"></i> Inicio</a></li>
-            <li><a href="{{ route('admin.productos.index') }}"><i class="fa-solid fa-box"></i> Productos e Inventario</a></li>
-            <li><a href="{{ route('admin.pedidos.index') }}"><i class="fa-solid fa-cart-shopping"></i> Pedidos</a></li>
-            <li><a href="{{ route('home') }}"><i class="fa-solid fa-store"></i> Ver Tienda Pública</a></li>
-            <li>
-                <form action="{{ route('logout') }}" method="POST" style="padding: 12px 20px;">
-                    @csrf
-                    <button type="submit" style="background:none; border:none; color:#f87171; cursor:pointer; font-weight:600;">
-                        <i class="fa-solid fa-right-from-bracket"></i> Cerrar sesión
-                    </button>
-                </form>
-            </li>
-        </ul>
-    </aside>
+        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+            <a href="{{ route('admin.productos.create') }}" class="tg-btn-dark">
+                <i class="fa-solid fa-plus"></i> Nuevo Producto
+            </a>
+            <a href="{{ route('admin.reportes.ventas') }}" class="tg-btn-gold">
+                <i class="fa-solid fa-file-csv"></i> Reporte de Ventas
+            </a>
+        </div>
+    </div>
 
-    <!-- CONTENIDO PRINCIPAL -->
-    <main class="main-content">
+    <!-- TARJETAS DE MÉTRICAS (KPIs) -->
+    <section class="kpi-grid">
+        <div class="kpi-card" style="border-left:4px solid #e4b353;">
+            <i class="fa-solid fa-user-group kpi-icon" style="background:rgba(228,179,83,0.2); color:#151515;"></i>
+            <div class="kpi-details">
+                <h3 style="font-size:0.82rem; text-transform:uppercase; color:#64748b;">Total de Usuarios</h3>
+                <div class="kpi-value" style="color:#151515;">{{ $kpis['total_usuarios'] }}</div>
+                <span class="kpi-trend up"><i class="fa-solid fa-check"></i> Registrados en BIO-GEST</span>
+            </div>
+        </div>
+        <div class="kpi-card" style="border-left:4px solid #e4b353;">
+            <i class="fa-solid fa-boxes-packing kpi-icon" style="background:rgba(228,179,83,0.2); color:#151515;"></i>
+            <div class="kpi-details">
+                <h3 style="font-size:0.82rem; text-transform:uppercase; color:#64748b;">Pedidos Pendientes</h3>
+                <div class="kpi-value" style="color:#151515;">{{ $kpis['pedidos_pendientes'] }}</div>
+                <span class="kpi-trend up"><i class="fa-solid fa-clock"></i> Por gestionar</span>
+            </div>
+        </div>
+        <div class="kpi-card" style="border-left:4px solid #e4b353;">
+            <i class="fa-solid fa-truck-fast kpi-icon" style="background:rgba(228,179,83,0.2); color:#151515;"></i>
+            <div class="kpi-details">
+                <h3 style="font-size:0.82rem; text-transform:uppercase; color:#64748b;">Pedidos Realizados</h3>
+                <div class="kpi-value" style="color:#151515;">{{ $kpis['total_pedidos'] }}</div>
+                <span class="kpi-subtext">Histórico acumulado</span>
+            </div>
+        </div>
+        <div class="kpi-card" style="border-left:4px solid #e4b353;">
+            <i class="fa-solid fa-sack-dollar kpi-icon" style="background:rgba(228,179,83,0.2); color:#151515;"></i>
+            <div class="kpi-details">
+                <h3 style="font-size:0.82rem; text-transform:uppercase; color:#64748b;">Ingresos Acumulados</h3>
+                <div class="kpi-value" style="color:#151515;">${{ number_format($kpis['ingresos_totales'], 0, ',', '.') }}</div>
+                <span class="kpi-trend up"><i class="fa-solid fa-arrow-up"></i> Ventas efectivas</span>
+            </div>
+        </div>
+    </section>
 
-        <!-- HEADER SUPERIOR -->
-        <header class="top-header">
-            <div class="search-bar">
-                <i class="fa-solid fa-magnifying-glass"></i>
-                <input type="text" placeholder="Buscar pedido, cliente o producto...">
-            </div>
-            <div class="user-profile">
-                <i class="fa-solid fa-bell notifications"></i>
-                <div class="profile-info">
-                    <i class="fa-circle-user fa-solid"></i>
-                    <span>{{ auth()->user()->nombre_completo ?? 'Administrador' }}</span>
-                </div>
-            </div>
-        </header>
+    <!-- REJILLA DE WIDGETS Y TABLAS -->
+    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(460px, 1fr)); gap:22px;">
 
-        <!-- TÍTULO Y BIENVENIDA -->
-        <section class="welcome-title" style="margin-bottom: 20px;">
-            <h1>Bienvenido, {{ auth()->user()->nombre ?? 'Administrador' }}</h1>
-            <p>Gestiona todo el sistema de TENEBRIOS GOLD desde aquí</p>
-        </section>
-
-        <!-- TARJETAS DE MÉTRICAS (KPIs) -->
-        <section class="kpi-grid">
-            <div class="kpi-card">
-                <i class="fa-solid fa-user-group kpi-icon"></i>
-                <div class="kpi-details">
-                    <h3>total de usuarios</h3>
-                    <div class="kpi-value">{{ $kpis['total_usuarios'] }}</div>
-                    <span class="kpi-trend up"><i class="fa-solid fa-arrow-up"></i> Registrados en BIO-GEST</span>
-                </div>
+        <!-- WIDGET 1: PEDIDOS RECIENTES -->
+        <div class="tg-card" style="margin-bottom:0;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+                <h2 style="font-size:1.05rem; margin:0; color:#151515;"><i class="fa-solid fa-cart-flatbed" style="color:#e4b353;"></i> Pedidos Recientes</h2>
+                <a href="{{ route('admin.pedidos.index') }}" style="font-size:0.85rem; color:#151515; font-weight:700; text-decoration:none;">Ver todos &rarr;</a>
             </div>
-            <div class="kpi-card">
-                <i class="fa-solid fa-boxes-packing kpi-icon"></i>
-                <div class="kpi-details">
-                    <h3>Pedidos pendientes</h3>
-                    <div class="kpi-value">{{ $kpis['pedidos_pendientes'] }}</div>
-                    <span class="kpi-trend up"><i class="fa-solid fa-clock"></i> Por despachar</span>
-                </div>
-            </div>
-            <div class="kpi-card">
-                <i class="fa-solid fa-truck-fast kpi-icon"></i>
-                <div class="kpi-details">
-                    <h3>pedidos realizados</h3>
-                    <div class="kpi-value">{{ $kpis['total_pedidos'] }}</div>
-                    <span class="kpi-subtext">histórico acumulado</span>
-                </div>
-            </div>
-            <div class="kpi-card">
-                <i class="fa-solid fa-sack-dollar kpi-icon"></i>
-                <div class="kpi-details">
-                    <h3>Ingresos acumulados</h3>
-                    <div class="kpi-value">${{ number_format($kpis['ingresos_totales'], 0, ',', '.') }}</div>
-                    <span class="kpi-trend up"><i class="fa-solid fa-arrow-up"></i> Ventas activas</span>
-                </div>
-            </div>
-        </section>
-
-        <!-- REJILLA DE WIDGETS Y TABLAS -->
-        <section class="dashboard-grid">
-
-            <!-- WIDGET 1: USUARIOS -->
-            <div class="widget-card">
-                <div class="widget-header">
-                    <h2>Gestión de usuarios</h2>
-                </div>
+            <div class="table-responsive">
                 <table class="custom-table">
                     <thead>
-                        <tr><th>ID</th><th>Nombre</th><th>Rol</th><th>Estado</th></tr>
-                    </thead>
-                    <tbody>
-                        @foreach($usuariosRecientes as $usr)
-                            <tr>
-                                <td>USR-{{ str_pad($usr->id_usuario, 3, '0', STR_PAD_LEFT) }}</td>
-                                <td>{{ $usr->nombre_completo }}</td>
-                                <td>{{ optional($usr->rol)->nombre_rol }}</td>
-                                <td><span class="badge badge-active">{{ $usr->estado }}</span></td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            </div>
-
-            <!-- WIDGET 2: PRODUCTOS -->
-            <div class="widget-card">
-                <div class="widget-header">
-                    <h2>Productos</h2>
-                    <a href="{{ route('admin.productos.index') }}">Ver todos</a>
-                </div>
-                <table class="custom-table">
-                    <thead>
-                        <tr><th>ID</th><th>Producto</th><th>Precio</th><th>Estado</th></tr>
-                    </thead>
-                    <tbody>
-                        @foreach($productos as $prod)
-                            <tr>
-                                <td>PROD-{{ str_pad($prod->id_producto, 3, '0', STR_PAD_LEFT) }}</td>
-                                <td>{{ \Illuminate\Support\Str::limit($prod->nombre_producto, 24) }}</td>
-                                <td>${{ number_format($prod->precio, 0, ',', '.') }}</td>
-                                <td><span class="badge badge-active">{{ $prod->estado }}</span></td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            </div>
-
-            <!-- WIDGET 3: PROMOCIONES -->
-            <div class="widget-card">
-                <div class="widget-header">
-                    <h2>Promociones activas</h2>
-                </div>
-                <table class="custom-table">
-                    <thead>
-                        <tr><th>Cupón</th><th>Descuento</th><th>Estado</th></tr>
-                    </thead>
-                    <tbody>
-                        @foreach($promociones as $promo)
-                            <tr>
-                                <td><strong>{{ $promo->codigo_cupon }}</strong></td>
-                                <td>{{ number_format($promo->descuento_porcentaje, 0) }}%</td>
-                                <td><span class="badge badge-active">{{ $promo->estado }}</span></td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            </div>
-
-            <!-- WIDGET 4: PEDIDOS RECIENTES -->
-            <div class="widget-card">
-                <div class="widget-header">
-                    <h2>Pedidos recientes</h2>
-                    <a href="{{ route('admin.pedidos.index') }}">Ver todos</a>
-                </div>
-                <table class="custom-table">
-                    <thead>
-                        <tr><th>ID</th><th>Cliente</th><th>Estado</th><th>Total</th></tr>
+                        <tr>
+                            <th>Pedido</th>
+                            <th>Cliente</th>
+                            <th>Estado</th>
+                            <th style="text-align:right;">Total</th>
+                        </tr>
                     </thead>
                     <tbody>
                         @forelse($pedidosRecientes as $ped)
                             <tr>
-                                <td>{{ $ped->numero_pedido ?? 'PED-'.$ped->id_pedido }}</td>
-                                <td>{{ optional($ped->usuario)->nombre_completo }}</td>
-                                <td><span class="badge badge-warning">{{ $ped->estado_pedido }}</span></td>
-                                <td>${{ number_format($ped->total, 0, ',', '.') }}</td>
+                                <td style="white-space:nowrap;">
+                                    <a href="{{ route('admin.pedidos.show', $ped->id_pedido) }}" style="font-weight:700; color:#151515; text-decoration:none;">
+                                        {{ $ped->numero_pedido ?? 'PED-' . $ped->id_pedido }}
+                                    </a>
+                                </td>
+                                <td>{{ optional($ped->usuario)->nombre_completo ?? 'Cliente' }}</td>
+                                <td>
+                                    @php
+                                        $badgeClass = match($ped->estado_pedido) {
+                                            'Entregado', 'Completado' => 'badge-active',
+                                            'Cancelado' => 'badge-danger',
+                                            'Despachado', 'Procesando' => 'badge-info',
+                                            default => 'badge-warning',
+                                        };
+                                    @endphp
+                                    <span class="badge {{ $badgeClass }}">{{ $ped->estado_pedido }}</span>
+                                </td>
+                                <td style="font-weight:700; text-align:right; white-space:nowrap;">${{ number_format($ped->total, 0, ',', '.') }}</td>
                             </tr>
                         @empty
-                            <tr><td colspan="4">Sin pedidos registrados.</td></tr>
+                            <tr><td colspan="4" style="text-align:center;">Sin pedidos registrados.</td></tr>
                         @endforelse
                     </tbody>
                 </table>
             </div>
+        </div>
 
-            <!-- WIDGET 5: INVENTARIO -->
-            <div class="widget-card">
-                <div class="widget-header">
-                    <h2>Inventario</h2>
-                    <a href="{{ route('admin.productos.index') }}">Gestionar stock</a>
-                </div>
+        <!-- WIDGET 2: ESTADO DE INVENTARIO -->
+        <div class="tg-card" style="margin-bottom:0;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+                <h2 style="font-size:1.05rem; margin:0; color:#151515;"><i class="fa-solid fa-warehouse" style="color:#e4b353;"></i> Estado del Inventario</h2>
+                <a href="{{ route('admin.inventario.index') }}" style="font-size:0.85rem; color:#151515; font-weight:700; text-decoration:none;">Ir a Inventario &rarr;</a>
+            </div>
+            <div class="table-responsive">
                 <table class="custom-table">
                     <thead>
-                        <tr><th>ID</th><th>Producto</th><th>Stock</th><th>Estado</th></tr>
+                        <tr>
+                            <th>Código</th>
+                            <th>Producto</th>
+                            <th style="text-align:center;">Stock</th>
+                            <th>Alerta</th>
+                        </tr>
                     </thead>
                     <tbody>
                         @foreach($productos as $prod)
+                            @php $min = $prod->stock_minimo ?? 10; @endphp
                             <tr>
-                                <td>INV-{{ str_pad($prod->id_producto, 3, '0', STR_PAD_LEFT) }}</td>
-                                <td>{{ \Illuminate\Support\Str::limit($prod->nombre_producto, 24) }}</td>
-                                <td>{{ $prod->stock }}</td>
+                                <td style="white-space:nowrap; font-weight:700;">INV-{{ str_pad((string) $prod->id_producto, 3, '0', STR_PAD_LEFT) }}</td>
+                                <td style="font-weight:600; color:#151515;">{{ $prod->nombre_producto }}</td>
+                                <td style="font-weight:700; text-align:center; white-space:nowrap;">{{ $prod->stock }} uds.</td>
                                 <td>
-                                    @if($prod->stock <= 15)
-                                        <span class="badge badge-danger">Bajo</span>
-                                    @elseif($prod->stock <= 30)
-                                        <span class="badge badge-warning">Medio</span>
+                                    @if($prod->stock <= 0)
+                                        <span class="badge badge-danger">Agotado</span>
+                                    @elseif($prod->stock <= $min)
+                                        <span class="badge badge-warning">Stock Bajo</span>
                                     @else
                                         <span class="badge badge-active">Óptimo</span>
                                     @endif
@@ -229,10 +141,70 @@
                     </tbody>
                 </table>
             </div>
+        </div>
 
-        </section>
+        <!-- WIDGET 3: CATÁLOGO DE PRODUCTOS -->
+        <div class="tg-card" style="margin-bottom:0;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+                <h2 style="font-size:1.05rem; margin:0; color:#151515;"><i class="fa-solid fa-box-open" style="color:#e4b353;"></i> Catálogo de Productos</h2>
+                <a href="{{ route('admin.productos.index') }}" style="font-size:0.85rem; color:#151515; font-weight:700; text-decoration:none;">Gestionar &rarr;</a>
+            </div>
+            <div class="table-responsive">
+                <table class="custom-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Producto</th>
+                            <th style="text-align:right;">Precio</th>
+                            <th>Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($productos as $prod)
+                            <tr>
+                                <td style="white-space:nowrap; font-weight:700;">PROD-{{ str_pad((string) $prod->id_producto, 3, '0', STR_PAD_LEFT) }}</td>
+                                <td style="font-weight:600; color:#151515;">{{ $prod->nombre_producto }}</td>
+                                <td style="text-align:right; font-weight:700; white-space:nowrap;">${{ number_format($prod->precio, 0, ',', '.') }}</td>
+                                <td>
+                                    <span class="badge {{ $prod->estado === 'Activo' ? 'badge-active' : 'badge-danger' }}">
+                                        {{ $prod->estado }}
+                                    </span>
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        </div>
 
-    </main>
+        <!-- WIDGET 4: USUARIOS RECIENTES -->
+        <div class="tg-card" style="margin-bottom:0;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+                <h2 style="font-size:1.05rem; margin:0; color:#151515;"><i class="fa-solid fa-users" style="color:#e4b353;"></i> Usuarios Recientes</h2>
+            </div>
+            <div class="table-responsive">
+                <table class="custom-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nombre</th>
+                            <th>Rol</th>
+                            <th>Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($usuariosRecientes as $usr)
+                            <tr>
+                                <td style="white-space:nowrap; font-weight:700;">USR-{{ str_pad((string) $usr->id_usuario, 3, '0', STR_PAD_LEFT) }}</td>
+                                <td style="font-weight:600; color:#151515;">{{ $usr->nombre_completo }}</td>
+                                <td>{{ optional($usr->rol)->nombre_rol }}</td>
+                                <td><span class="badge badge-active">{{ $usr->estado }}</span></td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        </div>
 
-</body>
-</html>
+    </div>
+@endsection

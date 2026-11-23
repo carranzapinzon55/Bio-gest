@@ -1,99 +1,153 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestión de Pedidos | Panel Admin</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="{{ asset('assets/css/admin.css') }}">
-    <style>
-        .sidebar { background-color: #151515; color: #ffffff; border-right: 2px solid #e4b353; }
-        .sidebar .brand { border-bottom: 1px solid #2d2d2d; }
-        .sidebar .brand h2 { color: #e4b353; }
-        .sidebar .menu li a { color: #e2e8f0; }
-        .sidebar .menu li.active a, .sidebar .menu li a:hover {
-            background-color: #e4b353; color: #151515; font-weight: 700;
-        }
-    </style>
-</head>
-<body>
-    <aside class="sidebar">
-        <div class="brand">
-            <h2>Tenebrios Gold</h2>
-            <p>panel de administrador</p>
+@extends('layouts.app')
+
+@section('title', 'Gestión de Pedidos | BIO-GEST Tenebrios Gold')
+@section('header_title', 'Gestión y Seguimiento de Pedidos')
+
+@section('content')
+    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:15px; margin-bottom:20px;">
+        <div>
+            <h1 style="margin:0; font-size:1.45rem; color:#151515;">Pedidos de Clientes</h1>
+            <p style="margin:4px 0 0 0; color:#64748b; font-size:0.9rem;">
+                Consulta los pedidos recibidos desde la tienda, revisa sus productos y actualiza su estado logístico
+            </p>
         </div>
-        <ul class="menu">
-            <li><a href="{{ route('admin.inicio') }}"><i class="fa-solid fa-house"></i> Inicio</a></li>
-            <li><a href="{{ route('admin.productos.index') }}"><i class="fa-solid fa-box"></i> Productos e Inventario</a></li>
-            <li class="active"><a href="{{ route('admin.pedidos.index') }}"><i class="fa-solid fa-cart-shopping"></i> Pedidos</a></li>
-            <li><a href="{{ route('home') }}"><i class="fa-solid fa-store"></i> Ver Tienda Pública</a></li>
-        </ul>
-    </aside>
+        <a href="{{ route('admin.reportes.ventas') }}" class="tg-btn-gold">
+            <i class="fa-solid fa-chart-column"></i> Ver Reporte y Exportar CSV
+        </a>
+    </div>
 
-    <main class="main-content">
-        <header class="top-header" style="margin-bottom:25px;">
-            <div style="font-size:1.4rem; font-weight:700; color:#151515;">Gestión y Despacho de Pedidos</div>
-        </header>
-
-        @if(session('success'))
-            <div style="background:#dcfce7; color:#15803d; padding:12px; border-radius:6px; margin-bottom:20px; font-weight:600;">
-                {{ session('success') }}
+    <!-- Filtros por Estado y Búsqueda -->
+    <div class="tg-card" style="padding:16px 20px;">
+        <form action="{{ route('admin.pedidos.index') }}" method="GET" style="display:flex; flex-wrap:wrap; gap:12px; align-items:flex-end;">
+            <div style="flex:1; min-width:220px;">
+                <label style="display:block; font-size:0.8rem; font-weight:700; color:#151515; margin-bottom:4px;">Buscar pedido o cliente</label>
+                <input type="text" name="q" value="{{ request('q') }}" placeholder="Ej. PED-1002, nombre o correo..."
+                       style="width:100%; padding:9px 12px; border:1px solid #cbd5e1; border-radius:6px;">
             </div>
-        @endif
 
-        <div class="widget-card" style="background:#fff; border-radius:8px; padding:20px; box-shadow:0 2px 8px rgba(0,0,0,0.06);">
-            <table class="custom-table" style="width:100%;">
+            <div style="min-width:200px;">
+                <label style="display:block; font-size:0.8rem; font-weight:700; color:#151515; margin-bottom:4px;">Filtrar por Estado</label>
+                <select name="estado" style="width:100%; padding:9px 12px; border:1px solid #cbd5e1; border-radius:6px;">
+                    <option value="">Todos los estados</option>
+                    @foreach(['Pendiente', 'Procesando', 'Despachado', 'Listo para retiro', 'Entregado', 'Completado', 'Cancelado'] as $est)
+                        <option value="{{ $est }}" {{ request('estado') === $est ? 'selected' : '' }}>
+                            {{ $est === 'Despachado' ? 'Enviado / Despachado' : $est }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+
+            <div style="display:flex; gap:8px;">
+                <button type="submit" class="tg-btn-dark" style="padding:9px 16px;">
+                    <i class="fa-solid fa-magnifying-glass"></i> Buscar
+                </button>
+                @if(request()->hasAny(['q', 'estado']))
+                    <a href="{{ route('admin.pedidos.index') }}" style="padding:9px 14px; border:1px solid #cbd5e1; border-radius:6px; text-decoration:none; color:#475569; font-weight:600; font-size:0.88rem;">
+                        Ver todos
+                    </a>
+                @endif
+            </div>
+        </form>
+    </div>
+
+    <!-- Tabla de Pedidos -->
+    <div class="tg-card">
+        <div class="table-responsive">
+            <table class="custom-table">
                 <thead>
                     <tr>
-                        <th>Número</th>
+                        <th>N.º Pedido</th>
                         <th>Cliente</th>
-                        <th>Total</th>
-                        <th>Pago</th>
+                        <th>Fecha</th>
+                        <th>Productos y Cantidades</th>
+                        <th style="text-align:center;">Cant. Total</th>
+                        <th>Valor Total</th>
                         <th>Estado Actual</th>
-                        <th>Cambiar Estado</th>
-                        <th>Acción</th>
+                        <th>Actualizar Estado</th>
+                        <th style="text-align:right;">Detalle</th>
                     </tr>
                 </thead>
                 <tbody>
                     @forelse($pedidos as $ped)
+                        @php
+                            $badgeClass = match($ped->estado_pedido) {
+                                'Entregado', 'Completado' => 'badge-active',
+                                'Cancelado' => 'badge-danger',
+                                'Despachado', 'Procesando', 'Listo para retiro' => 'badge-info',
+                                default => 'badge-warning',
+                            };
+                            $totalUnidades = $ped->detalles->sum('cantidad');
+                        @endphp
                         <tr>
-                            <td><strong>{{ $ped->numero_pedido }}</strong></td>
-                            <td>{{ optional($ped->usuario)->nombre_completo }}</td>
-                            <td>${{ number_format($ped->total, 0, ',', '.') }}</td>
-                            <td>{{ $ped->estado_pago }} ({{ $ped->metodo_pago }})</td>
-                            <td>
-                                <span class="badge badge-warning">{{ $ped->estado_pedido }}</span>
+                            <td style="font-weight:800; color:#151515; white-space:nowrap;">
+                                {{ $ped->numero_pedido ?? 'PED-' . $ped->id_pedido }}
                             </td>
                             <td>
-                                <form action="{{ route('admin.pedidos.estado', $ped->id_pedido) }}" method="POST" style="display:flex; gap:6px;">
+                                <div style="font-weight:700; color:#151515;">{{ optional($ped->usuario)->nombre_completo ?? 'Cliente' }}</div>
+                                <div style="font-size:0.78rem; color:#64748b;">{{ optional($ped->usuario)->correo }}</div>
+                            </td>
+                            <td style="white-space:nowrap; font-size:0.84rem;">
+                                {{ optional($ped->fecha_pedido)->format('d/m/Y H:i') }}
+                            </td>
+                            <td>
+                                <ul style="margin:0; padding-left:16px; font-size:0.83rem; color:#334155;">
+                                    @foreach($ped->detalles as $det)
+                                        <li>
+                                            {{ optional($det->producto)->nombre_producto ?? 'Producto #' . $det->id_producto }}
+                                            <strong>(x{{ $det->cantidad }})</strong>
+                                        </li>
+                                    @endforeach
+                                </ul>
+                            </td>
+                            <td style="text-align:center; font-weight:700;">
+                                {{ $totalUnidades }} uds.
+                            </td>
+                            <td style="white-space:nowrap;">
+                                <div style="font-weight:800; color:#151515;">${{ number_format($ped->total, 0, ',', '.') }}</div>
+                                <div style="font-size:0.75rem; color:#64748b;">{{ $ped->metodo_pago }} ({{ $ped->estado_pago }})</div>
+                            </td>
+                            <td>
+                                <span class="badge {{ $badgeClass }}">
+                                    {{ $ped->estado_pedido === 'Despachado' ? 'Enviado / Despachado' : $ped->estado_pedido }}
+                                </span>
+                            </td>
+                            <td>
+                                <form action="{{ route('admin.pedidos.estado', $ped->id_pedido) }}" method="POST" style="display:flex; gap:6px; align-items:center;">
                                     @csrf
                                     @method('PATCH')
-                                    <select name="estado_pedido" style="padding:4px; font-size:0.85rem; border-radius:4px; border:1px solid #ccc;">
-                                        @foreach(['Pendiente', 'Procesando', 'Despachado', 'Listo para retiro', 'Entregado', 'Completado', 'Cancelado'] as $st)
-                                            <option value="{{ $st }}" {{ $ped->estado_pedido === $st ? 'selected' : '' }}>{{ $st }}</option>
-                                        @endforeach
+                                    <select name="estado_pedido" style="padding:6px 8px; font-size:0.82rem; border-radius:6px; border:1px solid #cbd5e1; background:#fff;">
+                                        <option value="Pendiente" {{ $ped->estado_pedido === 'Pendiente' ? 'selected' : '' }}>Pendiente</option>
+                                        <option value="Procesando" {{ $ped->estado_pedido === 'Procesando' ? 'selected' : '' }}>Procesando</option>
+                                        <option value="Enviado" {{ $ped->estado_pedido === 'Despachado' ? 'selected' : '' }}>Enviado / Despachado</option>
+                                        <option value="Entregado" {{ $ped->estado_pedido === 'Entregado' ? 'selected' : '' }}>Entregado</option>
+                                        <option value="Completado" {{ $ped->estado_pedido === 'Completado' ? 'selected' : '' }}>Completado</option>
+                                        <option value="Cancelado" {{ $ped->estado_pedido === 'Cancelado' ? 'selected' : '' }}>Cancelado</option>
                                     </select>
-                                    <button type="submit" style="background:#151515; color:#e4b353; border:none; padding:4px 8px; border-radius:4px; cursor:pointer; font-size:0.8rem; font-weight:700;">
-                                        OK
+                                    <button type="submit" class="tg-btn-dark" style="padding:6px 10px; font-size:0.8rem;">
+                                        Guardar
                                     </button>
                                 </form>
                             </td>
-                            <td>
-                                <a href="{{ route('admin.pedidos.show', $ped->id_pedido) }}" style="color:#0284c7; text-decoration:none; font-weight:600;">
-                                    <i class="fas fa-eye"></i> Detalle
+                            <td style="text-align:right; white-space:nowrap;">
+                                <a href="{{ route('admin.pedidos.show', $ped->id_pedido) }}"
+                                   class="tg-btn-gold" style="padding:6px 12px; font-size:0.8rem;">
+                                    <i class="fa-solid fa-eye"></i> Ver
                                 </a>
                             </td>
                         </tr>
                     @empty
-                        <tr><td colspan="7" style="text-align:center; padding:20px;">Sin pedidos registrados.</td></tr>
+                        <tr>
+                            <td colspan="9" style="text-align:center; padding:28px; color:#64748b;">
+                                No se encontraron pedidos registrados.
+                            </td>
+                        </tr>
                     @endforelse
                 </tbody>
             </table>
-
-            <div style="margin-top:20px;">
-                {{ $pedidos->links() }}
-            </div>
         </div>
-    </main>
-</body>
-</html>
+
+        <div style="margin-top:18px;">
+            {{ $pedidos->links() }}
+        </div>
+    </div>
+@endsection

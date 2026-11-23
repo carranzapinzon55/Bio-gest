@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Client;
 
 use App\Http\Controllers\Controller;
+use App\Models\MovimientoInventario;
 use App\Models\Pedido;
 use App\Models\PedidoDetalle;
 use App\Models\Producto;
@@ -33,7 +34,10 @@ class CheckoutController extends Controller
     }
 
     /**
-     * Procesar pedido en transacción con validación y descuento de stock.
+     * Procesar pedido del cliente en transacción atómica:
+     * a) Registra el pedido y su detalle con estado inicial 'Pendiente'.
+     * b) Descuenta automáticamente el inventario disponible y registra el movimiento de SALIDA.
+     * c) Disponible de inmediato en el panel del administrador.
      */
     public function procesar(Request $request): RedirectResponse
     {
@@ -43,6 +47,11 @@ class CheckoutController extends Controller
             'ciudad_entrega'    => ['required', 'string', 'max:100'],
             'telefono_contacto' => ['required', 'string', 'max:20'],
             'metodo_pago'       => ['required', 'in:Contraentrega,Transferencia,PSE,Tarjeta'],
+        ], [
+            'direccion_entrega.required' => 'La dirección de entrega es obligatoria.',
+            'ciudad_entrega.required'    => 'La ciudad de entrega es obligatoria.',
+            'telefono_contacto.required' => 'El teléfono de contacto es obligatorio.',
+            'metodo_pago.required'       => 'Selecciona un método de pago válido.',
         ]);
 
         $carrito = session('carrito', []);
@@ -52,7 +61,25 @@ class CheckoutController extends Controller
 
         try {
             $pedido = DB::transaction(function () use ($datos, $carrito) {
-                $subtotal = collect($carrito)->sum(fn ($item) => $item['precio'] * $item['cantidad']);
+                $subtotal = 0;
+                $productosBloqueados = [];
+
+                // Validar existencias reales con bloqueo pesimista antes de insertar
+                foreach ($carrito as $item) {
+                    $producto = Producto::lockForUpdate()->findOrFail($item['id_producto']);
+
+                    if ($producto->estado !== 'Activo') {
+                        throw new \RuntimeException("El producto '{$producto->nombre_producto}' ya no se encuentra disponible.");
+                    }
+
+                    if ($producto->stock < $item['cantidad']) {
+                        throw new \RuntimeException("Stock insuficiente para '{$producto->nombre_producto}'. Disponible: {$producto->stock} uds.");
+                    }
+
+                    $subtotal += ((float) $producto->precio * (int) $item['cantidad']);
+                    $productosBloqueados[$producto->id_producto] = $producto;
+                }
+
                 $costoEnvio = $subtotal >= 122900 ? 0.00 : 10000.00;
                 $total = $subtotal + $costoEnvio;
 
@@ -71,36 +98,63 @@ class CheckoutController extends Controller
                     'fecha_pedido'      => now(),
                 ]);
 
+                $numeroPedido = 'PED-' . (1000 + $nuevoPedido->id_pedido);
                 $nuevoPedido->update([
-                    'numero_pedido' => 'PED-' . (1000 + $nuevoPedido->id_pedido),
+                    'numero_pedido' => $numeroPedido,
                 ]);
 
                 foreach ($carrito as $item) {
-                    $producto = Producto::lockForUpdate()->findOrFail($item['id_producto']);
-
-                    if ($producto->stock < $item['cantidad']) {
-                        throw new \RuntimeException("Stock insuficiente para '{$producto->nombre_producto}'. Stock disponible: {$producto->stock}.");
-                    }
+                    /** @var Producto $producto */
+                    $producto = $productosBloqueados[$item['id_producto']];
+                    $cantidadCompra = (int) $item['cantidad'];
+                    $stockAnterior  = (int) $producto->stock;
 
                     PedidoDetalle::create([
                         'id_pedido'       => $nuevoPedido->id_pedido,
                         'id_producto'     => $producto->id_producto,
-                        'cantidad'        => $item['cantidad'],
+                        'cantidad'        => $cantidadCompra,
                         'precio_unitario' => $producto->precio,
-                        'subtotal'        => $producto->precio * $item['cantidad'],
+                        'subtotal'        => $producto->precio * $cantidadCompra,
                     ]);
 
-                    // Descontar inventario (el trigger trg_auditoria_stock_producto registra la SALIDA)
-                    $producto->decrement('stock', $item['cantidad']);
+                    $conteoMovimientosAntes = MovimientoInventario::where('id_producto', $producto->id_producto)->count();
+
+                    // Descontar inventario disponible
+                    $producto->decrement('stock', $cantidadCompra);
+                    $producto->refresh();
+
+                    $conteoMovimientosDespues = MovimientoInventario::where('id_producto', $producto->id_producto)->count();
+                    $observacionVenta = "Salida por venta en tienda - Pedido {$numeroPedido} (Stock previo: {$stockAnterior}, nuevo: {$producto->stock})";
+
+                    // Si el trigger de MySQL no está instalado en el entorno, lo crea Eloquent directamente;
+                    // si el trigger ya lo insertó, actualiza la observación con el número de pedido.
+                    if ($conteoMovimientosDespues === $conteoMovimientosAntes) {
+                        MovimientoInventario::create([
+                            'id_producto'      => $producto->id_producto,
+                            'tipo_movimiento'  => 'SALIDA',
+                            'cantidad'         => $cantidadCompra,
+                            'observacion'      => $observacionVenta,
+                            'fecha_movimiento' => now(),
+                        ]);
+                    } else {
+                        MovimientoInventario::where('id_producto', $producto->id_producto)
+                            ->orderByDesc('id_movimiento')
+                            ->first()
+                            ?->update(['observacion' => $observacionVenta]);
+                    }
                 }
 
+                // Limpiar carrito en sesión y en base de datos si existiera
                 session()->forget('carrito');
+                if (auth()->user()->carrito) {
+                    auth()->user()->carrito->detalles()->delete();
+                }
 
                 return $nuevoPedido;
             });
 
             return redirect()->route('cliente.pedidos.index')
-                ->with('success', "¡Pedido {$pedido->numero_pedido} confirmado y registrado con éxito!");
+                ->with('success', "¡Pedido {$pedido->numero_pedido} confirmado y registrado con éxito! El inventario ha sido actualizado.");
 
         } catch (\Exception $e) {
             return back()->with('error', $e->getMessage())->withInput();

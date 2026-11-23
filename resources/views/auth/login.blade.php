@@ -28,6 +28,12 @@
                 </div>
             @endif
 
+            @if(request()->query('deactivated') == '1' && !$errors->any())
+                <div style="background:#fee2e2; color:#b91c1c; padding:10px; margin-bottom:15px; border-radius:5px; text-align:center; font-size:0.9rem;">
+                    <p style="margin:2px 0;">Tu cuenta ha sido desactivada por un administrador. Tu sesión fue cerrada de inmediato.</p>
+                </div>
+            @endif
+
             @if($errors->any())
                 <div style="background:#fee2e2; color:#b91c1c; padding:10px; margin-bottom:15px; border-radius:5px; text-align:center; font-size:0.9rem;">
                     @foreach($errors->all() as $error)
