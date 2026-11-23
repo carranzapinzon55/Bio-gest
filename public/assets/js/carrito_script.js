@@ -38,14 +38,14 @@ function renderizarCarrito() {
 
     carrito.forEach((prod, index) => {
         const subtotal = prod.precio * prod.cantidad;
-        const imagenRuta = prod.imagen ? prod.imagen : '../assent/img/Logo.jpeg';
+        const imagenRuta = prod.imagen ? prod.imagen : '/assets/img/Logo.jpeg';
 
         const fila = document.createElement('div');
         fila.classList.add('fila-producto');
 
         fila.innerHTML = `
             <div class="col-prod info-prod">
-                <img src="${imagenRuta}" alt="${prod.nombre}" class="prod-thumb" onerror="this.src='../assent/img/Logo.jpeg';">
+                <img src="${imagenRuta}" alt="${prod.nombre}" class="prod-thumb" onerror="this.src='/assets/img/Logo.jpeg';">
                 <div>
                     <span class="prod-nombre">${prod.nombre}</span>
                     ${prod.presentacion ? `<br><small style="color:#777;">${prod.presentacion}</small>` : ''}
@@ -179,14 +179,14 @@ function renderizarCarrito() {
 
     carrito.forEach((prod, index) => {
         const subtotal = prod.precio * prod.cantidad;
-        const imagenRuta = prod.imagen ? prod.imagen : '../assent/img/Logo.jpeg';
+        const imagenRuta = prod.imagen ? prod.imagen : '/assets/img/Logo.jpeg';
 
         const fila = document.createElement('div');
         fila.classList.add('fila-producto');
 
         fila.innerHTML = `
             <div class="col-prod info-prod" style="display: flex; align-items: center; gap: 15px; padding: 10px 0;">
-                <img src="${imagenRuta}" alt="${prod.nombre}" class="prod-thumb" style="width: 60px; height: 60px; object-fit: cover; border-radius: 6px;" onerror="this.src='../assent/img/Logo.jpeg';">
+                <img src="${imagenRuta}" alt="${prod.nombre}" class="prod-thumb" style="width: 60px; height: 60px; object-fit: cover; border-radius: 6px;" onerror="this.src='/assets/img/Logo.jpeg';">
                 <div>
                     <span class="prod-nombre" style="font-weight: bold; color: #222;">${prod.nombre}</span>
                     ${prod.presentacion ? `<br><small style="color:#777;">${prod.presentacion}</small>` : ''}

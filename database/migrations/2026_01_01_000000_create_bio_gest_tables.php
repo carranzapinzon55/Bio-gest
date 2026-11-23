@@ -3,6 +3,7 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
@@ -78,6 +79,10 @@ return new class extends Migration
             $table->foreign('id_categoria')->references('id_categoria')->on('categoria');
         });
 
+        // Restricciones CHECK para producto: precio > 0 y stock >= 0
+        DB::statement('ALTER TABLE producto ADD CONSTRAINT chk_producto_precio CHECK (precio > 0)');
+        DB::statement('ALTER TABLE producto ADD CONSTRAINT chk_producto_stock CHECK (stock >= 0)');
+
         // 6. Tabla: movimiento_inventario
         Schema::create('movimiento_inventario', function (Blueprint $table) {
             $table->increments('id_movimiento');
@@ -151,6 +156,9 @@ return new class extends Migration
             $table->foreign('id_pedido')->references('id_pedido')->on('pedido')->onDelete('cascade');
             $table->foreign('id_producto')->references('id_producto')->on('producto');
         });
+
+        // Restricción CHECK para pedido_detalle: cantidad > 0
+        DB::statement('ALTER TABLE pedido_detalle ADD CONSTRAINT chk_pedido_detalle_cantidad CHECK (cantidad > 0)');
 
         // 11. Tabla: promocion
         Schema::create('promocion', function (Blueprint $table) {

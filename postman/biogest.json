@@ -1,0 +1,906 @@
+{
+  "info": {
+    "_postman_id": "a8f3b6c1-92e4-4d89-9a25-bio-gest-2026",
+    "name": "BIO-GEST REST API",
+    "description": "Colección completa de endpoints para el núcleo del Backend y API REST de BIO-GEST (Tenebrios Gold). Incluye scripts para gestión de variables de sesión Sanctum, validaciones de esquemas y ejemplos de respuestas (200, 201, 401, 403, 422).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://127.0.0.1:8000/api",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Autenticación",
+      "description": "Endpoints públicos y protegidos para inicio de sesión, registro de clientes, consulta de perfil y cierre de sesión con tokens Laravel Sanctum.",
+      "item": [
+        {
+          "name": "POST /api/login (Administrador / Cliente)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (pm.response.code === 200 && jsonData.data && jsonData.data.token) {",
+                  "    pm.collectionVariables.set(\"token\", jsonData.data.token);",
+                  "    console.log(\"Token Sanctum guardado exitosamente:\", jsonData.data.token);",
+                  "} else {",
+                  "    console.warn(\"No se pudo extraer el token de la respuesta.\");",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"correo\": \"admin@tenebriosgold.com\",\n  \"contrasena\": \"Admin123*\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/login",
+              "host": ["{{base_url}}"],
+              "path": ["login"]
+            },
+            "description": "Inicia sesión con correo y contraseña. Devuelve un Bearer Token Sanctum que se asigna automáticamente a la variable {{token}}."
+          },
+          "response": [
+            {
+              "name": "200 - Login Exitoso",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  { "key": "Accept", "value": "application/json" },
+                  { "key": "Content-Type", "value": "application/json" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"correo\": \"admin@tenebriosgold.com\",\n  \"contrasena\": \"Admin123*\"\n}"
+                },
+                "url": { "raw": "{{base_url}}/login", "host": ["{{base_url}}"], "path": ["login"] }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Inicio de sesión exitoso.\",\n  \"data\": {\n    \"token\": \"1|8vH2zX9qL4mN7pR1tY5wU3eI6oA0sD2fG4hJ8kL1\",\n    \"token_type\": \"Bearer\",\n    \"usuario\": {\n      \"id_usuario\": 1,\n      \"nombre\": \"Administrador\",\n      \"apellido\": \"BIO-GEST\",\n      \"nombre_completo\": \"Administrador BIO-GEST\",\n      \"correo\": \"admin@tenebriosgold.com\",\n      \"telefono\": \"3001234567\",\n      \"id_rol\": 1,\n      \"rol\": \"Administrador\",\n      \"perfil_uso\": \"Proyecto comercial / Gran escala\",\n      \"estado\": \"Activo\"\n    }\n  }\n}"
+            },
+            {
+              "name": "401 - Credenciales Inválidas",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  { "key": "Accept", "value": "application/json" },
+                  { "key": "Content-Type", "value": "application/json" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"correo\": \"admin@tenebriosgold.com\",\n  \"contrasena\": \"ClaveErronea\"\n}"
+                },
+                "url": { "raw": "{{base_url}}/login", "host": ["{{base_url}}"], "path": ["login"] }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": false,\n  \"message\": \"Credenciales inválidas.\"\n}"
+            },
+            {
+              "name": "422 - Error de Validación",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  { "key": "Accept", "value": "application/json" },
+                  { "key": "Content-Type", "value": "application/json" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"correo\": \"no-es-correo\"\n}"
+                },
+                "url": { "raw": "{{base_url}}/login", "host": ["{{base_url}}"], "path": ["login"] }
+              },
+              "status": "Unprocessable Entity",
+              "code": 422,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": false,\n  \"message\": \"Errores de validación.\",\n  \"errors\": {\n    \"correo\": [\"Ingrese un correo electrónico válido.\"],\n    \"contrasena\": [\"La contraseña es obligatoria.\"]\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "POST /api/registro",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Juan Esteban\",\n  \"apellido\": \"Gómez Restrepo\",\n  \"correo\": \"juan.gomez@ejemplo.com\",\n  \"telefono\": \"3158901234\",\n  \"contrasena\": \"Cliente2026*\",\n  \"perfil_uso\": \"Alimentación continua\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/registro",
+              "host": ["{{base_url}}"],
+              "path": ["registro"]
+            },
+            "description": "Registra un nuevo usuario con rol Cliente (id_rol: 2) y devuelve su información con un token de acceso inicial."
+          },
+          "response": [
+            {
+              "name": "201 - Registro Exitoso",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  { "key": "Accept", "value": "application/json" },
+                  { "key": "Content-Type", "value": "application/json" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"nombre\": \"Juan Esteban\",\n  \"apellido\": \"Gómez Restrepo\",\n  \"correo\": \"juan.gomez@ejemplo.com\",\n  \"telefono\": \"3158901234\",\n  \"contrasena\": \"Cliente2026*\",\n  \"perfil_uso\": \"Alimentación continua\"\n}"
+                },
+                "url": { "raw": "{{base_url}}/registro", "host": ["{{base_url}}"], "path": ["registro"] }
+              },
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Usuario registrado exitosamente.\",\n  \"data\": {\n    \"token\": \"2|h9f8d7s6a5g4f3d2s1a0\",\n    \"token_type\": \"Bearer\",\n    \"usuario\": {\n      \"id_usuario\": 3,\n      \"nombre\": \"Juan Esteban\",\n      \"apellido\": \"Gómez Restrepo\",\n      \"nombre_completo\": \"Juan Esteban Gómez Restrepo\",\n      \"correo\": \"juan.gomez@ejemplo.com\",\n      \"telefono\": \"3158901234\",\n      \"id_rol\": 2,\n      \"rol\": \"Cliente\",\n      \"perfil_uso\": \"Alimentación continua\",\n      \"estado\": \"Activo\"\n    }\n  }\n}"
+            },
+            {
+              "name": "422 - Correo Ya Registrado",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  { "key": "Accept", "value": "application/json" },
+                  { "key": "Content-Type", "value": "application/json" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"nombre\": \"Duplicado\",\n  \"apellido\": \"Prueba\",\n  \"correo\": \"cliente@tenebriosgold.com\",\n  \"contrasena\": \"Cliente123*\"\n}"
+                },
+                "url": { "raw": "{{base_url}}/registro", "host": ["{{base_url}}"], "path": ["registro"] }
+              },
+              "status": "Unprocessable Entity",
+              "code": 422,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": false,\n  \"message\": \"Errores de validación.\",\n  \"errors\": {\n    \"correo\": [\"Este correo ya se encuentra registrado.\"]\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "GET /api/perfil",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/perfil",
+              "host": ["{{base_url}}"],
+              "path": ["perfil"]
+            },
+            "description": "Obtiene los detalles del usuario autenticado actual, incluyendo su rol y lista de direcciones registradas."
+          },
+          "response": [
+            {
+              "name": "200 - Perfil Obtenido",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  { "key": "Accept", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{token}}" }
+                ],
+                "url": { "raw": "{{base_url}}/perfil", "host": ["{{base_url}}"], "path": ["perfil"] }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"id_usuario\": 2,\n    \"nombre\": \"Cliente\",\n    \"apellido\": \"Tenebrios Gold\",\n    \"nombre_completo\": \"Cliente Tenebrios Gold\",\n    \"correo\": \"cliente@tenebriosgold.com\",\n    \"telefono\": \"3109876543\",\n    \"id_rol\": 2,\n    \"rol\": \"Cliente\",\n    \"perfil_uso\": \"Alimentación continua\",\n    \"estado\": \"Activo\",\n    \"fecha_registro\": \"2026-11-21 23:52:33\",\n    \"direcciones\": [\n      {\n        \"id_direccion\": 2,\n        \"id_usuario\": 2,\n        \"nombre_ubicacion\": \"Casa\",\n        \"direccion\": \"Carrera 15 # 45-20, Chapinero\",\n        \"ciudad\": \"Bogotá\",\n        \"departamento\": \"Cundinamarca\",\n        \"codigo_postal\": \"110011\",\n        \"es_principal\": true\n      }\n    ]\n  }\n}"
+            },
+            {
+              "name": "401 - No Autenticado",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  { "key": "Accept", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer invalid_token" }
+                ],
+                "url": { "raw": "{{base_url}}/perfil", "host": ["{{base_url}}"], "path": ["perfil"] }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"message\": \"Unauthenticated.\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "POST /api/logout",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/logout",
+              "host": ["{{base_url}}"],
+              "path": ["logout"]
+            },
+            "description": "Revoca el token de acceso personal utilizado para autenticar la petición actual."
+          },
+          "response": [
+            {
+              "name": "200 - Sesión Cerrada",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  { "key": "Accept", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{token}}" }
+                ],
+                "url": { "raw": "{{base_url}}/logout", "host": ["{{base_url}}"], "path": ["logout"] }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Sesión cerrada exitosamente.\"\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "2. Productos",
+      "description": "Catálogo público de productos y administración completa (CRUD) protegida por rol Administrador con restricciones CHECK.",
+      "item": [
+        {
+          "name": "GET /api/productos",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/productos",
+              "host": ["{{base_url}}"],
+              "path": ["productos"]
+            },
+            "description": "Consulta el catálogo público de productos activos, incluyendo la categoría y el estado de stock dinámico calculado con la función SQL fn_estado_stock."
+          },
+          "response": [
+            {
+              "name": "200 - Lista de Productos",
+              "originalRequest": {
+                "method": "GET",
+                "header": [{ "key": "Accept", "value": "application/json" }],
+                "url": { "raw": "{{base_url}}/productos", "host": ["{{base_url}}"], "path": ["productos"] }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"total\": 5,\n  \"data\": [\n    {\n      \"id_producto\": 1,\n      \"id_categoria\": 1,\n      \"nombre_producto\": \"Paquete Inicial – 500 larvas\",\n      \"descripcion\": \"Ideal para probar o si tienes una mascota. Las que no uses las guardas en nevera, hibernan hasta 2 meses y medio.\",\n      \"precio\": \"34900.00\",\n      \"stock\": 50,\n      \"stock_minimo\": 10,\n      \"imagen\": \"paquete_500.jpg\",\n      \"estado\": \"Activo\",\n      \"categoria\": {\n        \"id_categoria\": 1,\n        \"nombre_categoria\": \"Paquetes de Larvas\"\n      },\n      \"estado_stock\": \"DISPONIBLE\"\n    },\n    {\n      \"id_producto\": 2,\n      \"id_categoria\": 1,\n      \"nombre_producto\": \"Paquete Básico – 1.000 larvas\",\n      \"descripcion\": \"Incluye guía en PDF con todo el proceso de cría.\",\n      \"precio\": \"59900.00\",\n      \"stock\": 45,\n      \"stock_minimo\": 10,\n      \"imagen\": \"paquete_1000.jpg\",\n      \"estado\": \"Activo\",\n      \"categoria\": {\n        \"id_categoria\": 1,\n        \"nombre_categoria\": \"Paquetes de Larvas\"\n      },\n      \"estado_stock\": \"DISPONIBLE\"\n    }\n  ]\n}"
+            }
+          ]
+        },
+        {
+          "name": "GET /api/productos/{id}",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/productos/1",
+              "host": ["{{base_url}}"],
+              "path": ["productos", "1"]
+            },
+            "description": "Obtiene la ficha detallada de un producto por su id_producto, incluyendo su estado_stock computado con la función SQL."
+          },
+          "response": [
+            {
+              "name": "200 - Detalle de Producto",
+              "originalRequest": {
+                "method": "GET",
+                "header": [{ "key": "Accept", "value": "application/json" }],
+                "url": { "raw": "{{base_url}}/productos/1", "host": ["{{base_url}}"], "path": ["productos", "1"] }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"id_producto\": 1,\n    \"id_categoria\": 1,\n    \"nombre_producto\": \"Paquete Inicial – 500 larvas\",\n    \"descripcion\": \"Ideal para probar o si tienes una mascota.\",\n    \"precio\": \"34900.00\",\n    \"stock\": 50,\n    \"stock_minimo\": 10,\n    \"imagen\": \"paquete_500.jpg\",\n    \"estado\": \"Activo\",\n    \"categoria\": {\n      \"id_categoria\": 1,\n      \"nombre_categoria\": \"Paquetes de Larvas\",\n      \"descripcion\": \"Larvas vivas de Tenebrio Molitor de alta calidad con garantía de llegada viva\"\n    },\n    \"estado_stock\": \"DISPONIBLE\"\n  }\n}"
+            },
+            {
+              "name": "404 - Producto No Encontrado",
+              "originalRequest": {
+                "method": "GET",
+                "header": [{ "key": "Accept", "value": "application/json" }],
+                "url": { "raw": "{{base_url}}/productos/999", "host": ["{{base_url}}"], "path": ["productos", "999"] }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": false,\n  \"message\": \"Producto no encontrado.\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "POST /api/productos (Admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id_categoria\": 1,\n  \"nombre_producto\": \"Combo Pie de Cría Premium – 3,000 larvas\",\n  \"descripcion\": \"Excelente equilibrio para inicio intensivo de criadero, incluye sustrato enriquecido.\",\n  \"beneficios\": \"Alta prolificidad y metamorfosis garantizada.\",\n  \"instrucciones_conservacion\": \"Mantener en bandejas a temperatura de 24°C a 27°C.\",\n  \"especies_recomendadas\": \"Criaderos comerciales, aves fincas, petauros.\",\n  \"politica_reembolso\": \"Garantía de reposición ante mortalidad demostrada.\",\n  \"precio\": 189900.00,\n  \"stock\": 20,\n  \"stock_minimo\": 5,\n  \"imagen\": \"combo_3000.jpg\",\n  \"estado\": \"Activo\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/productos",
+              "host": ["{{base_url}}"],
+              "path": ["productos"]
+            },
+            "description": "Crea un producto en MySQL validando las restricciones CHECK (precio > 0 y stock >= 0). Requiere rol Administrador."
+          },
+          "response": [
+            {
+              "name": "201 - Producto Creado Exitosamente",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  { "key": "Accept", "value": "application/json" },
+                  { "key": "Content-Type", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{token}}" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"id_categoria\": 1,\n  \"nombre_producto\": \"Combo Pie de Cría Premium\",\n  \"precio\": 189900.00,\n  \"stock\": 20\n}"
+                },
+                "url": { "raw": "{{base_url}}/productos", "host": ["{{base_url}}"], "path": ["productos"] }
+              },
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Producto creado exitosamente.\",\n  \"data\": {\n    \"id_producto\": 6,\n    \"id_categoria\": 1,\n    \"nombre_producto\": \"Combo Pie de Cría Premium\",\n    \"precio\": \"189900.00\",\n    \"stock\": 20,\n    \"estado\": \"Activo\",\n    \"stock_minimo\": 10,\n    \"categoria\": {\n      \"id_categoria\": 1,\n      \"nombre_categoria\": \"Paquetes de Larvas\"\n    }\n  }\n}"
+            },
+            {
+              "name": "403 - Acceso Denegado (No es Admin)",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  { "key": "Accept", "value": "application/json" },
+                  { "key": "Content-Type", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{token_cliente}}" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"id_categoria\": 1,\n  \"nombre_producto\": \"Intento no autorizado\",\n  \"precio\": 10000,\n  \"stock\": 5\n}"
+                },
+                "url": { "raw": "{{base_url}}/productos", "host": ["{{base_url}}"], "path": ["productos"] }
+              },
+              "status": "Forbidden",
+              "code": 403,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": false,\n  \"message\": \"Acceso denegado. Se requiere uno de los siguientes roles: Administrador.\"\n}"
+            },
+            {
+              "name": "422 - Violación de Restricción CHECK (Precio <= 0 o Stock < 0)",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  { "key": "Accept", "value": "application/json" },
+                  { "key": "Content-Type", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{token}}" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"id_categoria\": 1,\n  \"nombre_producto\": \"Producto con Precio Invalido\",\n  \"precio\": 0,\n  \"stock\": -5\n}"
+                },
+                "url": { "raw": "{{base_url}}/productos", "host": ["{{base_url}}"], "path": ["productos"] }
+              },
+              "status": "Unprocessable Entity",
+              "code": 422,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": false,\n  \"message\": \"Errores de validación.\",\n  \"errors\": {\n    \"precio\": [\"El precio debe ser estrictamente mayor a 0.\"],\n    \"stock\": [\"El stock debe ser mayor o igual a 0.\"]\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "PUT /api/productos/{id} (Admin)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"precio\": 36900.00,\n  \"stock\": 65,\n  \"descripcion\": \"Edición con sustrato vitamínico reforzado.\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/productos/1",
+              "host": ["{{base_url}}"],
+              "path": ["productos", "1"]
+            },
+            "description": "Actualiza el producto. Si se modifica el stock, el trigger de MySQL trg_auditoria_stock_producto registra automáticamente la ENTRADA o SALIDA en movimiento_inventario."
+          },
+          "response": [
+            {
+              "name": "200 - Producto Actualizado",
+              "originalRequest": {
+                "method": "PUT",
+                "header": [
+                  { "key": "Accept", "value": "application/json" },
+                  { "key": "Content-Type", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{token}}" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"precio\": 36900.00,\n  \"stock\": 65\n}"
+                },
+                "url": { "raw": "{{base_url}}/productos/1", "host": ["{{base_url}}"], "path": ["productos", "1"] }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Producto actualizado exitosamente.\",\n  \"data\": {\n    \"id_producto\": 1,\n    \"id_categoria\": 1,\n    \"nombre_producto\": \"Paquete Inicial – 500 larvas\",\n    \"precio\": \"36900.00\",\n    \"stock\": 65,\n    \"estado\": \"Activo\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "DELETE /api/productos/{id} (Desactivación Lógica)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/productos/1",
+              "host": ["{{base_url}}"],
+              "path": ["productos", "1"]
+            },
+            "description": "Realiza la desactivación lógica del producto (estado = 'Inactivo') preservando la integridad referencial en pedidos y movimientos."
+          },
+          "response": [
+            {
+              "name": "200 - Desactivación Lógica Exitosa",
+              "originalRequest": {
+                "method": "DELETE",
+                "header": [
+                  { "key": "Accept", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{token}}" }
+                ],
+                "url": { "raw": "{{base_url}}/productos/1", "host": ["{{base_url}}"], "path": ["productos", "1"] }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Producto 'Paquete Inicial – 500 larvas' desactivado exitosamente (baja lógica).\",\n  \"data\": {\n    \"id_producto\": 1,\n    \"estado\": \"Inactivo\"\n  }\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "3. Pedidos",
+      "description": "Gestión de pedidos con transacciones atómicas, validación y descuento concurrente de stock, actualización administrativa y cancelación con restauración de inventario.",
+      "item": [
+        {
+          "name": "GET /api/pedidos",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/pedidos",
+              "host": ["{{base_url}}"],
+              "path": ["pedidos"]
+            },
+            "description": "Si el usuario es Administrador retorna todos los pedidos del sistema. Si es Cliente retorna únicamente los pedidos propios."
+          },
+          "response": [
+            {
+              "name": "200 - Listado de Pedidos",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  { "key": "Accept", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{token}}" }
+                ],
+                "url": { "raw": "{{base_url}}/pedidos", "host": ["{{base_url}}"], "path": ["pedidos"] }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"total\": 2,\n  \"data\": [\n    {\n      \"id_pedido\": 1,\n      \"numero_pedido\": \"PED-1001\",\n      \"id_usuario\": 2,\n      \"subtotal\": \"122900.00\",\n      \"costo_envio\": \"0.00\",\n      \"total\": \"122900.00\",\n      \"metodo_pago\": \"Contraentrega\",\n      \"estado_pago\": \"Aprobado\",\n      \"estado_pedido\": \"Completado\",\n      \"detalles\": [\n        {\n          \"id_detalle\": 1,\n          \"id_pedido\": 1,\n          \"id_producto\": 3,\n          \"cantidad\": 1,\n          \"precio_unitario\": \"122900.00\",\n          \"subtotal\": \"122900.00\",\n          \"producto\": {\n            \"id_producto\": 3,\n            \"nombre_producto\": \"Paquete Recomendado – 2.000 larvas\"\n          }\n        }\n      ]\n    }\n  ]\n}"
+            }
+          ]
+        },
+        {
+          "name": "GET /api/pedidos/{id}",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/pedidos/1",
+              "host": ["{{base_url}}"],
+              "path": ["pedidos", "1"]
+            },
+            "description": "Consulta el detalle de un pedido específico. Valida que el cliente solo pueda consultar sus propios pedidos."
+          },
+          "response": [
+            {
+              "name": "200 - Detalle de Pedido Encontrado",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  { "key": "Accept", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{token}}" }
+                ],
+                "url": { "raw": "{{base_url}}/pedidos/1", "host": ["{{base_url}}"], "path": ["pedidos", "1"] }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"id_pedido\": 1,\n    \"numero_pedido\": \"PED-1001\",\n    \"id_usuario\": 2,\n    \"subtotal\": \"122900.00\",\n    \"costo_envio\": \"0.00\",\n    \"total\": \"122900.00\",\n    \"metodo_pago\": \"Contraentrega\",\n    \"estado_pago\": \"Aprobado\",\n    \"estado_pedido\": \"Completado\",\n    \"direccion_entrega\": \"Carrera 15 # 45-20, Chapinero\",\n    \"ciudad_entrega\": \"Bogotá\",\n    \"telefono_contacto\": \"3109876543\",\n    \"detalles\": [\n      {\n        \"id_detalle\": 1,\n        \"id_pedido\": 1,\n        \"id_producto\": 3,\n        \"cantidad\": 1,\n        \"precio_unitario\": \"122900.00\",\n        \"subtotal\": \"122900.00\"\n      }\n    ]\n  }\n}"
+            },
+            {
+              "name": "403 - Acceso Denegado (Pedido Ajeno)",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  { "key": "Accept", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{token}}" }
+                ],
+                "url": { "raw": "{{base_url}}/pedidos/99", "host": ["{{base_url}}"], "path": ["pedidos", "99"] }
+              },
+              "status": "Forbidden",
+              "code": 403,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": false,\n  \"message\": \"Acceso denegado. No tienes permisos para ver este pedido.\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "POST /api/pedidos (Transacción y Descuento de Stock)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id_direccion\": 2,\n  \"metodo_pago\": \"Contraentrega\",\n  \"direccion_entrega\": \"Carrera 15 # 45-20, Chapinero\",\n  \"ciudad_entrega\": \"Bogotá\",\n  \"telefono_contacto\": \"3109876543\",\n  \"items\": [\n    {\n      \"id_producto\": 1,\n      \"cantidad\": 2\n    },\n    {\n      \"id_producto\": 2,\n      \"cantidad\": 1\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/pedidos",
+              "host": ["{{base_url}}"],
+              "path": ["pedidos"]
+            },
+            "description": "Genera un pedido en una transacción atómica (DB::transaction). Bloquea productos para concurrencia (lockForUpdate), descuenta stock y el trigger registra la SALIDA en movimiento_inventario."
+          },
+          "response": [
+            {
+              "name": "201 - Pedido Creado y Stock Descontado",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  { "key": "Accept", "value": "application/json" },
+                  { "key": "Content-Type", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{token}}" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"metodo_pago\": \"Contraentrega\",\n  \"items\": [\n    { \"id_producto\": 1, \"cantidad\": 2 },\n    { \"id_producto\": 2, \"cantidad\": 1 }\n  ]\n}"
+                },
+                "url": { "raw": "{{base_url}}/pedidos", "host": ["{{base_url}}"], "path": ["pedidos"] }
+              },
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Pedido generado exitosamente y stock descontado.\",\n  \"data\": {\n    \"numero_pedido\": \"PED-20261122-A1B2\",\n    \"id_usuario\": 2,\n    \"subtotal\": 129700,\n    \"costo_envio\": 0,\n    \"total\": 129700,\n    \"estado_pedido\": \"Pendiente\",\n    \"id_pedido\": 3,\n    \"detalles\": [\n      {\n        \"id_detalle\": 4,\n        \"id_pedido\": 3,\n        \"id_producto\": 1,\n        \"cantidad\": 2,\n        \"precio_unitario\": \"34900.00\",\n        \"subtotal\": 69800\n      },\n      {\n        \"id_detalle\": 5,\n        \"id_pedido\": 3,\n        \"id_producto\": 2,\n        \"cantidad\": 1,\n        \"precio_unitario\": \"59900.00\",\n        \"subtotal\": 59900\n      }\n    ]\n  }\n}"
+            },
+            {
+              "name": "422 - Stock Insuficiente",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  { "key": "Accept", "value": "application/json" },
+                  { "key": "Content-Type", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{token}}" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"items\": [\n    { \"id_producto\": 5, \"cantidad\": 999 }\n  ]\n}"
+                },
+                "url": { "raw": "{{base_url}}/pedidos", "host": ["{{base_url}}"], "path": ["pedidos"] }
+              },
+              "status": "Unprocessable Entity",
+              "code": 422,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": false,\n  \"message\": \"Stock insuficiente para el producto 'Paquete Industrial – 10.000 larvas'. Stock disponible: 15, cantidad solicitada: 999.\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "PUT /api/pedidos/{id} (Admin Actualiza Estado)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"estado_pedido\": \"Despachado\",\n  \"estado_pago\": \"Aprobado\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/pedidos/2",
+              "host": ["{{base_url}}"],
+              "path": ["pedidos", "2"]
+            },
+            "description": "Permite al Administrador actualizar el estado logístico del pedido. Si el pedido cambia a 'Cancelado', reingresa de forma automática el stock al inventario."
+          },
+          "response": [
+            {
+              "name": "200 - Estado Actualizado Correctamente",
+              "originalRequest": {
+                "method": "PUT",
+                "header": [
+                  { "key": "Accept", "value": "application/json" },
+                  { "key": "Content-Type", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{token}}" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"estado_pedido\": \"Despachado\",\n  \"estado_pago\": \"Aprobado\"\n}"
+                },
+                "url": { "raw": "{{base_url}}/pedidos/2", "host": ["{{base_url}}"], "path": ["pedidos", "2"] }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Estado del pedido actualizado a 'Despachado' correctamente.\",\n  \"data\": {\n    \"id_pedido\": 2,\n    \"numero_pedido\": \"PED-1002\",\n    \"estado_pedido\": \"Despachado\",\n    \"estado_pago\": \"Aprobado\"\n  }\n}"
+            },
+            {
+              "name": "403 - No Autorizado (Requiere Administrador)",
+              "originalRequest": {
+                "method": "PUT",
+                "header": [
+                  { "key": "Accept", "value": "application/json" },
+                  { "key": "Content-Type", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{token_cliente}}" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"estado_pedido\": \"Entregado\"\n}"
+                },
+                "url": { "raw": "{{base_url}}/pedidos/2", "host": ["{{base_url}}"], "path": ["pedidos", "2"] }
+              },
+              "status": "Forbidden",
+              "code": 403,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": false,\n  \"message\": \"Acceso denegado. Solo un administrador puede actualizar el estado de los pedidos.\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "DELETE /api/pedidos/{id} (Cancela y Restaura Stock)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/pedidos/2",
+              "host": ["{{base_url}}"],
+              "path": ["pedidos", "2"]
+            },
+            "description": "Cancela el pedido y restaura inmediatamente el inventario de todos los productos involucrados en la orden."
+          },
+          "response": [
+            {
+              "name": "200 - Pedido Cancelado y Stock Restaurado",
+              "originalRequest": {
+                "method": "DELETE",
+                "header": [
+                  { "key": "Accept", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{token}}" }
+                ],
+                "url": { "raw": "{{base_url}}/pedidos/2", "host": ["{{base_url}}"], "path": ["pedidos", "2"] }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Pedido cancelado y stock de productos restaurado exitosamente.\",\n  \"data\": {\n    \"id_pedido\": 2,\n    \"numero_pedido\": \"PED-1002\",\n    \"estado_pedido\": \"Cancelado\"\n  }\n}"
+            },
+            {
+              "name": "400 - Pedido Ya Cancelado Previamente",
+              "originalRequest": {
+                "method": "DELETE",
+                "header": [
+                  { "key": "Accept", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{token}}" }
+                ],
+                "url": { "raw": "{{base_url}}/pedidos/2", "host": ["{{base_url}}"], "path": ["pedidos", "2"] }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": "json",
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": false,\n  \"message\": \"El pedido ya se encuentra cancelado.\"\n}"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

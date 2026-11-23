@@ -37,11 +37,11 @@ async function cargarDetalleProducto() {
             const precioFormateado = precioNum.toLocaleString('es-CO');
             const descripcion = productoActual.descripcion || 'Sin descripción disponible para este producto.';
             
-            let imagen = '../assent/img/Logo.jpeg';
+            let imagen = '/assets/img/Logo.jpeg';
             if (productoActual.imagen) {
-                imagen = productoActual.imagen.startsWith('http') || productoActual.imagen.startsWith('../') 
+                imagen = productoActual.imagen.startsWith('http') || productoActual.imagen.startsWith('/') 
                     ? productoActual.imagen 
-                    : `../assent/img/${productoActual.imagen}`;
+                    : `/assets/img/${productoActual.imagen}`;
             }
 
             // Actualizar elementos de la vista con selectores flexibles
@@ -60,7 +60,7 @@ async function cargarDetalleProducto() {
             
             if (elemImg) {
                 elemImg.src = imagen;
-                elemImg.onerror = () => { elemImg.src = '../assent/img/Logo.jpeg'; };
+                elemImg.onerror = () => { elemImg.src = '/assets/img/Logo.jpeg'; };
             }
         } else {
             const elemTitulo = document.getElementById('titulo-producto') || document.getElementById('nombre-producto');
@@ -126,11 +126,11 @@ function agregarDesdeDetalle(redirigirACarrito = false) {
     const nombreProd = productoActual.nombre_producto || productoActual.nombre || 'Producto';
     const precioProd = Number(productoActual.precio || 0);
     
-    let imagenRuta = '../assent/img/Logo.jpeg';
+    let imagenRuta = '/assets/img/Logo.jpeg';
     if (productoActual.imagen) {
-        imagenRuta = productoActual.imagen.startsWith('http') || productoActual.imagen.startsWith('../') 
+        imagenRuta = productoActual.imagen.startsWith('http') || productoActual.imagen.startsWith('/') 
             ? productoActual.imagen 
-            : `../assent/img/${productoActual.imagen}`;
+            : `/assets/img/${productoActual.imagen}`;
     }
 
     guardarEnLocalStorage({
@@ -284,11 +284,11 @@ async function cargarDetalleProducto() {
         const precioFormateado = precioNum.toLocaleString('es-CO');
         const descripcion = productoActual.descripcion || 'Sin descripción disponible para este producto.';
         
-        let imagen = '../assent/img/Logo.jpeg';
+        let imagen = '/assets/img/Logo.jpeg';
         if (productoActual.imagen) {
-            imagen = productoActual.imagen.startsWith('http') || productoActual.imagen.startsWith('../') 
+            imagen = productoActual.imagen.startsWith('http') || productoActual.imagen.startsWith('/') 
                 ? productoActual.imagen 
-                : `../assent/img/${productoActual.imagen}`;
+                : `/assets/img/${productoActual.imagen}`;
         }
 
         // Actualizar elementos de la vista con selectores flexibles
@@ -307,7 +307,7 @@ async function cargarDetalleProducto() {
         
         if (elemImg) {
             elemImg.src = imagen;
-            elemImg.onerror = () => { elemImg.src = '../assent/img/Logo.jpeg'; };
+            elemImg.onerror = () => { elemImg.src = '/assets/img/Logo.jpeg'; };
         }
     } else {
         const elemTitulo = document.getElementById('titulo-producto') || document.getElementById('nombre-producto');
@@ -360,11 +360,11 @@ function agregarDesdeDetalle(redirigirACarrito = false) {
     const nombreProd = productoActual.nombre_producto || productoActual.nombre || 'Producto';
     const precioProd = Number(productoActual.precio || 0);
     
-    let imagenRuta = '../assent/img/Logo.jpeg';
+    let imagenRuta = '/assets/img/Logo.jpeg';
     if (productoActual.imagen) {
-        imagenRuta = productoActual.imagen.startsWith('http') || productoActual.imagen.startsWith('../') 
+        imagenRuta = productoActual.imagen.startsWith('http') || productoActual.imagen.startsWith('/') 
             ? productoActual.imagen 
-            : `../assent/img/${productoActual.imagen}`;
+            : `/assets/img/${productoActual.imagen}`;
     }
 
     guardarEnLocalStorage({
