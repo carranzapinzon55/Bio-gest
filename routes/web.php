@@ -100,6 +100,7 @@ Route::middleware(['auth'])->group(function () {
 */
 Route::middleware(['auth', 'role:Administrador'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/inicio', [DashboardController::class, 'index'])->name('inicio');
+    Route::get('/panel-data', [DashboardController::class, 'data'])->name('panel.data');
 
     // Gestión de Usuarios (Conectado con Base de Datos MySQL)
     Route::get('/usuarios', [UsuarioAdminController::class, 'index'])->name('usuarios.index');

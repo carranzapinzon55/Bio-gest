@@ -72,7 +72,7 @@
                         <label for="telefono">Teléfono / Celular</label>
                         <div class="input-campo">
                             <i class="fa-solid fa-phone"></i>
-                            <input type="tel" id="telefono" name="telefono" value="{{ old('telefono') }}" placeholder="Ej: 3001234567">
+                            <input type="tel" id="telefono" name="telefono" value="{{ old('telefono') }}" placeholder="Ej: 3001234567" inputmode="numeric" maxlength="10" autocomplete="tel" pattern="[0-9]{1,10}">
                         </div>
                     </div>
 
@@ -81,12 +81,13 @@
                         <label for="perfil_uso">Perfil de uso / Destino *</label>
                         <div class="input-campo">
                             <i class="fa-solid fa-tag"></i>
-                            <select id="perfil_uso" name="perfil_uso" required style="width:100%; border:none; outline:none; background:transparent; padding:8px;">
+                            <select id="perfil_uso" name="perfil_uso" required>
                                 <option value="Alimentación continua" {{ old('perfil_uso') === 'Alimentación continua' ? 'selected' : '' }}>Alimentación continua</option>
                                 <option value="Inicio de criadero" {{ old('perfil_uso') === 'Inicio de criadero' ? 'selected' : '' }}>Inicio de criadero</option>
                                 <option value="Proyecto comercial / Gran escala" {{ old('perfil_uso') === 'Proyecto comercial / Gran escala' ? 'selected' : '' }}>Proyecto comercial / Gran escala</option>
                                 <option value="Mascota única" {{ old('perfil_uso') === 'Mascota única' ? 'selected' : '' }}>Mascota única</option>
                             </select>
+                            <i class="fa-solid fa-chevron-down select-arrow" aria-hidden="true"></i>
                         </div>
                     </div>
 
@@ -123,5 +124,19 @@
             </div>
         </div>
     </div>
+    <script>
+        const telefono = document.getElementById('telefono');
+        telefono.addEventListener('input', () => {
+            telefono.value = telefono.value.replace(/\D/g, '').slice(0, 10);
+        });
+        telefono.addEventListener('paste', event => {
+            event.preventDefault();
+            const pastedDigits = event.clipboardData.getData('text').replace(/\D/g, '');
+            const start = telefono.selectionStart;
+            const end = telefono.selectionEnd;
+            const available = 10 - (telefono.value.length - (end - start));
+            telefono.setRangeText(pastedDigits.slice(0, Math.max(0, available)), start, end, 'end');
+        });
+    </script>
 </body>
 </html>

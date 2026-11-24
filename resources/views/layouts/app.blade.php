@@ -519,36 +519,46 @@
         </main>
 
         <footer class="main-footer">
-            <div class="footer-col brand-col">
-                <div class="placeholder-box small-square footer-logo-placeholder">
-                    <img src="{{ asset('assets/img/Logo.jpeg') }}" alt="Logo Tenebrios Gold" class="footer-logo">
+            <div class="footer-top">
+                <div class="footer-col brand-col">
+                    <div class="footer-logo-placeholder">
+                        <img src="{{ asset('assets/img/Logo.jpeg') }}" alt="Logo Tenebrios Gold" class="footer-logo">
+                    </div>
+                    <h4 class="footer-brand">TENEBRIOS <span>GOLD</span></h4>
+                    <p>Alimento vivo y pie de cr&iacute;a con garant&iacute;a de llegada viva.</p>
                 </div>
-                <div>
-                    <h4>TENEBRIOS GOLD</h4>
-                    <p>Alimento vivo y pie de cría con garantía de llegada viva</p>
+                <div class="footer-col info-col">
+                    <h4>Informaci&oacute;n</h4>
+                    <ul>
+                        <li><a href="{{ route('nosotros') }}"><i class="fas fa-chevron-right"></i> &iquest;Qui&eacute;nes somos?</a></li>
+                        <li><a href="{{ route('envios') }}"><i class="fas fa-chevron-right"></i> Env&iacute;os y reembolso por mortalidad</a></li>
+                        <li><a href="{{ route('faq') }}"><i class="fas fa-chevron-right"></i> Preguntas frecuentes</a></li>
+                        <li><a href="{{ route('contacto.index') }}"><i class="fas fa-chevron-right"></i> Contacto</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col social-col">
+                    <h4>S&iacute;guenos</h4>
+                    <p>Novedades, cuidados y promociones en nuestras redes.</p>
+                    <div class="social-icons">
+                        <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                        <a href="#" aria-label="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+                    </div>
                 </div>
             </div>
-            <div class="footer-col info-col">
-                <h4>Información</h4>
-                <ul>
-                    <li><a href="{{ route('nosotros') }}">¿Quiénes somos?</a></li>
-                    <li><a href="{{ route('envios') }}">Políticas de envío y reembolso por mortalidad</a></li>
-                    <li><a href="{{ route('faq') }}">Preguntas Frecuentes (Cuidados y Nevera)</a></li>
-                    <li><a href="{{ route('contacto.index') }}">Contacto</a></li>
-                </ul>
-            </div>
-            <div class="footer-col social-col">
-                <h4>Síguenos</h4>
-                <div class="social-icons">
-                    <i class="fab fa-facebook"></i>
-                    <i class="fab fa-instagram"></i>
-                    <i class="fab fa-whatsapp"></i>
-                </div>
+            <div class="footer-bottom">
+                <p>&copy; {{ date('Y') }} Tenebrios Gold. Todos los derechos reservados.</p>
             </div>
         </footer>
     @endif
 
     @stack('scripts')
+
+    <script>
+        window.addEventListener('storage', event => {
+            if (event.key === 'biogest_product_catalog_sync') window.location.reload();
+        });
+    </script>
 
     @auth
     <script>

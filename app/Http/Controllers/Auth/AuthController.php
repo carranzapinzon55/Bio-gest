@@ -57,7 +57,7 @@ class AuthController extends Controller
             'nombre'     => ['required', 'string', 'max:100'],
             'apellido'   => ['required', 'string', 'max:100'],
             'correo'     => ['required', 'email', 'max:150', 'unique:usuario,correo'],
-            'telefono'   => ['nullable', 'string', 'max:20'],
+            'telefono'   => ['nullable', 'string', 'max:10', 'regex:/^[0-9]{1,10}$/'],
             'perfil_uso' => ['required', 'in:Inicio de criadero,Alimentación continua,Proyecto comercial / Gran escala,Mascota única'],
             'contrasena' => ['required', 'string', 'min:6', 'confirmed'],
         ]);

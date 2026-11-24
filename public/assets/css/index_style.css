@@ -364,51 +364,102 @@ a {
 }
 .news-form button:hover { background-color: var(--primary-gold-hover); }
 
-/* FOOTER */
-.main-footer {
-    background-color: var(--card-bg);
-    display: flex;
-    justify-content: space-between;
-    padding: 40px 5%;
-    color: var(--text-dark);
+/* FOOTER (selectores "footer.main-footer" para ganar a los CSS de cada página) */
+footer.main-footer {
+    display: block;
+    background: linear-gradient(180deg, #0b0b0b 0%, #000 100%);
+    color: #d6d6d6;
+    padding: 0;
+    margin-top: 0;
+    border-top: 3px solid var(--primary-gold);
 }
-.brand-col {
-    display: flex;
-    align-items: center;
-    gap: 15px;
+footer.main-footer .footer-top {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 50px 5% 35px;
+    display: grid;
+    grid-template-columns: 1.3fr 1fr 1fr;
+    gap: 40px;
 }
-.brand-col h4 {
-    color: var(--dark-bg);
-    margin-bottom: 5px;
+footer.main-footer .footer-col { padding: 0; }
+footer.main-footer h4 {
+    color: #fff;
+    font-size: 1.05rem;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 18px;
+    position: relative;
+    padding-bottom: 10px;
 }
-.brand-col p {
-    font-size: 0.85rem;
-    color: var(--primary-gold);
-    font-weight: bold;
+footer.main-footer h4::after {
+    content: "";
+    position: absolute; left: 0; bottom: 0;
+    width: 40px; height: 2px;
+    background: var(--primary-gold);
 }
-.info-col h4, .social-col h4 {
+footer.main-footer p { font-size: 0.9rem; line-height: 1.6; color: #a8a8a8; }
+
+/* Marca */
+footer.main-footer .brand-col { display: block; }
+footer.main-footer .footer-logo-placeholder {
+    width: 80px; height: 80px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 2px solid var(--primary-gold);
+    box-shadow: 0 0 18px rgba(228, 179, 83, 0.35);
     margin-bottom: 15px;
-    color: var(--dark-bg);
+    background: #000;
 }
-.info-col ul {
-    list-style: none;
+footer.main-footer .footer-logo { width: 100%; height: 100%; object-fit: cover; }
+footer.main-footer .footer-brand { font-size: 1.3rem; }
+footer.main-footer .footer-brand span { color: var(--primary-gold); }
+footer.main-footer .footer-brand::after { display: none; }
+
+/* Enlaces */
+footer.main-footer .info-col ul { list-style: none; padding: 0; margin: 0; }
+footer.main-footer .info-col li { margin-bottom: 10px; }
+footer.main-footer .info-col a {
+    color: #cfcfcf;
+    font-size: 0.92rem;
+    text-decoration: none;
+    transition: color 0.2s ease, padding-left 0.2s ease;
 }
-.info-col a {
-    color: var(--text-muted);
-    line-height: 2;
-    transition: color 0.2s ease;
+footer.main-footer .info-col a i { font-size: 0.7rem; color: var(--primary-gold); margin-right: 6px; }
+footer.main-footer .info-col a:hover { color: var(--primary-gold); padding-left: 5px; }
+
+/* Redes */
+footer.main-footer .social-col { text-align: left; }
+footer.main-footer .social-icons { display: flex; gap: 12px; margin-top: 15px; justify-content: flex-start; }
+footer.main-footer .social-icons a {
+    width: 42px; height: 42px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 50%;
+    border: 1px solid #333;
+    background: #161616;
+    color: #fff;
+    font-size: 1.1rem;
+    text-decoration: none;
+    transition: all 0.25s ease;
 }
-.info-col a:hover { color: var(--primary-gold); }
-.social-col { text-align: center; }
-.social-icons {
-    display: flex;
-    gap: 15px;
-    font-size: 1.5rem;
-    color: var(--dark-bg);
-    justify-content: center;
+footer.main-footer .social-icons a:hover {
+    background: var(--primary-gold);
+    border-color: var(--primary-gold);
+    color: #000;
+    transform: translateY(-3px);
 }
-.social-icons i {
-    cursor: pointer;
-    transition: color 0.2s ease;
+
+/* Barra inferior */
+footer.main-footer .footer-bottom {
+    border-top: 1px solid #222;
+    text-align: center;
+    padding: 18px 5%;
 }
-.social-icons i:hover { color: var(--primary-gold); }
+footer.main-footer .footer-bottom p { font-size: 0.82rem; color: #777; margin: 0; }
+
+@media (max-width: 768px) {
+    footer.main-footer .footer-top { grid-template-columns: 1fr; text-align: center; gap: 30px; }
+    footer.main-footer h4::after { left: 50%; transform: translateX(-50%); }
+    footer.main-footer .footer-logo-placeholder { margin: 0 auto 15px; }
+    footer.main-footer .social-col { text-align: center; }
+    footer.main-footer .social-icons { justify-content: center; }
+}

@@ -6,9 +6,12 @@ use App\Http\Controllers\Controller;
 use App\Models\Categoria;
 use App\Models\MovimientoInventario;
 use App\Models\Producto;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 class ProductoAdminController extends Controller
@@ -51,7 +54,7 @@ class ProductoAdminController extends Controller
     /**
      * Guardar un nuevo producto en la base de datos con validaciones estrictas.
      */
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request): RedirectResponse|JsonResponse
     {
         $datos = $request->validate([
             'id_categoria'               => ['required', 'integer', 'exists:categoria,id_categoria'],
@@ -65,6 +68,7 @@ class ProductoAdminController extends Controller
             'stock'                      => ['required', 'integer', 'gte:0'],
             'stock_minimo'               => ['nullable', 'integer', 'gte:0'],
             'imagen'                     => ['nullable', 'string', 'max:255'],
+            'imagen_archivo'             => ['nullable', 'image', 'mimes:jpg,jpeg,png', 'max:5120'],
             'estado'                     => ['required', 'in:Activo,Inactivo'],
         ], [
             'id_categoria.required'    => 'La categoría del producto es obligatoria.',
@@ -78,6 +82,12 @@ class ProductoAdminController extends Controller
         ]);
 
         $datos['stock_minimo'] = $datos['stock_minimo'] ?? 10;
+        unset($datos['imagen_archivo']);
+        if ($request->hasFile('imagen_archivo')) {
+            $datos['imagen'] = $this->storeProductImage($request->file('imagen_archivo'));
+        } elseif (empty($datos['imagen'])) {
+            $datos['imagen'] = 'Tenebrios_img.png';
+        }
 
         $producto = DB::transaction(function () use ($datos) {
             $nuevoProducto = Producto::create($datos);
@@ -94,6 +104,14 @@ class ProductoAdminController extends Controller
 
             return $nuevoProducto;
         });
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Producto registrado exitosamente.',
+                'data' => $producto->load('categoria'),
+            ], 201);
+        }
 
         return redirect()->route('admin.productos.index')
             ->with('success', "Producto '{$producto->nombre_producto}' registrado exitosamente.");
@@ -116,7 +134,7 @@ class ProductoAdminController extends Controller
     /**
      * Actualizar producto en la base de datos registrando movimiento de inventario si cambia el stock.
      */
-    public function update(Request $request, int $producto): RedirectResponse
+    public function update(Request $request, int $producto): RedirectResponse|JsonResponse
     {
         $productoModel = Producto::findOrFail($producto);
 
@@ -132,6 +150,7 @@ class ProductoAdminController extends Controller
             'stock'                      => ['required', 'integer', 'gte:0'],
             'stock_minimo'               => ['nullable', 'integer', 'gte:0'],
             'imagen'                     => ['nullable', 'string', 'max:255'],
+            'imagen_archivo'             => ['nullable', 'image', 'mimes:jpg,jpeg,png', 'max:5120'],
             'estado'                     => ['required', 'in:Activo,Inactivo'],
         ], [
             'precio.gt'  => 'El precio debe ser estrictamente mayor a 0.',
@@ -139,6 +158,10 @@ class ProductoAdminController extends Controller
         ]);
 
         $datos['stock_minimo'] = $datos['stock_minimo'] ?? $productoModel->stock_minimo ?? 10;
+        unset($datos['imagen_archivo']);
+        if ($request->hasFile('imagen_archivo')) {
+            $datos['imagen'] = $this->storeProductImage($request->file('imagen_archivo'));
+        }
 
         DB::transaction(function () use ($productoModel, $datos) {
             $stockAnterior = (int) $productoModel->stock;
@@ -163,6 +186,14 @@ class ProductoAdminController extends Controller
                 }
             }
         });
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Producto actualizado correctamente.',
+                'data' => $productoModel->fresh()->load('categoria'),
+            ]);
+        }
 
         return redirect()->route('admin.productos.index')
             ->with('success', "Producto '{$productoModel->nombre_producto}' actualizado correctamente.");
@@ -236,5 +267,18 @@ class ProductoAdminController extends Controller
         });
 
         return back()->with('success', "Movimiento de {$datos['tipo_movimiento']} aplicado. Nuevo stock de '{$producto->nombre_producto}': {$producto->fresh()->stock} unidades.");
+    }
+
+    private function storeProductImage(UploadedFile $image): string
+    {
+        $directory = public_path('assets/img/productos');
+        if (!is_dir($directory) && !mkdir($directory, 0755, true) && !is_dir($directory)) {
+            throw new \RuntimeException('No fue posible preparar el directorio de imágenes de productos.');
+        }
+
+        $filename = Str::uuid() . '.' . $image->extension();
+        $image->move($directory, $filename);
+
+        return 'productos/' . $filename;
     }
 }

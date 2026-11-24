@@ -154,7 +154,8 @@ class CheckoutController extends Controller
             });
 
             return redirect()->route('cliente.pedidos.index')
-                ->with('success', "¡Pedido {$pedido->numero_pedido} confirmado y registrado con éxito! El inventario ha sido actualizado.");
+                ->with('success', "¡Pedido #{$pedido->numero_pedido} confirmado y registrado con éxito! El inventario ha sido actualizado.")
+                ->with('pedido_creado', $pedido->numero_pedido);
 
         } catch (\Exception $e) {
             return back()->with('error', $e->getMessage())->withInput();

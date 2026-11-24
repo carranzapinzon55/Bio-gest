@@ -15,7 +15,6 @@
         <div class="logo-container">
             <a href="{{ route('home') }}" style="display:flex;align-items:center;text-decoration:none;">
                 <img src="{{ asset('assets/img/LOGO PNG.png') }}" alt="Logo Tenebrios Gold" />
-                <h1 class="header-logo">TENEBRIOS GOLD</h1>
             </a>
         </div>
     </header>

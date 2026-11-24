@@ -70,3 +70,18 @@
     </div>
 </div>
 @endsection
+
+@if(session('pedido_creado'))
+    @push('scripts')
+    <script>
+        try {
+            localStorage.setItem('biogest_admin_sync', JSON.stringify({
+                order: @json(session('pedido_creado')),
+                timestamp: Date.now()
+            }));
+        } catch (error) {
+            console.warn('No fue posible emitir la señal local de actualización del panel.', error);
+        }
+    </script>
+    @endpush
+@endif

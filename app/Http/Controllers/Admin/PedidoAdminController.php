@@ -157,8 +157,23 @@ class PedidoAdminController extends Controller
 
             $etiquetaEstado = $nuevoEstadoInput === 'Enviado' ? 'Enviado (Despachado)' : $nuevoEstadoDb;
 
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => "Estado del pedido actualizado a '{$etiquetaEstado}' correctamente.",
+                    'data' => $pedido->fresh()->load(['usuario', 'detalles.producto', 'direccion']),
+                ]);
+            }
+
             return back()->with('success', "Confirmación: El estado del pedido {$pedido->numero_pedido} fue actualizado exitosamente a '{$etiquetaEstado}'.");
         } catch (\Exception $e) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $e->getMessage(),
+                ], 422);
+            }
+
             return back()->with('error', $e->getMessage());
         }
     }

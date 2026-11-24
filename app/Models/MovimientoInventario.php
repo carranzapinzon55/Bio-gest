@@ -19,6 +19,10 @@ class MovimientoInventario extends Model
         'fecha_movimiento',
     ];
 
+    protected $casts = [
+        'fecha_movimiento' => 'datetime',
+    ];
+
     public function producto(): BelongsTo
     {
         return $this->belongsTo(Producto::class, 'id_producto', 'id_producto');
