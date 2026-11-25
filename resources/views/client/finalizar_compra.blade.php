@@ -50,7 +50,7 @@
                     </div>
                     <div style="flex:1;">
                         <label style="display:block; font-weight:700; margin-bottom:6px; color:#333;">Teléfono de Contacto *</label>
-                        <input type="tel" name="telefono_contacto" value="{{ old('telefono_contacto', auth()->user()->telefono) }}" required style="width:100%; padding:10px; border:1px solid #ccc; border-radius:6px;">
+                        <input type="tel" name="telefono_contacto" value="{{ old('telefono_contacto', optional(auth()->user())->telefono) }}" required style="width:100%; padding:10px; border:1px solid #ccc; border-radius:6px;">
                     </div>
                 </div>
 

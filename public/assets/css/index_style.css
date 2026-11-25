@@ -2,16 +2,15 @@
 :root {
     --primary-gold: #e4b353;       
     --primary-gold-hover: #c99b45; 
-    --dark-bg: #151515;            
+    --dark-bg: #111111;            
     --light-bg: #f8f9fa;           
     --card-bg: #ffffff;            
     --text-dark: #333333;          
     --text-light: #ffffff;         
     --text-muted: #777777;         
     --border-color: #eaeaea;
-    --nav-bg: #151515; /* COLOR DE NAVEGACIÓN */ 
+    --nav-bg: #111111; /* COLOR DE NAVEGACIÓN */ 
     --nav-text: #ffffff; /* COLOR DE TEXTO DE NAVEGACIÓN */
-       
 }
 
 /* RESETEO BÁSICO */
@@ -59,22 +58,25 @@ a {
 .small-square { width: 80px; height: 80px; }
 .footer-logo { width: 80px; height: 60px; object-fit: contain; }
 
-/* ENCABEZADO */
+/* ENCABEZADO UNIFICADO TIENDA (#111111) */
+header.main-header,
 .main-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     padding: 15px 40px;
-    background-color: var(--dark-bg);
+    background-color: #111111;
     color: var(--text-light);
+    border-bottom: 1px solid #222222;
 }
 .logo-area {
     display: flex;
     align-items: center;
     gap: 15px;
+    text-decoration: none;
 }
-.brand-text h1 { font-size: 1.2rem; color: var(--text-light); }
-.brand-text p { font-size: 0.8rem; color: var(--primary-gold); font-weight: bold; }
+.brand-text h1 { font-size: 1.2rem; color: var(--text-light); margin: 0; }
+.brand-text p { font-size: 0.8rem; color: var(--primary-gold); font-weight: bold; margin: 2px 0 0 0; }
 
 .search-bar {
     display: flex;
@@ -93,7 +95,7 @@ a {
 }
 .search-bar button {
     background-color: var(--primary-gold);
-    color: var(--dark-bg);
+    color: #111111;
     border: none;
     padding: 10px 20px;
     cursor: pointer;
@@ -116,8 +118,9 @@ a {
     transition: color 0.2s ease;
 }
 .action-item:hover, .action-item a:hover { color: var(--primary-gold); }
-.action-item a { color: var(--text-light); transition: color 0.2s ease; }
+.action-item a { color: var(--text-light); transition: color 0.2s ease; text-decoration: none; }
 
+header.main-header .cart-btn,
 .cart-btn {
     background-color: transparent;
     color: var(--primary-gold);
@@ -125,14 +128,16 @@ a {
     padding: 6px 12px;
     border-radius: 20px;
     font-weight: bold;
+    text-decoration: none;
 }
+header.main-header .cart-btn:hover,
 .cart-btn:hover {
     background-color: var(--primary-gold);
-    color: var(--dark-bg);
+    color: #111111;
 }
 .cart-count {
     background-color: var(--text-light);
-    color: var(--dark-bg);
+    color: #111111;
     border-radius: 50%;
     padding: 2px 6px;
     font-size: 0.8rem;
@@ -140,25 +145,36 @@ a {
 }
 
 
-/* NAVEGACIÓN */
+/* NAVEGACIÓN UNIFICADA (#111111) */
+nav.main-nav,
 .main-nav {
-    background-color: var(--nav-bg);
+    background-color: #111111;
     border-bottom: 1px solid var(--border-color);
+    padding: 0;
+    margin: 0;
 }
+nav.main-nav ul,
 .main-nav ul {
     display: flex;
     justify-content: center;
     gap: 40px;
     list-style: none;
     padding: 15px 0;
+    margin: 0;
 }
+nav.main-nav a,
 .main-nav a {
     color: var(--nav-text);
     font-weight: 500;
+    font-size: 1rem;
+    text-decoration: none;
+    padding-bottom: 4px;
     transition: color 0.2s ease;
 }
 
 /* STYLE DE ANIMACION DEL BOTON DE NAVEGACIÓN */
+nav.main-nav a.active,
+nav.main-nav a:hover,
 .main-nav a.active,
 .main-nav a:hover {
     color: var(--primary-gold);

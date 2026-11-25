@@ -1,11 +1,9 @@
 /**
  * ============================================================================
  * MÓDULO DE GESTIÓN DE USUARIOS - TENEBRIOS GOLD (BIO-GEST ADMIN)
- * Solo roles Administrador y Cliente (HU-02 / RF-002)
- * Reglas de negocio:
- * 1. Clientes se registran por autoservicio en tienda.
- * 2. Administrador SOLO puede: Crear Nuevo Administrador, Consultar Ficha y Activar/Desactivar.
- * 3. Prohibido editar datos personales de terceros o eliminar usuarios.
+ * - Botón "Ver" abre ficha completa (datos personales, direcciones y resumen de pedidos)
+ * - Botón "+ Nuevo Administrador" crea cuenta con id_rol = 1 (Administrador)
+ * - Botón "Activar / Desactivar" cambia estado en MySQL sin errores 404/405/500
  * ============================================================================
  */
 
@@ -23,6 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const roleFilter = document.getElementById('roleFilter');
     const statusFilter = document.getElementById('statusFilter');
     const btnResetFilters = document.getElementById('btnResetFilters');
+    const btnEmptyReset = document.getElementById('btnEmptyReset');
     const usersTableBody = document.getElementById('usersTableBody');
     const visibleCount = document.getElementById('visibleCount');
     const totalCount = document.getElementById('totalCount');
@@ -35,7 +34,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const userForm = document.getElementById('userForm');
     const btnToggleStatusFromModal = document.getElementById('btnToggleStatusFromModal');
 
-    // Inicializar
+    // Inicializar tabla y contadores
     updateCounts();
     renderTable();
 
@@ -43,40 +42,49 @@ document.addEventListener('DOMContentLoaded', () => {
     if (searchInput) searchInput.addEventListener('input', renderTable);
     if (roleFilter) roleFilter.addEventListener('change', renderTable);
     if (statusFilter) statusFilter.addEventListener('change', renderTable);
+
+    function resetFilters() {
+        if (searchInput) searchInput.value = '';
+        if (roleFilter) roleFilter.value = 'Todos';
+        if (statusFilter) statusFilter.value = 'Todos';
+        renderTable();
+    }
+
     if (btnResetFilters) {
         btnResetFilters.addEventListener('click', () => {
-            if (searchInput) searchInput.value = '';
-            if (roleFilter) roleFilter.value = 'Todos';
-            if (statusFilter) statusFilter.value = 'Todos';
-            renderTable();
+            resetFilters();
             showToast('Filtros restablecidos.', 'info');
         });
     }
+    if (btnEmptyReset) {
+        btnEmptyReset.addEventListener('click', resetFilters);
+    }
 
-    // Modal Crear Administrador
+    // Abrir Modal "+ Nuevo Administrador"
     if (btnOpenCreateModal) {
         btnOpenCreateModal.addEventListener('click', () => {
-            userForm.reset();
+            if (userForm) userForm.reset();
             clearErrors();
             openModal(userFormModal);
+            document.getElementById('userNameInput')?.focus();
         });
     }
 
-    // Submit Crear Administrador
+    // Enviar Formulario "+ Nuevo Administrador" (POST /admin/usuarios)
     if (userForm) {
         userForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             clearErrors();
 
-            const nombre = document.getElementById('userNameInput').value.trim();
-            const correo = document.getElementById('userEmailInput').value.trim();
-            const contrasena = document.getElementById('userPasswordInput').value;
-            const telefono = document.getElementById('userPhoneInput').value.trim();
-            const estado = document.getElementById('userStatusInput').value;
+            const nombre = document.getElementById('userNameInput')?.value.trim() || '';
+            const correo = document.getElementById('userEmailInput')?.value.trim() || '';
+            const contrasena = document.getElementById('userPasswordInput')?.value || '';
+            const telefono = document.getElementById('userPhoneInput')?.value.trim() || '';
+            const estado = document.getElementById('userStatusInput')?.value || 'Activo';
 
             let hasError = false;
             if (!nombre) {
-                showFieldError('nameError', 'El nombre completo es obligatorio.');
+                showFieldError('nameError', 'El nombre completo del nuevo administrador es obligatorio.');
                 hasError = true;
             }
             if (!correo) {
@@ -90,8 +98,10 @@ document.addEventListener('DOMContentLoaded', () => {
             if (hasError) return;
 
             const submitBtn = document.getElementById('btnSaveUser');
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Guardando...';
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Guardando...';
+            }
 
             try {
                 const response = await fetch(apiConfig.baseUrl, {
@@ -99,6 +109,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     headers: {
                         'Content-Type': 'application/json',
                         'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
                         'X-CSRF-TOKEN': apiConfig.csrfToken
                     },
                     body: JSON.stringify({
@@ -106,14 +117,20 @@ document.addEventListener('DOMContentLoaded', () => {
                         correo,
                         contrasena,
                         telefono,
-                        estado
+                        estado,
+                        id_rol: 1
                     })
                 });
 
                 const data = await response.json();
 
                 if (!response.ok || !data.ok) {
-                    throw new Error(data.message || 'Error al crear el nuevo administrador.');
+                    if (data.errors) {
+                        if (data.errors.nombre) showFieldError('nameError', data.errors.nombre[0]);
+                        if (data.errors.correo) showFieldError('emailError', data.errors.correo[0]);
+                        if (data.errors.contrasena) showFieldError('passwordError', data.errors.contrasena[0]);
+                    }
+                    throw new Error(data.message || 'Verifica los campos del formulario.');
                 }
 
                 users.unshift(data.usuario);
@@ -121,17 +138,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 userForm.reset();
                 updateCounts();
                 renderTable();
-                showToast(data.message, 'success');
+                showToast(data.message || 'Administrador creado exitosamente.', 'success');
             } catch (err) {
                 showToast(err.message, 'error');
             } finally {
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = '<i class="fa-solid fa-check"></i> Registrar Administrador';
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = '<i class="fa-solid fa-check"></i> Registrar Administrador';
+                }
             }
         });
     }
 
-    // Cerrar Modales
+    // Cerrar Modales por botón, clic en fondo o tecla Escape
     document.querySelectorAll('[data-close-modal]').forEach(btn => {
         btn.addEventListener('click', () => {
             const modalId = btn.getAttribute('data-close-modal');
@@ -140,18 +159,51 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
+    [userFormModal, userDetailModal].forEach(modalEl => {
+        if (!modalEl) return;
+        modalEl.addEventListener('click', (e) => {
+            if (e.target === modalEl) closeModal(modalEl);
+        });
+    });
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            closeModal(userFormModal);
+            closeModal(userDetailModal);
+        }
+    });
+
     // Alternar Estado desde la Ficha Detallada
     if (btnToggleStatusFromModal) {
         btnToggleStatusFromModal.addEventListener('click', async () => {
             if (!currentDetailUserId) return;
             await toggleUserStatus(currentDetailUserId);
-            // Recargar ficha
             await showUserDetail(currentDetailUserId);
         });
     }
 
-    // Función Render Table
+    // Delegación de eventos en la tabla para "Ver" y "Activar / Desactivar"
+    if (usersTableBody) {
+        usersTableBody.addEventListener('click', (e) => {
+            const viewBtn = e.target.closest('.btn-view-detail');
+            if (viewBtn) {
+                const id = parseInt(viewBtn.getAttribute('data-id'), 10);
+                if (!isNaN(id)) showUserDetail(id);
+                return;
+            }
+
+            const statusBtn = e.target.closest('.btn-status-toggle');
+            if (statusBtn) {
+                const id = parseInt(statusBtn.getAttribute('data-id'), 10);
+                if (!isNaN(id)) toggleUserStatus(id);
+            }
+        });
+    }
+
+    // Renderizado de la tabla
     function renderTable() {
+        if (!usersTableBody) return;
+
         const q = (searchInput?.value || '').toLowerCase().trim();
         const role = roleFilter?.value || 'Todos';
         const status = statusFilter?.value || 'Todos';
@@ -159,6 +211,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const filtered = users.filter(u => {
             const matchesQuery = !q ||
                 (u.nombre && u.nombre.toLowerCase().includes(q)) ||
+                (u.nombre_pila && u.nombre_pila.toLowerCase().includes(q)) ||
+                (u.apellido && u.apellido.toLowerCase().includes(q)) ||
                 (u.correo && u.correo.toLowerCase().includes(q)) ||
                 (u.id && u.id.toLowerCase().includes(q));
 
@@ -191,11 +245,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 : `<span class="status-badge status-inactive"><i class="fa-solid fa-circle-xmark"></i> Inactivo</span>`;
 
             return `
-                <tr>
+                <tr data-user-row="${user.id_usuario}">
                     <td style="font-weight:700; color:#4b5563;">${escapeHtml(user.id)}</td>
                     <td>
                         <div style="font-weight:700; color:#111111;">${escapeHtml(user.nombre)}</div>
-                        <div style="font-size:0.78rem; color:#6b7280;">${escapeHtml(user.notas || 'Cliente regular')}</div>
+                        <div style="font-size:0.78rem; color:#6b7280;">${escapeHtml(user.notas || 'Alimentación continua')}</div>
                     </td>
                     <td style="color:#1e293b;">${escapeHtml(user.correo)}</td>
                     <td>${roleBadge}</td>
@@ -207,9 +261,9 @@ document.addEventListener('DOMContentLoaded', () => {
                                 type="button"
                                 class="user-action-btn btn-view-detail"
                                 data-id="${user.id_usuario}"
-                                title="Consultar ficha de cuenta"
+                                title="Ver ficha completa de la cuenta"
                             >
-                                <i class="fa-solid fa-id-card" style="color:#e6a100;"></i> Ver Ficha
+                                <i class="fa-solid fa-eye" style="color:#e6a100;"></i> Ver
                             </button>
                             <button
                                 type="button"
@@ -225,31 +279,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 </tr>
             `;
         }).join('');
-
-        // Eventos a botones de la tabla
-        usersTableBody.querySelectorAll('.btn-view-detail').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const id = parseInt(btn.getAttribute('data-id'), 10);
-                showUserDetail(id);
-            });
-        });
-
-        usersTableBody.querySelectorAll('.btn-status-toggle').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const id = parseInt(btn.getAttribute('data-id'), 10);
-                toggleUserStatus(id);
-            });
-        });
     }
 
-    // Consulta detallada de información de cualquier cuenta (Req 3b)
-    async function showUserDetail(idUsuario) {
-        currentDetailUserId = idUsuario;
-        openModal(userDetailModal);
-
-        // Referencias
+    // Poblar interfaz del modal de detalle con un objeto usuario
+    function populateDetailModal(u, addresses, orders, resumen) {
+        const detailAvatar = document.getElementById('detailAvatar');
         const detailId = document.getElementById('detailId');
         const detailName = document.getElementById('detailName');
+        const detailFirstName = document.getElementById('detailFirstName');
+        const detailLastName = document.getElementById('detailLastName');
         const detailEmail = document.getElementById('detailEmail');
         const detailPhone = document.getElementById('detailPhone');
         const detailRegistered = document.getElementById('detailRegistered');
@@ -261,61 +299,58 @@ document.addEventListener('DOMContentLoaded', () => {
         const addressList = document.getElementById('addressListContainer');
         const orderCount = document.getElementById('orderCount');
         const orderList = document.getElementById('orderListContainer');
+        const summaryTotalOrders = document.getElementById('summaryTotalOrders');
+        const summaryTotalSpent = document.getElementById('summaryTotalSpent');
+        const summaryLastOrder = document.getElementById('summaryLastOrder');
         const notice = document.getElementById('detailAccountStatusNotice');
 
-        addressList.innerHTML = '<p style="color:#6b7280; font-size:0.84rem; font-style:italic;"><i class="fa-solid fa-spinner fa-spin"></i> Cargando información detallada...</p>';
-        orderList.innerHTML = '<p style="color:#6b7280; font-size:0.84rem; font-style:italic;"><i class="fa-solid fa-spinner fa-spin"></i> Cargando pedidos...</p>';
+        if (detailAvatar) detailAvatar.textContent = getInitials(u.nombre);
+        if (detailId) detailId.textContent = u.id || `USR-${u.id_usuario}`;
+        if (detailName) detailName.textContent = u.nombre || '-';
+        if (detailFirstName) detailFirstName.textContent = u.nombre_pila || (u.nombre ? u.nombre.split(' ')[0] : '-');
+        if (detailLastName) detailLastName.textContent = u.apellido || '-';
+        if (detailEmail) detailEmail.textContent = u.correo || '-';
+        if (detailPhone) detailPhone.textContent = u.telefono || 'No registrado';
+        if (detailRegistered) detailRegistered.textContent = u.fecha_registro || '-';
+        if (detailLastAccess) detailLastAccess.textContent = u.ultimoAcceso || u.fecha_registro || '-';
+        if (detailPerfil) detailPerfil.textContent = u.perfil_uso || u.notas || 'Alimentación continua';
 
-        try {
-            const response = await fetch(`${apiConfig.baseUrl}/${idUsuario}`, {
-                headers: { 'Accept': 'application/json' }
-            });
-
-            if (!response.ok) throw new Error('No fue posible consultar la ficha del usuario.');
-
-            const data = await response.json();
-            const u = data.usuario;
-            const addresses = data.direcciones || [];
-            const orders = data.pedidos || [];
-
-            detailId.textContent = u.id;
-            detailName.textContent = u.nombre;
-            detailEmail.textContent = u.correo;
-            detailPhone.textContent = u.telefono;
-            detailRegistered.textContent = u.fecha_registro || '-';
-            detailLastAccess.textContent = u.ultimoAcceso || '-';
-            detailPerfil.textContent = u.notas || 'Cliente general';
-
-            const isAdmin = u.rol === 'Administrador';
+        const isAdmin = u.rol === 'Administrador';
+        if (detailRoleBadge) {
             detailRoleBadge.innerHTML = isAdmin
                 ? `<span class="role-badge-admin"><i class="fa-solid fa-shield-halved"></i> Administrador</span>`
                 : `<span class="role-badge-cliente"><i class="fa-solid fa-user"></i> Cliente</span>`;
+        }
 
-            const isActivo = u.estado === 'Activo';
+        const isActivo = u.estado === 'Activo';
+        if (detailStatusBadge) {
             detailStatusBadge.innerHTML = isActivo
                 ? `<span class="status-badge status-active"><i class="fa-solid fa-circle-check"></i> Activo</span>`
                 : `<span class="status-badge status-inactive"><i class="fa-solid fa-circle-xmark"></i> Inactivo</span>`;
+        }
 
-            if (notice) {
-                notice.innerHTML = isActivo
-                    ? '<span style="color:#059669;"><i class="fa-solid fa-check-circle"></i> Cuenta habilitada con acceso al sistema</span>'
-                    : '<span style="color:#dc2626;"><i class="fa-solid fa-ban"></i> Cuenta bloqueada temporalmente</span>';
-            }
+        if (notice) {
+            notice.innerHTML = isActivo
+                ? '<span style="color:#059669;"><i class="fa-solid fa-check-circle"></i> Cuenta habilitada con acceso al sistema</span>'
+                : '<span style="color:#dc2626;"><i class="fa-solid fa-ban"></i> Cuenta inactiva / acceso bloqueado</span>';
+        }
 
-            if (btnToggleStatusFromModal) {
-                btnToggleStatusFromModal.className = `user-action-btn ${isActivo ? 'btn-status-toggle is-active' : 'btn-status-toggle is-inactive'}`;
-                btnToggleStatusFromModal.innerHTML = `<i class="fa-solid ${isActivo ? 'fa-toggle-on' : 'fa-toggle-off'}"></i> ${isActivo ? 'Desactivar Cuenta' : 'Activar Cuenta'}`;
-            }
+        if (btnToggleStatusFromModal) {
+            btnToggleStatusFromModal.className = `user-action-btn ${isActivo ? 'btn-status-toggle is-active' : 'btn-status-toggle is-inactive'}`;
+            btnToggleStatusFromModal.innerHTML = `<i class="fa-solid ${isActivo ? 'fa-toggle-on' : 'fa-toggle-off'}"></i> ${isActivo ? 'Desactivar Cuenta' : 'Activar Cuenta'}`;
+        }
 
-            // Renderizar Direcciones
-            addressCount.textContent = addresses.length;
-            if (addresses.length === 0) {
-                addressList.innerHTML = '<p style="color:#9ca3af; font-size:0.84rem; font-style:italic;">No hay direcciones registradas para este usuario.</p>';
+        // Direcciones
+        const addrArray = Array.isArray(addresses) ? addresses : [];
+        if (addressCount) addressCount.textContent = addrArray.length;
+        if (addressList) {
+            if (addrArray.length === 0) {
+                addressList.innerHTML = '<p style="color:#9ca3af; font-size:0.84rem; font-style:italic;">No hay direcciones registradas para esta cuenta.</p>';
             } else {
-                addressList.innerHTML = addresses.map(d => `
+                addressList.innerHTML = addrArray.map(d => `
                     <div class="address-card">
                         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
-                            <strong style="color:#111111;"><i class="fa-solid fa-map-pin" style="color:#e6a100;"></i> ${escapeHtml(d.nombre_ubicacion)}</strong>
+                            <strong style="color:#111111;"><i class="fa-solid fa-map-pin" style="color:#e6a100;"></i> ${escapeHtml(d.nombre_ubicacion || 'Principal')}</strong>
                             ${d.es_principal ? '<span style="background:#e0f2fe; color:#0369a1; font-size:0.7rem; font-weight:700; padding:2px 8px; border-radius:999px;">Principal</span>' : ''}
                         </div>
                         <div style="color:#334155;">${escapeHtml(d.direccion)}</div>
@@ -323,42 +358,104 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                 `).join('');
             }
+        }
 
-            // Renderizar Pedidos
-            orderCount.textContent = orders.length;
-            if (orders.length === 0) {
+        // Resumen y lista de pedidos
+        const ordArray = Array.isArray(orders) ? orders : [];
+        if (orderCount) orderCount.textContent = ordArray.length;
+
+        const totalSpentFormatted = resumen?.total_comprado_formateado ||
+            ('$' + ordArray.filter(o => (o.estado_pedido || o.estado) !== 'Cancelado')
+                .reduce((acc, o) => acc + (parseFloat(o.total) || 0), 0)
+                .toLocaleString('es-CO'));
+
+        if (summaryTotalOrders) summaryTotalOrders.textContent = resumen?.total_pedidos ?? ordArray.length;
+        if (summaryTotalSpent) summaryTotalSpent.textContent = totalSpentFormatted;
+        if (summaryLastOrder) {
+            summaryLastOrder.textContent = ordArray.length > 0
+                ? `${ordArray[0].codigo} (${ordArray[0].fecha})`
+                : 'Sin pedidos';
+        }
+
+        if (orderList) {
+            if (ordArray.length === 0) {
                 orderList.innerHTML = '<p style="color:#9ca3af; font-size:0.84rem; font-style:italic;">No se han registrado compras o pedidos con esta cuenta.</p>';
             } else {
-                orderList.innerHTML = orders.map(p => {
-                    let statusColor = '#3b82f6';
-                    let statusBg = '#eff6ff';
-                    if (p.estado === 'Entregado') { statusColor = '#059669'; statusBg = '#ecfdf5'; }
-                    else if (p.estado === 'Cancelado') { statusColor = '#dc2626'; statusBg = '#fef2f2'; }
-                    else if (p.estado === 'Enviado') { statusColor = '#8b5cf6'; statusBg = '#f5f3ff'; }
+                orderList.innerHTML = ordArray.map(p => {
+                    const est = p.estado_pedido || p.estado || 'Pendiente';
+                    let statusColor = '#1e40af';
+                    let statusBg = '#dbeafe';
+                    if (est === 'Entregado' || est === 'Completado') { statusColor = '#059669'; statusBg = '#ecfdf5'; }
+                    else if (est === 'Cancelado') { statusColor = '#dc2626'; statusBg = '#fef2f2'; }
+                    else if (est === 'Despachado') { statusColor = '#7c3aed'; statusBg = '#f5f3ff'; }
+                    else if (est === 'Pendiente') { statusColor = '#92400e'; statusBg = '#fef3c7'; }
 
                     return `
                         <div class="order-item-card">
                             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
-                                <strong style="color:#111111;">${escapeHtml(p.codigo)}</strong>
+                                <strong style="color:#111111;">${escapeHtml(p.codigo)} <span style="font-weight:normal; color:#64748b; font-size:0.78rem;">(${escapeHtml(p.metodo_pago || 'Contraentrega')})</span></strong>
                                 <span class="order-badge-pill" style="background:${statusBg}; color:${statusColor};">
-                                    ${escapeHtml(p.estado)}
+                                    ${escapeHtml(est)}
                                 </span>
                             </div>
                             <div style="display:flex; justify-content:space-between; align-items:center; color:#64748b; font-size:0.8rem;">
-                                <span><i class="fa-regular fa-calendar"></i> ${escapeHtml(p.fecha)} · ${p.items_count} producto(s)</span>
+                                <span><i class="fa-regular fa-calendar"></i> ${escapeHtml(p.fecha)} · ${p.items_count ?? 1} unidad(es)</span>
                                 <strong style="color:#111111; font-size:0.88rem;">${escapeHtml(p.total_formateado)}</strong>
                             </div>
                         </div>
                     `;
                 }).join('');
             }
-        } catch (err) {
-            addressList.innerHTML = `<p style="color:#dc2626; font-size:0.84rem;">${escapeHtml(err.message)}</p>`;
-            orderList.innerHTML = '';
         }
     }
 
-    // Alternar Estado Activo / Inactivo en MySQL (Req 3c)
+    // Mostrar detalle de cuenta (puebla de inmediato con datos locales y refresca vía GET /admin/usuarios/{id})
+    async function showUserDetail(idUsuario) {
+        currentDetailUserId = idUsuario;
+        openModal(userDetailModal);
+
+        // 1. Mostrar inmediatamente datos pre-cargados si existen
+        const cachedUser = users.find(u => Number(u.id_usuario) === Number(idUsuario));
+        if (cachedUser) {
+            populateDetailModal(
+                cachedUser,
+                cachedUser.direcciones || [],
+                cachedUser.pedidos || [],
+                cachedUser.resumen_pedidos || null
+            );
+        }
+
+        // 2. Consultar datos frescos en tiempo real desde GET /admin/usuarios/{id}
+        try {
+            const response = await fetch(`${apiConfig.baseUrl}/${idUsuario}`, {
+                headers: {
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+
+            if (!response.ok) throw new Error('No fue posible actualizar la ficha del usuario.');
+
+            const data = await response.json();
+            if (data && data.ok && data.usuario) {
+                const idx = users.findIndex(u => Number(u.id_usuario) === Number(idUsuario));
+                if (idx !== -1) users[idx] = data.usuario;
+
+                populateDetailModal(
+                    data.usuario,
+                    data.direcciones || data.usuario.direcciones || [],
+                    data.pedidos || data.usuario.pedidos || [],
+                    data.resumen_pedidos || data.usuario.resumen_pedidos || null
+                );
+            }
+        } catch (err) {
+            if (!cachedUser) {
+                showToast(err.message, 'error');
+            }
+        }
+    }
+
+    // Alternar Estado Activo / Inactivo en MySQL
     async function toggleUserStatus(idUsuario) {
         try {
             const response = await fetch(`${apiConfig.baseUrl}/${idUsuario}/estado`, {
@@ -366,6 +463,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 headers: {
                     'Content-Type': 'application/json',
                     'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
                     'X-CSRF-TOKEN': apiConfig.csrfToken
                 }
             });
@@ -376,8 +474,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 throw new Error(data.message || 'No fue posible actualizar el estado de la cuenta.');
             }
 
-            // Actualizar arreglo local
-            const idx = users.findIndex(u => u.id_usuario === idUsuario);
+            const idx = users.findIndex(u => Number(u.id_usuario) === Number(idUsuario));
             if (idx !== -1) {
                 users[idx] = data.usuario;
             }
@@ -395,18 +492,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function openModal(modal) {
         if (!modal) return;
-        modal.classList.add('active');
+        modal.classList.add('open', 'active');
         modal.setAttribute('aria-hidden', 'false');
     }
 
     function closeModal(modal) {
         if (!modal) return;
-        modal.classList.remove('active');
+        modal.classList.remove('open', 'active');
         modal.setAttribute('aria-hidden', 'true');
     }
 
     function clearErrors() {
-        document.querySelectorAll('.error-msg').forEach(el => el.textContent = '');
+        document.querySelectorAll('.error-msg').forEach(el => {
+            el.textContent = '';
+        });
     }
 
     function showFieldError(id, msg) {
@@ -414,13 +513,22 @@ document.addEventListener('DOMContentLoaded', () => {
         if (el) el.textContent = msg;
     }
 
+    function getInitials(fullName) {
+        const parts = (fullName || '').trim().split(/\s+/);
+        if (!parts.length || !parts[0]) return 'U';
+        if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
+        return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
+    }
+
     function showToast(message, type = 'info') {
         const container = document.getElementById('toastContainer');
         if (!container) return;
 
         const toast = document.createElement('div');
-        toast.className = `toast-msg toast-${type}`;
-        const icon = type === 'success' ? 'fa-circle-check' : (type === 'error' ? 'fa-triangle-exclamation' : 'fa-circle-info');
+        toast.className = `toast-item toast-msg toast-${type}`;
+        const icon = type === 'success'
+            ? 'fa-circle-check'
+            : (type === 'error' ? 'fa-triangle-exclamation' : 'fa-circle-info');
 
         toast.innerHTML = `
             <i class="fa-solid ${icon}"></i>
@@ -435,7 +543,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function escapeHtml(str) {
-        if (!str) return '';
+        if (str === null || str === undefined) return '';
         return String(str)
             .replace(/&/g, '&amp;')
             .replace(/</g, '&lt;')

@@ -347,8 +347,8 @@
             }
         </style>
     @else
-        <!-- Estilos Globales Tienda Pública Tenebrios Gold (#151515 y #e4b353) -->
-        <link rel="stylesheet" href="{{ asset('assets/css/index_style.css') }}">
+        <!-- Estilos Globales Tienda Pública Tenebrios Gold (#111111 y #e4b353) -->
+        <link rel="stylesheet" href="{{ asset('assets/css/index_style.css') }}?v={{ file_exists(public_path('assets/css/index_style.css')) ? filemtime(public_path('assets/css/index_style.css')) : time() }}">
     @endif
     @stack('styles')
 </head>

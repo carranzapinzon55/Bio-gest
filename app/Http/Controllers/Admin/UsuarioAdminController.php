@@ -10,6 +10,7 @@ use App\Models\Rol;
 use App\Models\Usuario;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\View\View;
@@ -23,10 +24,10 @@ class UsuarioAdminController extends Controller
     {
         $this->ensureRolesExist();
 
-        $usuarios = Usuario::with('rol')
+        $usuarios = Usuario::with(['rol', 'direcciones', 'pedidos.detalles'])
             ->orderByDesc('id_usuario')
             ->get()
-            ->map(fn (Usuario $u) => $this->formatUser($u))
+            ->map(fn (Usuario $u) => $this->formatUserWithRelations($u))
             ->values();
 
         if ($request->wantsJson() || $request->ajax()) {
@@ -43,144 +44,150 @@ class UsuarioAdminController extends Controller
 
     /**
      * Consulta la ficha detallada de información de cualquier cuenta.
-     * Retorna datos personales, rol, estado, fechas, direcciones y pedidos.
+     * Retorna datos personales, rol, estado, fechas, direcciones y resumen de pedidos.
      */
     public function show(int $id_usuario): JsonResponse
     {
-        $usuario = Usuario::with('rol')->findOrFail($id_usuario);
-
-        $direcciones = DireccionUsuario::where('id_usuario', $usuario->id_usuario)
-            ->orderByDesc('es_principal')
-            ->orderBy('id_direccion')
-            ->get()
-            ->map(function ($d) {
-                return [
-                    'id_direccion'     => $d->id_direccion,
-                    'nombre_ubicacion' => $d->nombre_ubicacion ?: 'Principal',
-                    'direccion'        => $d->direccion,
-                    'ciudad'           => $d->ciudad,
-                    'departamento'     => $d->departamento,
-                    'codigo_postal'    => $d->codigo_postal,
-                    'es_principal'     => (bool) $d->es_principal,
-                ];
-            });
-
-        $pedidos = Pedido::where('id_usuario', $usuario->id_usuario)
-            ->withCount('detalles')
-            ->orderByDesc('id_pedido')
-            ->get()
-            ->map(function ($p) {
-                return [
-                    'id_pedido'    => $p->id_pedido,
-                    'codigo'       => 'PED-' . str_pad((string) $p->id_pedido, 5, '0', STR_PAD_LEFT),
-                    'fecha'        => $p->fecha_pedido ? Carbon::parse($p->fecha_pedido)->format('d/m/Y h:i a') : '-',
-                    'estado'       => $p->estado,
-                    'total'        => (float) $p->total,
-                    'total_formateado' => '$ ' . number_format($p->total, 0, ',', '.'),
-                    'items_count'  => $p->detalles_count,
-                    'metodo_pago'  => $p->metodo_pago,
-                ];
-            });
+        $usuario = Usuario::with(['rol', 'direcciones', 'pedidos.detalles'])->findOrFail($id_usuario);
+        $formatted = $this->formatUserWithRelations($usuario);
 
         return response()->json([
-            'ok'          => true,
-            'usuario'     => $this->formatUser($usuario),
-            'direcciones' => $direcciones,
-            'pedidos'     => $pedidos,
+            'ok'              => true,
+            'usuario'         => $formatted,
+            'direcciones'     => $formatted['direcciones'],
+            'pedidos'         => $formatted['pedidos'],
+            'resumen_pedidos' => $formatted['resumen_pedidos'],
         ]);
     }
 
     /**
      * Regla de negocio estricta: desde el panel el administrador SOLO puede
-     * crear nuevas cuentas con rol exclusivo de Administrador.
+     * crear nuevas cuentas con rol exclusivo de Administrador (id_rol = 1).
+     * Soporta peticiones AJAX (JSON) y envíos de formulario estándar con @csrf.
      */
-    public function store(Request $request): JsonResponse
+    public function store(Request $request): JsonResponse|RedirectResponse
     {
         $this->ensureRolesExist();
 
         $datos = $request->validate([
             'nombre'     => ['required', 'string', 'max:190'],
+            'apellido'   => ['nullable', 'string', 'max:100'],
             'correo'     => ['required', 'email', 'max:150', 'unique:usuario,correo'],
             'telefono'   => ['nullable', 'string', 'max:20'],
             'contrasena' => ['required', 'string', 'min:6'],
             'estado'     => ['nullable', 'in:Activo,Inactivo'],
         ], [
-            'nombre.required'     => 'El nombre completo del nuevo administrador es obligatorio.',
+            'nombre.required'     => 'El nombre del nuevo administrador es obligatorio.',
             'correo.required'     => 'El correo corporativo es obligatorio.',
+            'correo.email'        => 'Ingresa un formato de correo electrónico válido.',
             'correo.unique'       => 'Ya existe una cuenta registrada con este correo electrónico.',
             'contrasena.required' => 'Debes asignar una contraseña de acceso inicial (mínimo 6 caracteres).',
             'contrasena.min'      => 'La contraseña debe contener al menos 6 caracteres.',
         ]);
 
-        [$nombre, $apellido] = $this->splitFullName($datos['nombre']);
+        if (!empty($datos['apellido'])) {
+            $nombre = trim($datos['nombre']);
+            $apellido = trim($datos['apellido']);
+        } else {
+            [$nombre, $apellido] = $this->splitFullName($datos['nombre']);
+        }
 
         // El rol está ESTRICTAMENTE fijado a Administrador (id_rol = 1)
-        $rolAdmin = Rol::where('nombre_rol', 'Administrador')->firstOrFail();
+        $rolAdmin = Rol::where('id_rol', 1)->orWhere('nombre_rol', 'Administrador')->firstOrFail();
 
         $usuario = Usuario::create([
             'id_rol'         => $rolAdmin->id_rol,
             'nombre'         => $nombre,
             'apellido'       => $apellido,
             'correo'         => strtolower(trim($datos['correo'])),
-            'telefono'       => $datos['telefono'] ?: null,
+            'telefono'       => !empty($datos['telefono']) ? trim($datos['telefono']) : null,
             'contrasena'     => Hash::make($datos['contrasena']),
             'perfil_uso'     => 'Proyecto comercial / Gran escala',
             'estado'         => $datos['estado'] ?? 'Activo',
             'fecha_registro' => now(),
         ]);
 
-        $usuario->load('rol');
+        $usuario->load(['rol', 'direcciones', 'pedidos.detalles']);
 
         // Registro de auditoría en Bitácora
-        BitacoraSeguridad::registrar(
-            auth()->id(),
-            'Creación de Administrador',
-            "Se creó la cuenta administrativa para {$usuario->nombre_completo} ({$usuario->correo})."
-        );
+        try {
+            BitacoraSeguridad::registrar(
+                auth()->id(),
+                'Creación de Administrador',
+                "Se creó la cuenta administrativa para {$usuario->nombre_completo} ({$usuario->correo})."
+            );
+        } catch (\Throwable $e) {
+            // Continuar aunque la tabla de bitácora no esté disponible
+        }
 
-        return response()->json([
-            'ok'      => true,
-            'message' => "Administrador {$usuario->nombre_completo} registrado exitosamente.",
-            'usuario' => $this->formatUser($usuario),
-        ], 201);
+        $mensajeExito = "Administrador {$usuario->nombre_completo} registrado exitosamente.";
+
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json([
+                'ok'      => true,
+                'message' => $mensajeExito,
+                'usuario' => $this->formatUserWithRelations($usuario),
+            ], 201);
+        }
+
+        return redirect()
+            ->route('admin.usuarios.index')
+            ->with('success', $mensajeExito);
     }
 
     /**
-     * Alterna el estado entre Activo e Inactivo sin recargar la página.
+     * Alterna el estado entre Activo e Inactivo en MySQL.
+     * Soporta peticiones AJAX (PATCH/POST) y formularios tradicionales.
      */
-    public function toggleEstado(int $id_usuario): JsonResponse
+    public function toggleEstado(Request $request, int $id_usuario): JsonResponse|RedirectResponse
     {
-        $usuario = Usuario::with('rol')->findOrFail($id_usuario);
+        $usuario = Usuario::with(['rol', 'direcciones', 'pedidos.detalles'])->findOrFail($id_usuario);
 
         if (auth()->check() && (int) auth()->id() === (int) $usuario->id_usuario && $usuario->estado === 'Activo') {
-            return response()->json([
-                'ok'      => false,
-                'message' => 'No puedes desactivar tu propia cuenta de administrador con sesión activa.',
-            ], 422);
+            $msgError = 'No puedes desactivar tu propia cuenta de administrador con sesión activa.';
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json([
+                    'ok'      => false,
+                    'message' => $msgError,
+                ], 422);
+            }
+            return redirect()->route('admin.usuarios.index')->with('error', $msgError);
         }
 
         $estadoAnterior = $usuario->estado;
         $usuario->estado = $usuario->estado === 'Activo' ? 'Inactivo' : 'Activo';
 
         if ($usuario->estado !== 'Activo') {
-            $usuario->tokens()->delete();
+            if (method_exists($usuario, 'tokens')) {
+                $usuario->tokens()->delete();
+            }
             $usuario->remember_token = null;
         }
 
         $usuario->save();
 
         // Registro de auditoría en Bitácora
-        BitacoraSeguridad::registrar(
-            auth()->id(),
-            'Cambio de Estado de Cuenta',
-            "Cuenta de {$usuario->nombre_completo} ({$usuario->correo}) cambió de '{$estadoAnterior}' a '{$usuario->estado}'."
-        );
+        try {
+            BitacoraSeguridad::registrar(
+                auth()->id(),
+                'Cambio de Estado de Cuenta',
+                "Cuenta de {$usuario->nombre_completo} ({$usuario->correo}) cambió de '{$estadoAnterior}' a '{$usuario->estado}'."
+            );
+        } catch (\Throwable $e) {
+            // Continuar aunque la tabla de bitácora no esté disponible
+        }
 
-        return response()->json([
-            'ok'      => true,
-            'message' => "Estado de {$usuario->nombre_completo} actualizado a {$usuario->estado}.",
-            'usuario' => $this->formatUser($usuario),
-        ]);
+        $mensaje = "Estado de {$usuario->nombre_completo} actualizado a {$usuario->estado}.";
+
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json([
+                'ok'      => true,
+                'message' => $mensaje,
+                'usuario' => $this->formatUserWithRelations($usuario),
+            ]);
+        }
+
+        return redirect()->route('admin.usuarios.index')->with('success', $mensaje);
     }
 
     /**
@@ -206,9 +213,9 @@ class UsuarioAdminController extends Controller
     }
 
     /**
-     * Formatea el modelo Usuario al contrato esperado por la vista.
+     * Formatea el modelo Usuario con todas sus direcciones y resumen de pedidos.
      */
-    private function formatUser(Usuario $u): array
+    private function formatUserWithRelations(Usuario $u): array
     {
         $fecha = $u->fecha_registro
             ? Carbon::parse($u->fecha_registro)->format('d/m/Y h:i a')
@@ -216,19 +223,75 @@ class UsuarioAdminController extends Controller
 
         $fechaFormateada = str_replace(['am', 'pm', 'AM', 'PM'], ['a. m.', 'p. m.', 'a. m.', 'p. m.'], $fecha);
 
+        $direcciones = $u->direcciones
+            ->sortByDesc('es_principal')
+            ->values()
+            ->map(function (DireccionUsuario $d) {
+                return [
+                    'id_direccion'     => $d->id_direccion,
+                    'nombre_ubicacion' => $d->nombre_ubicacion ?: 'Principal',
+                    'direccion'        => $d->direccion,
+                    'ciudad'           => $d->ciudad,
+                    'departamento'     => $d->departamento,
+                    'codigo_postal'    => $d->codigo_postal ?: 'N/A',
+                    'es_principal'     => (bool) $d->es_principal,
+                ];
+            })
+            ->all();
+
+        $pedidosCollection = $u->pedidos->sortByDesc('id_pedido')->values();
+
+        $pedidos = $pedidosCollection->map(function (Pedido $p) {
+            $estadoPedido = $p->estado_pedido ?? $p->estado ?? 'Pendiente';
+            $codigoPedido = $p->numero_pedido ?: ('PED-' . str_pad((string) $p->id_pedido, 4, '0', STR_PAD_LEFT));
+            $fechaPed = $p->fecha_pedido
+                ? str_replace(['am', 'pm', 'AM', 'PM'], ['a. m.', 'p. m.', 'a. m.', 'p. m.'], Carbon::parse($p->fecha_pedido)->format('d/m/Y h:i a'))
+                : '-';
+
+            return [
+                'id_pedido'        => $p->id_pedido,
+                'codigo'           => $codigoPedido,
+                'fecha'            => $fechaPed,
+                'estado'           => $estadoPedido,
+                'estado_pedido'    => $estadoPedido,
+                'estado_pago'      => $p->estado_pago ?? 'Pendiente',
+                'total'            => (float) $p->total,
+                'total_formateado' => '$' . number_format((float) $p->total, 0, ',', '.'),
+                'items_count'      => $p->detalles ? $p->detalles->sum('cantidad') : 0,
+                'metodo_pago'      => $p->metodo_pago ?? 'Contraentrega',
+            ];
+        })->all();
+
+        $totalGastado = (float) $pedidosCollection
+            ->whereNotIn('estado_pedido', ['Cancelado'])
+            ->sum('total');
+
+        $ultimoPedido = $pedidos[0] ?? null;
+
         return [
-            'id_usuario'     => $u->id_usuario,
-            'id'             => 'USR-' . str_pad((string) $u->id_usuario, 3, '0', STR_PAD_LEFT),
-            'nombre'         => $u->nombre_completo,
-            'nombre_pila'    => $u->nombre,
-            'apellido'       => $u->apellido,
-            'correo'         => $u->correo,
-            'rol'            => optional($u->rol)->nombre_rol ?? 'Cliente',
-            'estado'         => $u->estado ?? 'Activo',
-            'ultimoAcceso'   => $fechaFormateada,
-            'fecha_registro' => $fechaFormateada,
-            'telefono'       => $u->telefono ?: 'No registrado',
-            'notas'          => $u->perfil_uso ?: 'Alimentación continua',
+            'id_usuario'      => $u->id_usuario,
+            'id'              => 'USR-' . str_pad((string) $u->id_usuario, 3, '0', STR_PAD_LEFT),
+            'nombre'          => $u->nombre_completo,
+            'nombre_pila'     => $u->nombre,
+            'apellido'        => $u->apellido,
+            'correo'          => $u->correo,
+            'rol'             => optional($u->rol)->nombre_rol ?? ($u->id_rol === 1 ? 'Administrador' : 'Cliente'),
+            'id_rol'          => $u->id_rol,
+            'estado'          => $u->estado ?? 'Activo',
+            'ultimoAcceso'    => $ultimoPedido ? $ultimoPedido['fecha'] : $fechaFormateada,
+            'fecha_registro'  => $fechaFormateada,
+            'telefono'        => $u->telefono ?: 'No registrado',
+            'notas'           => $u->perfil_uso ?: 'Alimentación continua',
+            'perfil_uso'      => $u->perfil_uso ?: 'Alimentación continua',
+            'direcciones'     => $direcciones,
+            'pedidos'         => $pedidos,
+            'resumen_pedidos' => [
+                'total_pedidos'            => count($pedidos),
+                'total_comprado'           => $totalGastado,
+                'total_comprado_formateado'=> '$' . number_format($totalGastado, 0, ',', '.'),
+                'ultimo_pedido_fecha'      => $ultimoPedido ? $ultimoPedido['fecha'] : 'Sin pedidos',
+                'ultimo_pedido_codigo'     => $ultimoPedido ? $ultimoPedido['codigo'] : '-',
+            ],
         ];
     }
 
@@ -263,7 +326,6 @@ class UsuarioAdminController extends Controller
             ['nombre_rol' => 'Cliente', 'descripcion' => 'Acceso al catálogo, compras, carrito y seguimiento de pedidos']
         );
 
-        // Eliminar cualquier otro rol no autorizado
         Rol::whereNotIn('id_rol', [1, 2])->delete();
     }
 }

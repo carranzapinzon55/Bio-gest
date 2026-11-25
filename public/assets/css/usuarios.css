@@ -693,7 +693,8 @@ body.admin-layout {
     transition: opacity 0.2s ease, visibility 0.2s ease;
 }
 
-.modal-backdrop.open {
+.modal-backdrop.open,
+.modal-backdrop.active {
     opacity: 1;
     visibility: visible;
 }
@@ -710,7 +711,8 @@ body.admin-layout {
     overflow: hidden;
 }
 
-.modal-backdrop.open .modal-dialog {
+.modal-backdrop.open .modal-dialog,
+.modal-backdrop.active .modal-dialog {
     transform: translateY(0);
 }
 
@@ -892,7 +894,8 @@ body.admin-layout {
     z-index: 3000;
 }
 
-.toast-item {
+.toast-item,
+.toast-msg {
     background-color: var(--tg-dark);
     color: #ffffff;
     border-left: 4px solid var(--tg-gold);
@@ -907,9 +910,18 @@ body.admin-layout {
     animation: slideInToast 0.25s ease forwards;
 }
 
-.toast-item i {
+.toast-msg.toast-error {
+    border-left-color: #ef4444;
+}
+
+.toast-item i,
+.toast-msg i {
     color: var(--tg-gold);
     font-size: 1rem;
+}
+
+.toast-msg.toast-error i {
+    color: #f87171;
 }
 
 @keyframes slideInToast {

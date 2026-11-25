@@ -1,142 +1,9 @@
-/* RESET Y GENERALES */
-* {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-}
+/* ==========================================================================
+   ESTILOS DE VISTA DE CARRITO DE COMPRAS - TENEBRIOS GOLD (BIO-GEST)
+   Hereda el <header class="main-header"> (#111111), <nav class="main-nav">
+   y <footer class="main-footer"> desde index_style.css y layouts/app.blade.php
+   ========================================================================== */
 
-body {
-    font-family: Arial, sans-serif;
-    color: #333333;
-    background-color: #ffffff;
-}
-
-/* HEADER UNIFICADO */
-.main-header {
-    background-color: #ffffff;
-    border-bottom: 1px solid #e5e5e5;
-    width: 100%;
-}
-
-.header-top {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 15px 20px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 30px;
-}
-
-.logo-container .logo-link {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    text-decoration: none;
-    color: #000;
-}
-
-.logo-img {
-    width: 65px;
-    height: 65px;
-    object-fit: cover;
-    border-radius: 4px;
-}
-
-.logo-text {
-    display: flex;
-    flex-direction: column;
-}
-
-.brand-title {
-    font-weight: 800;
-    font-size: 18px;
-    color: #111;
-}
-
-.brand-subtitle {
-    font-size: 12px;
-    color: #666;
-    margin-top: 2px;
-}
-
-.search-container {
-    position: relative;
-    flex: 1;
-    max-width: 400px;
-}
-
-.search-container input {
-    width: 100%;
-    padding: 9px 38px 9px 14px;
-    border: 1px solid #aaa;
-    border-radius: 4px;
-    font-size: 14px;
-    outline: none;
-}
-
-.search-btn {
-    position: absolute;
-    right: 10px;
-    top: 50%;
-    transform: translateY(-50%);
-    background: none;
-    border: none;
-    cursor: pointer;
-    font-size: 14px;
-}
-
-.header-user-actions {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-}
-
-.user-link {
-    text-decoration: none;
-    color: #3f51b5;
-    font-size: 14px;
-    font-weight: 500;
-}
-
-.cart-btn {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    border: 1px solid #333;
-    padding: 6px 14px;
-    border-radius: 4px;
-    text-decoration: none;
-    color: #000;
-    font-weight: bold;
-    font-size: 14px;
-}
-
-.main-nav {
-    border-top: 1px solid #f0f0f0;
-    padding: 12px 0;
-}
-
-.main-nav ul {
-    display: flex;
-    justify-content: center;
-    gap: 35px;
-    list-style: none;
-}
-
-.main-nav a {
-    text-decoration: none;
-    color: #333;
-    font-size: 15px;
-    font-weight: 500;
-}
-
-.main-nav a.active, .main-nav a:hover {
-    font-weight: bold;
-    color: #000;
-}
-
-/* ESTRUCTURA CARRITO */
 .contenedor-principal {
     max-width: 1100px;
     margin: 30px auto 60px auto;
@@ -147,7 +14,7 @@ body {
     font-size: 26px;
     font-weight: bold;
     margin-bottom: 25px;
-    color: #111;
+    color: #111111;
 }
 
 .carrito-grid {
@@ -162,7 +29,7 @@ body {
     border: 1px solid #e0e0e0;
     border-radius: 6px;
     overflow: hidden;
-    background-color: #fff;
+    background-color: #ffffff;
 }
 
 .tabla-header {
@@ -172,7 +39,7 @@ body {
     background-color: #f9f9f9;
     border-bottom: 1px solid #e0e0e0;
     font-size: 13px;
-    color: #666;
+    color: #666666;
     font-weight: bold;
 }
 
@@ -181,7 +48,7 @@ body {
     grid-template-columns: 2.5fr 1fr 1fr 1fr 40px;
     align-items: center;
     padding: 16px;
-    border-bottom: 1px solid #eee;
+    border-bottom: 1px solid #eeeeee;
     font-size: 14px;
 }
 
@@ -199,20 +66,20 @@ body {
     width: 60px;
     height: 60px;
     object-fit: cover;
-    border: 1px solid #ddd;
+    border: 1px solid #dddddd;
     border-radius: 4px;
 }
 
 .prod-nombre {
     font-weight: bold;
-    color: #222;
+    color: #222222;
 }
 
 /* CONTROLES DE CANTIDAD */
 .selector-cantidad {
     display: inline-flex;
     align-items: center;
-    border: 1px solid #ccc;
+    border: 1px solid #cccccc;
     border-radius: 4px;
     overflow: hidden;
 }
@@ -227,7 +94,7 @@ body {
 }
 
 .btn-cant:hover {
-    background-color: #ddd;
+    background-color: #dddddd;
 }
 
 .input-cant {
@@ -242,7 +109,7 @@ body {
 
 .subtotal-item {
     font-weight: bold;
-    color: #111;
+    color: #111111;
 }
 
 .btn-eliminar {
@@ -265,10 +132,10 @@ body {
 .btn-seguir-comprando {
     display: inline-block;
     padding: 10px 20px;
-    border: 1px solid #333;
+    border: 1px solid #333333;
     border-radius: 4px;
     text-decoration: none;
-    color: #333;
+    color: #333333;
     font-size: 14px;
     font-weight: bold;
     transition: background-color 0.2s;
@@ -290,36 +157,36 @@ body {
     font-size: 18px;
     font-weight: bold;
     margin-bottom: 20px;
-    color: #111;
+    color: #111111;
 }
 
 .linea-resumen {
     display: flex;
     justify-content: space-between;
     font-size: 14px;
-    color: #555;
+    color: #555555;
     margin-bottom: 14px;
 }
 
 .linea-resumen.total {
     font-size: 18px;
     font-weight: bold;
-    color: #111;
+    color: #111111;
     margin-top: 10px;
     margin-bottom: 20px;
 }
 
 .divisor-resumen {
     border: none;
-    border-top: 1px solid #ddd;
+    border-top: 1px solid #dddddd;
     margin: 15px 0;
 }
 
 .btn-finalizar-compra {
     width: 100%;
     padding: 12px;
-    background-color: #222;
-    color: #fff;
+    background-color: #111111;
+    color: #e4b353;
     border: none;
     border-radius: 4px;
     font-size: 15px;
@@ -329,47 +196,7 @@ body {
 }
 
 .btn-finalizar-compra:hover {
-    background-color: #000;
-}
-
-.metodos-pago {
-    margin-top: 25px;
-}
-
-.label-pago {
-    font-size: 13px;
-    color: #666;
-    display: block;
-    margin-bottom: 10px;
-}
-
-.iconos-pago {
-    display: flex;
-    gap: 10px;
-}
-
-.box-pago {
-    width: 50px;
-    height: 35px;
-    border: 1px dashed #ccc;
-    border-radius: 4px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background-color: #fff;
-    font-size: 16px;
-}
-
-.main-footer {
-    background-color: #f9f9f9;
-    border-top: 1px solid #e0e0e0;
-    padding: 20px 0;
-    text-align: center;
-}
-
-.footer-container p {
-    font-size: 14px;
-    color: #666;
+    background-color: #000000;
 }
 
 /* RESPONSIVE */
@@ -377,7 +204,7 @@ body {
     .carrito-grid {
         grid-template-columns: 1fr;
     }
-    
+
     .tabla-header {
         display: none;
     }

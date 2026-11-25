@@ -79,9 +79,10 @@ Route::prefix('carrito')->name('carrito.')->group(function () {
 });
 
 Route::middleware(['auth'])->group(function () {
-    // Checkout / Finalizar Compra
+    // Checkout / Finalizar Compra (soporta /finalizar-compra y /checkout)
     Route::get('/finalizar-compra', [CheckoutController::class, 'index'])->name('checkout.index');
     Route::post('/finalizar-compra', [CheckoutController::class, 'procesar'])->name('checkout.procesar');
+    Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.alias');
 
     // Cuenta de Cliente, Perfil, Direcciones y Mis Pedidos
     Route::prefix('mi-cuenta')->name('cliente.')->group(function () {
@@ -154,7 +155,7 @@ Route::middleware(['auth', 'role:Administrador'])->prefix('admin')->name('admin.
     Route::get('/usuarios/{id_usuario}', [UsuarioAdminController::class, 'show'])->name('usuarios.show');
     Route::post('/usuarios', [UsuarioAdminController::class, 'store'])->name('usuarios.store');
     Route::put('/usuarios/{id_usuario}', [UsuarioAdminController::class, 'update'])->name('usuarios.update');
-    Route::patch('/usuarios/{id_usuario}/estado', [UsuarioAdminController::class, 'toggleEstado'])->name('usuarios.estado');
+    Route::match(['patch', 'post'], '/usuarios/{id_usuario}/estado', [UsuarioAdminController::class, 'toggleEstado'])->name('usuarios.estado');
     Route::delete('/usuarios/{id_usuario}', [UsuarioAdminController::class, 'destroy'])->name('usuarios.destroy');
 
     // 10. Seguridad, Roles y Políticas Institucionales
