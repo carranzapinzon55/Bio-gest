@@ -115,7 +115,7 @@ class AuthApiController extends Controller
             'apellido'       => $request->apellido,
             'correo'         => $request->correo,
             'telefono'       => $request->telefono,
-            'contrasena'     => Hash::make($request->contrasena),
+            'contrasena'     => $request->contrasena,
             'perfil_uso'     => $request->perfil_uso ?? 'Alimentación continua',
             'estado'         => 'Activo',
             'fecha_registro' => now(),

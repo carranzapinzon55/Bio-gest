@@ -12,7 +12,6 @@ use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\View\View;
 
 class UsuarioAdminController extends Controller
@@ -107,7 +106,7 @@ class UsuarioAdminController extends Controller
             'apellido'       => $apellido,
             'correo'         => strtolower(trim($datos['correo'])),
             'telefono'       => !empty($datos['telefono']) ? trim($datos['telefono']) : null,
-            'contrasena'     => Hash::make($datos['contrasena']),
+            'contrasena'     => $datos['contrasena'],
             'perfil_uso'     => 'Proyecto comercial / Gran escala',
             'estado'         => $datos['estado'] ?? 'Activo',
             'fecha_registro' => now(),

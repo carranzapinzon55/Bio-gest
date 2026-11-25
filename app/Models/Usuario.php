@@ -36,6 +36,7 @@ class Usuario extends Authenticatable
 
     protected $casts = [
         'fecha_registro' => 'datetime',
+        'contrasena'     => 'hashed',
     ];
 
     public function getAuthPassword(): string

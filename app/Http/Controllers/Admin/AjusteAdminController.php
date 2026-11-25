@@ -9,7 +9,6 @@ use App\Models\Usuario;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -65,7 +64,7 @@ class AjusteAdminController extends Controller
         $admin->telefono = !empty($datos['telefono']) ? trim($datos['telefono']) : null;
 
         if (!empty($datos['contrasena'])) {
-            $admin->contrasena = Hash::make($datos['contrasena']);
+            $admin->contrasena = $datos['contrasena'];
         }
 
         $admin->save();
@@ -140,7 +139,7 @@ class AjusteAdminController extends Controller
                 $user->telefono = $request->input('telefono_admin');
             }
             if ($request->filled('contrasena_nueva')) {
-                $user->contrasena = Hash::make($request->input('contrasena_nueva'));
+                $user->contrasena = $request->input('contrasena_nueva');
             }
             $user->save();
         }

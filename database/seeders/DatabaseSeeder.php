@@ -4,7 +4,6 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Hash;
 use App\Models\Rol;
 use App\Models\Usuario;
 use App\Models\DireccionUsuario;
@@ -38,7 +37,7 @@ class DatabaseSeeder extends Seeder
             ['nombre_rol' => 'Cliente', 'descripcion' => 'Acceso al catálogo, compras, carrito y seguimiento de pedidos']
         );
 
-        // 2. Usuarios con contraseñas cifradas vía Hash::make
+        // 2. Usuarios con contraseñas cifradas automáticamente vía cast 'hashed' en Usuario
         $admin = Usuario::firstOrCreate(
             ['correo' => 'admin@tenebriosgold.com'],
             [
@@ -46,7 +45,7 @@ class DatabaseSeeder extends Seeder
                 'nombre'         => 'Administrador',
                 'apellido'       => 'BIO-GEST',
                 'telefono'       => '3001234567',
-                'contrasena'     => Hash::make('Admin123*'),
+                'contrasena'     => 'Admin123*',
                 'perfil_uso'     => 'Proyecto comercial / Gran escala',
                 'estado'         => 'Activo',
                 'fecha_registro' => now(),
@@ -60,7 +59,7 @@ class DatabaseSeeder extends Seeder
                 'nombre'         => 'Cliente',
                 'apellido'       => 'Tenebrios Gold',
                 'telefono'       => '3109876543',
-                'contrasena'     => Hash::make('Cliente123*'),
+                'contrasena'     => 'Cliente123*',
                 'perfil_uso'     => 'Alimentación continua',
                 'estado'         => 'Activo',
                 'fecha_registro' => now(),

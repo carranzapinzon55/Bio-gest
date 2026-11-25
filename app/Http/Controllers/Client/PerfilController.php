@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Models\DireccionUsuario;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
@@ -65,7 +64,7 @@ class PerfilController extends Controller
         ];
 
         if (!empty($datos['contrasena'])) {
-            $updatePayload['contrasena'] = Hash::make($datos['contrasena']);
+            $updatePayload['contrasena'] = $datos['contrasena'];
         }
 
         $usuario->update($updatePayload);

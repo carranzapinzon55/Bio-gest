@@ -85,7 +85,7 @@ class AuthController extends Controller
             'correo'     => strtolower(trim($datos['correo'])),
             'telefono'   => !empty($datos['telefono']) ? trim($datos['telefono']) : null,
             'perfil_uso' => $datos['perfil_uso'],
-            'contrasena' => Hash::make($datos['contrasena']),
+            'contrasena' => $datos['contrasena'],
             'estado'     => 'Activo',
         ]);
 
