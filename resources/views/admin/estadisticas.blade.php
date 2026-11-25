@@ -15,10 +15,20 @@
             </p>
         </div>
 
-        <div>
+        <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+            <!-- Exportar Excel (.xlsx) -->
+            <a href="{{ route('admin.estadisticas.excel', request()->all()) }}" class="tg-btn-dark" style="font-size:0.88rem; background:#047857; border-color:#059669; color:#ffffff;" title="Descargar reporte formateado en Excel (.xlsx)">
+                <i class="fa-solid fa-file-excel" style="color:#ffffff; font-size:1.05rem;"></i> Exportar Excel (.xlsx)
+            </a>
+
+            <!-- Exportar PDF -->
+            <a href="{{ route('admin.estadisticas.pdf', request()->all()) }}" class="tg-btn-dark" style="font-size:0.88rem; background:#b91c1c; border-color:#dc2626; color:#ffffff;" title="Descargar reporte ejecutivo en PDF">
+                <i class="fa-solid fa-file-pdf" style="color:#ffffff; font-size:1.05rem;"></i> Exportar PDF
+            </a>
+
             <!-- Botón Funcional Exportar CSV -->
-            <a href="{{ route('admin.estadisticas.csv', request()->all()) }}" class="tg-btn-dark" style="font-size:0.9rem;" title="Descargar reporte filtrado compatible con Excel">
-                <i class="fa-solid fa-file-csv" style="color:#e6a100; font-size:1.1rem;"></i> Exportar CSV
+            <a href="{{ route('admin.estadisticas.csv', request()->all()) }}" class="tg-btn-dark" style="font-size:0.88rem;" title="Descargar reporte filtrado compatible con Excel">
+                <i class="fa-solid fa-file-csv" style="color:#e6a100; font-size:1.05rem;"></i> Exportar CSV
             </a>
         </div>
     </div>

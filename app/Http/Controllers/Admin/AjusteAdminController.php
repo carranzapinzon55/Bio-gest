@@ -1,0 +1,181 @@
+<?php
+
+namespace App\Http\Controllers\Admin;
+
+use App\Http\Controllers\Controller;
+use App\Models\BitacoraSeguridad;
+use App\Models\Configuracion;
+use App\Models\Usuario;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\View\View;
+use Symfony\Component\HttpFoundation\StreamedResponse;
+
+class AjusteAdminController extends Controller
+{
+    /**
+     * Pantalla de Ajustes del Sistema y Parámetros Comerciales BIO-GEST.
+     */
+    public function index(): View
+    {
+        $ajustes = [
+            'costo_envio_bogota'   => (float) Configuracion::get('costo_envio_bogota', 10000),
+            'costo_envio_nacional' => (float) Configuracion::get('costo_envio_nacional', 18000),
+            'monto_envio_gratis'   => (float) Configuracion::get('monto_envio_gratis', 122900),
+            'porcentaje_iva'       => (float) Configuracion::get('porcentaje_iva', 19),
+            'whatsapp_soporte'     => Configuracion::get('whatsapp_soporte', '+57 310 000 0000'),
+            'alerta_stock_bajo'    => (int) Configuracion::get('alerta_stock_bajo', 1),
+            'alerta_nuevo_pedido'  => (int) Configuracion::get('alerta_nuevo_pedido', 1),
+        ];
+
+        $admin = auth()->user();
+
+        return view('admin.ajustes.index', compact('ajustes', 'admin'));
+    }
+
+    /**
+     * Guarda los parámetros comerciales y opcionalmente actualiza el perfil del administrador.
+     */
+    public function update(Request $request): RedirectResponse
+    {
+        $datos = $request->validate([
+            'costo_envio_bogota'   => ['required', 'numeric', 'gte:0'],
+            'costo_envio_nacional' => ['required', 'numeric', 'gte:0'],
+            'monto_envio_gratis'   => ['required', 'numeric', 'gte:0'],
+            'porcentaje_iva'       => ['required', 'numeric', 'gte:0', 'lte:100'],
+            'whatsapp_soporte'     => ['required', 'string', 'max:30'],
+            'alerta_stock_bajo'    => ['nullable', 'boolean'],
+            'alerta_nuevo_pedido'  => ['nullable', 'boolean'],
+
+            // Datos de perfil de admin (opcional)
+            'telefono_admin'       => ['nullable', 'string', 'max:20'],
+            'contrasena_nueva'     => ['nullable', 'string', 'min:6'],
+        ], [
+            'costo_envio_bogota.required'   => 'El costo de envío a Bogotá es obligatorio.',
+            'costo_envio_nacional.required' => 'El costo de envío nacional es obligatorio.',
+            'monto_envio_gratis.required'   => 'El monto de envío gratis es obligatorio.',
+            'porcentaje_iva.required'       => 'El porcentaje de IVA es obligatorio.',
+            'whatsapp_soporte.required'     => 'El número de WhatsApp de soporte es obligatorio.',
+        ]);
+
+        Configuracion::set('costo_envio_bogota', $datos['costo_envio_bogota'], 'comercial', 'Costo de envío urbano para Bogotá');
+        Configuracion::set('costo_envio_nacional', $datos['costo_envio_nacional'], 'comercial', 'Costo de envío nacional');
+        Configuracion::set('monto_envio_gratis', $datos['monto_envio_gratis'], 'comercial', 'Monto de compra para envío gratis');
+        Configuracion::set('porcentaje_iva', $datos['porcentaje_iva'], 'comercial', 'Porcentaje de IVA');
+        Configuracion::set('whatsapp_soporte', $datos['whatsapp_soporte'], 'soporte', 'Línea de atención WhatsApp');
+        Configuracion::set('alerta_stock_bajo', $request->has('alerta_stock_bajo') ? '1' : '0', 'notificaciones', 'Alerta stock bajo');
+        Configuracion::set('alerta_nuevo_pedido', $request->has('alerta_nuevo_pedido') ? '1' : '0', 'notificaciones', 'Alerta nuevo pedido');
+
+        // Actualizar datos del admin si aplica
+        if (auth()->check()) {
+            $user = auth()->user();
+            if ($request->filled('telefono_admin')) {
+                $user->telefono = $request->input('telefono_admin');
+            }
+            if ($request->filled('contrasena_nueva')) {
+                $user->contrasena = Hash::make($request->input('contrasena_nueva'));
+            }
+            $user->save();
+        }
+
+        BitacoraSeguridad::registrar(
+            auth()->id(),
+            'Actualización de Parámetros Comerciales',
+            'Se modificaron las tarifas de envío, IVA y parámetros de soporte en BIO-GEST.'
+        );
+
+        return redirect()->route('admin.ajustes.index')
+            ->with('success', 'Ajustes comerciales y parámetros del sistema guardados exitosamente en MySQL.');
+    }
+
+    /**
+     * Genera y descarga una copia de respaldo completa (.sql) de la base de datos MySQL.
+     */
+    public function descargarRespaldoSql(): StreamedResponse
+    {
+        $dbName = config('database.connections.mysql.database', 'bio_gest');
+        $fileName = 'respaldo_biogest_' . now()->format('Y_m_d_His') . '.sql';
+
+        BitacoraSeguridad::registrar(
+            auth()->id(),
+            'Descarga de Respaldo Base de Datos',
+            "Generación y descarga de archivo de respaldo .sql de '{$dbName}'."
+        );
+
+        $headers = [
+            'Content-Type'        => 'application/sql',
+            'Content-Disposition' => "attachment; filename=\"{$fileName}\"",
+            'Pragma'              => 'no-cache',
+            'Cache-Control'       => 'must-revalidate, post-check=0, pre-check=0',
+            'Expires'             => '0',
+        ];
+
+        return response()->stream(function () use ($dbName) {
+            $out = fopen('php://output', 'w');
+
+            // Encabezado institucional
+            fwrite($out, "-- =====================================================================\n");
+            fwrite($out, "-- TENEBRIOS GOLD · BIO-GEST - COPIA DE SEGURIDAD MYSQL OFICIAL\n");
+            fwrite($out, "-- Base de datos: {$dbName}\n");
+            fwrite($out, "-- Generado el: " . now()->format('Y-m-d H:i:s') . "\n");
+            fwrite($out, "-- Generado por usuario ID: " . (auth()->id() ?? '1') . " (" . (auth()->user()->correo ?? 'admin@tenebriosgold.com') . ")\n");
+            fwrite($out, "-- =====================================================================\n\n");
+            fwrite($out, "SET FOREIGN_KEY_CHECKS=0;\n");
+            fwrite($out, "SET SQL_MODE = \"NO_AUTO_VALUE_ON_ZERO\";\n");
+            fwrite($out, "SET time_zone = \"-05:00\";\n\n");
+
+            // Obtener todas las tablas
+            $tablesRows = DB::select('SHOW TABLES');
+            $tables = [];
+            foreach ($tablesRows as $tr) {
+                $trArr = (array) $tr;
+                $tables[] = reset($trArr);
+            }
+
+            foreach ($tables as $table) {
+                fwrite($out, "\n-- -------------------------------------------------------------\n");
+                fwrite($out, "-- Estructura de tabla para `{$table}`\n");
+                fwrite($out, "-- -------------------------------------------------------------\n");
+                fwrite($out, "DROP TABLE IF EXISTS `{$table}`;\n");
+
+                $createTable = DB::select("SHOW CREATE TABLE `{$table}`");
+                $createArr = (array) $createTable[0];
+                $createSql = $createArr['Create Table'] ?? '';
+                fwrite($out, $createSql . ";\n\n");
+
+                // Datos de la tabla
+                $rows = DB::table($table)->get();
+                if ($rows->count() > 0) {
+                    fwrite($out, "-- Volcado de datos para `{$table}` (" . $rows->count() . " registros)\n");
+
+                    $chunks = $rows->chunk(50);
+                    foreach ($chunks as $chunk) {
+                        $insertValues = [];
+                        foreach ($chunk as $row) {
+                            $rowArray = (array) $row;
+                            $escapedValues = array_map(function ($val) {
+                                if (is_null($val)) {
+                                    return 'NULL';
+                                }
+                                return "'" . addslashes((string) $val) . "'";
+                            }, $rowArray);
+                            $insertValues[] = "(" . implode(', ', $escapedValues) . ")";
+                        }
+
+                        $firstRowCols = array_keys((array) $chunk->first());
+                        $colsSql = "`" . implode('`, `', $firstRowCols) . "`";
+
+                        fwrite($out, "INSERT INTO `{$table}` ({$colsSql}) VALUES\n" . implode(",\n", $insertValues) . ";\n");
+                    }
+                    fwrite($out, "\n");
+                }
+            }
+
+            fwrite($out, "SET FOREIGN_KEY_CHECKS=1;\n");
+            fwrite($out, "-- Fin del respaldo BIO-GEST\n");
+            fclose($out);
+        }, 200, $headers);
+    }
+}

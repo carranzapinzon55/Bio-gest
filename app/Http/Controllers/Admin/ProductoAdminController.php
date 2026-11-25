@@ -67,8 +67,7 @@ class ProductoAdminController extends Controller
             'precio'                     => ['required', 'numeric', 'gt:0'],
             'stock'                      => ['required', 'integer', 'gte:0'],
             'stock_minimo'               => ['nullable', 'integer', 'gte:0'],
-            'imagen'                     => ['nullable', 'string', 'max:255'],
-            'imagen_archivo'             => ['nullable', 'image', 'mimes:jpg,jpeg,png', 'max:5120'],
+            'imagen'                     => ['nullable'],
             'estado'                     => ['required', 'in:Activo,Inactivo'],
         ], [
             'id_categoria.required'    => 'La categoría del producto es obligatoria.',
@@ -82,10 +81,19 @@ class ProductoAdminController extends Controller
         ]);
 
         $datos['stock_minimo'] = $datos['stock_minimo'] ?? 10;
-        unset($datos['imagen_archivo']);
-        if ($request->hasFile('imagen_archivo')) {
+
+        if ($request->hasFile('imagen')) {
+            $request->validate([
+                'imagen' => ['file', 'image', 'mimes:png,jpg,jpeg,webp', 'max:5120'],
+            ], [
+                'imagen.image' => 'El archivo seleccionado debe ser una imagen válida.',
+                'imagen.mimes' => 'Formatos permitidos: PNG, JPG, JPEG o WEBP.',
+                'imagen.max'   => 'El tamaño máximo de la imagen es 5MB.',
+            ]);
+            $datos['imagen'] = $this->storeProductImage($request->file('imagen'));
+        } elseif ($request->hasFile('imagen_archivo')) {
             $datos['imagen'] = $this->storeProductImage($request->file('imagen_archivo'));
-        } elseif (empty($datos['imagen'])) {
+        } elseif (empty($datos['imagen']) || !is_string($datos['imagen'])) {
             $datos['imagen'] = 'Tenebrios_img.png';
         }
 
@@ -149,8 +157,7 @@ class ProductoAdminController extends Controller
             'precio'                     => ['required', 'numeric', 'gt:0'],
             'stock'                      => ['required', 'integer', 'gte:0'],
             'stock_minimo'               => ['nullable', 'integer', 'gte:0'],
-            'imagen'                     => ['nullable', 'string', 'max:255'],
-            'imagen_archivo'             => ['nullable', 'image', 'mimes:jpg,jpeg,png', 'max:5120'],
+            'imagen'                     => ['nullable'],
             'estado'                     => ['required', 'in:Activo,Inactivo'],
         ], [
             'precio.gt'  => 'El precio debe ser estrictamente mayor a 0.',
@@ -158,9 +165,21 @@ class ProductoAdminController extends Controller
         ]);
 
         $datos['stock_minimo'] = $datos['stock_minimo'] ?? $productoModel->stock_minimo ?? 10;
-        unset($datos['imagen_archivo']);
-        if ($request->hasFile('imagen_archivo')) {
+
+        if ($request->hasFile('imagen')) {
+            $request->validate([
+                'imagen' => ['file', 'image', 'mimes:png,jpg,jpeg,webp', 'max:5120'],
+            ], [
+                'imagen.image' => 'El archivo seleccionado debe ser una imagen válida.',
+                'imagen.mimes' => 'Formatos permitidos: PNG, JPG, JPEG o WEBP.',
+                'imagen.max'   => 'El tamaño máximo de la imagen es 5MB.',
+            ]);
+            $datos['imagen'] = $this->storeProductImage($request->file('imagen'));
+        } elseif ($request->hasFile('imagen_archivo')) {
             $datos['imagen'] = $this->storeProductImage($request->file('imagen_archivo'));
+        } else {
+            // Mantener imagen anterior si no se subió una nueva
+            unset($datos['imagen']);
         }
 
         DB::transaction(function () use ($productoModel, $datos) {

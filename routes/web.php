@@ -16,6 +16,10 @@ use App\Http\Controllers\Admin\InventarioAdminController;
 use App\Http\Controllers\Admin\PedidoAdminController;
 use App\Http\Controllers\Admin\UsuarioAdminController;
 use App\Http\Controllers\Admin\EstadisticaAdminController;
+use App\Http\Controllers\Admin\PromocionAdminController;
+use App\Http\Controllers\Admin\SeguridadAdminController;
+use App\Http\Controllers\Admin\ChatAdminController;
+use App\Http\Controllers\Admin\AjusteAdminController;
 use App\Http\Controllers\ReporteController;
 
 /*
@@ -107,6 +111,8 @@ Route::middleware(['auth', 'role:Administrador'])->prefix('admin')->name('admin.
     // 2. Módulo Unificado de Estadísticas y Reportes
     Route::get('/estadisticas', [EstadisticaAdminController::class, 'index'])->name('estadisticas');
     Route::get('/estadisticas/exportar-csv', [EstadisticaAdminController::class, 'exportarCsv'])->name('estadisticas.csv');
+    Route::get('/estadisticas/exportar-excel', [EstadisticaAdminController::class, 'exportarExcel'])->name('estadisticas.excel');
+    Route::get('/estadisticas/exportar-pdf', [EstadisticaAdminController::class, 'exportarPdf'])->name('estadisticas.pdf');
 
     // Redirección y compatibilidad con reportes anteriores
     Route::get('/reportes/ventas', fn () => redirect()->route('admin.estadisticas'))->name('reportes.ventas');
@@ -129,21 +135,34 @@ Route::middleware(['auth', 'role:Administrador'])->prefix('admin')->name('admin.
     Route::get('/alertas-stock', [InventarioAdminController::class, 'alertasStock'])->name('alertas-stock');
 
     // 7. Promociones
-    Route::get('/promociones', [DashboardController::class, 'promociones'])->name('promociones.index');
+    Route::get('/promociones', [PromocionAdminController::class, 'index'])->name('promociones.index');
+    Route::post('/promociones', [PromocionAdminController::class, 'store'])->name('promociones.store');
+    Route::put('/promociones/{id_promocion}', [PromocionAdminController::class, 'update'])->name('promociones.update');
+    Route::patch('/promociones/{id_promocion}/estado', [PromocionAdminController::class, 'toggleEstado'])->name('promociones.estado');
+    Route::delete('/promociones/{id_promocion}', [PromocionAdminController::class, 'destroy'])->name('promociones.destroy');
 
-    // 8. Chats de Clientes
-    Route::get('/chats', [DashboardController::class, 'chats'])->name('chats.index');
+    // 8. Centro de Mensajes y Chatbot BIO-GEST
+    Route::get('/chats', [ChatAdminController::class, 'index'])->name('chats.index');
+    Route::post('/chats/responder', [ChatAdminController::class, 'responderChat'])->name('chats.responder');
+    Route::patch('/chats/contacto/{id_mensaje}/atender', [ChatAdminController::class, 'atenderContacto'])->name('chats.contacto.atender');
+    Route::post('/chats/faq', [ChatAdminController::class, 'storeFaq'])->name('chats.faq.store');
+    Route::put('/chats/faq/{id_faq}', [ChatAdminController::class, 'updateFaq'])->name('chats.faq.update');
+    Route::delete('/chats/faq/{id_faq}', [ChatAdminController::class, 'destroyFaq'])->name('chats.faq.destroy');
 
-    // 9. Gestión de Usuarios
+    // 9. Gestión de Usuarios (Exclusivo Administrador y Ficha / Activación)
     Route::get('/usuarios', [UsuarioAdminController::class, 'index'])->name('usuarios.index');
+    Route::get('/usuarios/{id_usuario}', [UsuarioAdminController::class, 'show'])->name('usuarios.show');
     Route::post('/usuarios', [UsuarioAdminController::class, 'store'])->name('usuarios.store');
     Route::put('/usuarios/{id_usuario}', [UsuarioAdminController::class, 'update'])->name('usuarios.update');
     Route::patch('/usuarios/{id_usuario}/estado', [UsuarioAdminController::class, 'toggleEstado'])->name('usuarios.estado');
     Route::delete('/usuarios/{id_usuario}', [UsuarioAdminController::class, 'destroy'])->name('usuarios.destroy');
 
-    // 10. Seguridad y Roles
-    Route::get('/seguridad', [DashboardController::class, 'seguridad'])->name('seguridad.index');
+    // 10. Seguridad, Roles y Políticas Institucionales
+    Route::get('/seguridad', [SeguridadAdminController::class, 'index'])->name('seguridad.index');
+    Route::post('/seguridad/politicas', [SeguridadAdminController::class, 'updatePoliticas'])->name('seguridad.politicas.update');
 
-    // 11. Ajustes del Sistema
-    Route::get('/ajustes', [DashboardController::class, 'ajustes'])->name('ajustes.index');
+    // 11. Ajustes del Sistema y Parámetros Comerciales
+    Route::get('/ajustes', [AjusteAdminController::class, 'index'])->name('ajustes.index');
+    Route::post('/ajustes', [AjusteAdminController::class, 'update'])->name('ajustes.update');
+    Route::get('/ajustes/respaldo-sql', [AjusteAdminController::class, 'descargarRespaldoSql'])->name('ajustes.respaldo.sql');
 });

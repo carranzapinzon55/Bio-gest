@@ -40,7 +40,15 @@ class PedidoAdminController extends Controller
 
         $pedidos = $query->paginate(15)->withQueryString();
 
-        return view('admin.pedidos.index', compact('pedidos'));
+        // 4 KPIs reales desde MySQL
+        $kpis = [
+            'total'      => Pedido::count(),
+            'pendientes' => Pedido::where('estado_pedido', 'Pendiente')->count(),
+            'confirmados_enviados' => Pedido::whereIn('estado_pedido', ['Confirmado', 'Procesando', 'Enviado', 'Despachado', 'Listo para retiro'])->count(),
+            'entregados' => Pedido::whereIn('estado_pedido', ['Entregado', 'Completado'])->count(),
+        ];
+
+        return view('admin.pedidos.index', compact('pedidos', 'kpis'));
     }
 
     /**

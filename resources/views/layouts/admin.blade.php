@@ -18,7 +18,75 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 
     <!-- Estilos Oficiales Admin Tenebrios Gold -->
-    <link rel="stylesheet" href="{{ asset('assets/css/admin.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/css/admin.css') }}?v={{ file_exists(public_path('assets/css/admin.css')) ? filemtime(public_path('assets/css/admin.css')) : time() }}">
+
+    <style>
+        /* Alta especificidad para Menú Lateral Blanco Tenebrios Gold */
+        html body .admin-layout-wrapper .admin-sidebar,
+        html body #adminSidebar.admin-sidebar {
+            background-color: #ffffff !important;
+            color: #111111 !important;
+            border-right: 1px solid #e5e7eb !important;
+        }
+
+        html body .admin-layout-wrapper .admin-sidebar .sidebar-nav-container,
+        html body .admin-layout-wrapper .admin-sidebar .sidebar-menu {
+            background-color: #ffffff !important;
+            color: #111111 !important;
+        }
+
+        /* ÚNICAMENTE el bloque del logo permanece en negro #111111 */
+        html body .admin-layout-wrapper .admin-sidebar .sidebar-brand-block {
+            background-color: #111111 !important;
+            border-bottom: 2px solid #e6a100 !important;
+        }
+
+        html body .admin-layout-wrapper .admin-sidebar .sidebar-brand-block .brand-title {
+            color: #ffffff !important;
+        }
+
+        html body .admin-layout-wrapper .admin-sidebar .sidebar-brand-block .brand-subtitle {
+            color: #e6a100 !important;
+        }
+
+        html body .admin-layout-wrapper .admin-sidebar .sidebar-menu li a {
+            color: #111111 !important;
+            background-color: transparent !important;
+            border-left: 3px solid transparent !important;
+        }
+
+        html body .admin-layout-wrapper .admin-sidebar .sidebar-menu li a i {
+            color: #4b5563 !important;
+        }
+
+        html body .admin-layout-wrapper .admin-sidebar .sidebar-menu li a:hover {
+            background-color: #f3f4f6 !important;
+            color: #111111 !important;
+        }
+
+        html body .admin-layout-wrapper .admin-sidebar .sidebar-menu li a:hover i {
+            color: #e6a100 !important;
+        }
+
+        /* Ítem Activo: fondo crema #fdf8f0, texto dorado #e6a100, borde izquierdo dorado 3px */
+        html body .admin-layout-wrapper .admin-sidebar .sidebar-menu li.active a,
+        html body .admin-layout-wrapper .admin-sidebar .sidebar-menu li.active a:hover {
+            background-color: #fdf8f0 !important;
+            color: #e6a100 !important;
+            border-left: 3px solid #e6a100 !important;
+            font-weight: 700 !important;
+        }
+
+        html body .admin-layout-wrapper .admin-sidebar .sidebar-menu li.active a i {
+            color: #e6a100 !important;
+        }
+
+        html body .admin-layout-wrapper .admin-sidebar .sidebar-footer {
+            background-color: #ffffff !important;
+            color: #6b7280 !important;
+            border-top: 1px solid #e5e7eb !important;
+        }
+    </style>
 
     @stack('styles')
 </head>

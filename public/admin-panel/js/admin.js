@@ -442,7 +442,7 @@
     const inventoryBarColor = (pct) => (pct >= 65 ? 'green' : pct >= 40 ? 'yellow' : 'red');
     const inventoryStatus = (item) => (item.stock <= item.minStock ? 'Stock bajo' : 'En stock');
     const inventoryChange = (item) => item.change == null
-        ? '<span class="muted">Sin comparativo</span>'
+        ? ''
         : `<span class="trend ${item.change >= 0 ? 'up' : 'down'}"><i class="fa-solid fa-arrow-${item.change >= 0 ? 'up' : 'down'}"></i> ${item.change >= 0 ? '+' : ''}${item.change}%</span> vs. mes anterior`;
     const displayOrderStatus = (status) => ({
         Procesando: 'Confirmado',
@@ -1550,7 +1550,7 @@
             <div class="page-head">
                 <div>
                     <h2>Inventario</h2>
-                    <p>Control de stock de tus animales</p>
+                    <p>Control de existencias, entradas, salidas y ajustes de productos</p>
                 </div>
                 <div class="head-actions">
                     <label class="date-pill">

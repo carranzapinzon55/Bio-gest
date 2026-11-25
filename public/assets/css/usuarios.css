@@ -51,98 +51,8 @@ body.admin-layout {
 }
 
 /* ==========================================================================
-   1. SIDEBAR IZQUIERDO (#111111 y Dorado #E5B84B)
+   1. ESTILOS DE VISTA DE USUARIOS (El sidebar es provisto por admin.css)
    ========================================================================== */
-.admin-sidebar {
-    width: 260px;
-    background-color: var(--tg-dark);
-    color: #ffffff;
-    border-right: 3px solid var(--tg-gold);
-    display: flex;
-    flex-direction: column;
-    flex-shrink: 0;
-    transition: transform 0.3s ease;
-    z-index: 1000;
-}
-
-.admin-sidebar .brand {
-    padding: 22px 20px;
-    border-bottom: 1px solid #262626;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-
-.admin-sidebar .brand img {
-    width: 42px;
-    height: 42px;
-    object-fit: contain;
-    border-radius: 6px;
-    border: 1px solid var(--tg-gold);
-    background-color: #1a1a1a;
-}
-
-.admin-sidebar .brand h2 {
-    color: var(--tg-gold);
-    font-size: 1.12rem;
-    font-weight: 800;
-    margin: 0;
-    letter-spacing: 0.5px;
-}
-
-.admin-sidebar .brand p {
-    color: #a1a1aa;
-    font-size: 0.74rem;
-    margin-top: 2px;
-    text-transform: uppercase;
-    letter-spacing: 0.6px;
-}
-
-.admin-sidebar .menu {
-    list-style: none;
-    padding: 15px 0;
-    margin: 0;
-    flex: 1;
-}
-
-.admin-sidebar .menu li a {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 13px 22px;
-    color: #e2e8f0;
-    text-decoration: none;
-    font-size: 0.92rem;
-    font-weight: 500;
-    border-left: 4px solid transparent;
-    transition: all var(--transition-fast);
-}
-
-.admin-sidebar .menu li a i {
-    width: 20px;
-    text-align: center;
-    color: var(--tg-gold);
-    font-size: 1rem;
-    transition: color var(--transition-fast);
-}
-
-.admin-sidebar .menu li.active a,
-.admin-sidebar .menu li a:hover {
-    background-color: var(--tg-gold);
-    color: var(--tg-dark);
-    font-weight: 700;
-    border-left-color: #ffffff;
-}
-
-.admin-sidebar .menu li.active a i,
-.admin-sidebar .menu li a:hover i {
-    color: var(--tg-dark);
-}
-
-.admin-sidebar .sidebar-footer {
-    padding: 15px 20px;
-    border-top: 1px solid #262626;
-}
 
 .btn-logout-admin {
     width: 100%;
@@ -1021,16 +931,7 @@ body.admin-layout {
         flex-direction: column;
     }
 
-    .admin-sidebar {
-        width: 100%;
-        border-right: none;
-        border-bottom: 3px solid var(--tg-gold);
-        display: none;
-    }
-
-    .admin-sidebar.open {
-        display: flex;
-    }
+    /* El sidebar responsivo está controlado por admin.css */
 
     .menu-toggle-btn {
         display: inline-flex;

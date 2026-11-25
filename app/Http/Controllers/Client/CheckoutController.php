@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Client;
 
 use App\Http\Controllers\Controller;
+use App\Models\Configuracion;
 use App\Models\MovimientoInventario;
 use App\Models\Pedido;
 use App\Models\PedidoDetalle;
@@ -27,7 +28,16 @@ class CheckoutController extends Controller
 
         $direcciones = auth()->user()->direcciones;
         $subtotal = collect($carrito)->sum(fn ($item) => $item['precio'] * $item['cantidad']);
-        $costoEnvio = $subtotal >= 122900 ? 0.00 : 10000.00;
+
+        $montoEnvioGratis = (float) Configuracion::get('monto_envio_gratis', 122900);
+        $costoBogota = (float) Configuracion::get('costo_envio_bogota', 10000);
+        $costoNacional = (float) Configuracion::get('costo_envio_nacional', 18000);
+
+        $ciudadPrincipal = optional($direcciones->first())->ciudad ?? 'Bogotá';
+        $esBogota = (stripos($ciudadPrincipal, 'bogot') !== false);
+        $tarifaBase = $esBogota ? $costoBogota : $costoNacional;
+
+        $costoEnvio = $subtotal >= $montoEnvioGratis ? 0.00 : $tarifaBase;
         $total = $subtotal + $costoEnvio;
 
         return view('client.finalizar_compra', compact('carrito', 'direcciones', 'subtotal', 'costoEnvio', 'total'));
@@ -80,7 +90,14 @@ class CheckoutController extends Controller
                     $productosBloqueados[$producto->id_producto] = $producto;
                 }
 
-                $costoEnvio = $subtotal >= 122900 ? 0.00 : 10000.00;
+                $montoEnvioGratis = (float) Configuracion::get('monto_envio_gratis', 122900);
+                $costoBogota = (float) Configuracion::get('costo_envio_bogota', 10000);
+                $costoNacional = (float) Configuracion::get('costo_envio_nacional', 18000);
+
+                $esBogota = (stripos($datos['ciudad_entrega'], 'bogot') !== false);
+                $tarifaEnvio = $esBogota ? $costoBogota : $costoNacional;
+
+                $costoEnvio = $subtotal >= $montoEnvioGratis ? 0.00 : $tarifaEnvio;
                 $total = $subtotal + $costoEnvio;
 
                 $nuevoPedido = Pedido::create([
