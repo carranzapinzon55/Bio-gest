@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.admin')
 
 @section('title', 'Gestión de Usuarios | BIO-GEST Tenebrios Gold')
 @section('header_title', 'Dashboard General BIO-GEST')

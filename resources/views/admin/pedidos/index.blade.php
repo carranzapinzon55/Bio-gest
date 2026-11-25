@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.admin')
 
 @section('title', 'Gestión de Pedidos | BIO-GEST Tenebrios Gold')
 @section('header_title', 'Gestión y Seguimiento de Pedidos')
@@ -11,8 +11,8 @@
                 Consulta los pedidos recibidos desde la tienda, revisa sus productos y actualiza su estado logístico
             </p>
         </div>
-        <a href="{{ route('admin.reportes.ventas') }}" class="tg-btn-gold">
-            <i class="fa-solid fa-chart-column"></i> Ver Reporte y Exportar CSV
+        <a href="{{ route('admin.estadisticas') }}" class="tg-btn-gold">
+            <i class="fa-solid fa-chart-line"></i> Estadísticas y Reportes
         </a>
     </div>
 

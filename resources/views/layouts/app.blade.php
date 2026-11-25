@@ -12,29 +12,31 @@
     @if(request()->is('admin*'))
         <!-- Estilos Panel Administrativo Unificado Tenebrios Gold (#151515 y #e4b353) -->
         <link rel="stylesheet" href="{{ asset('assets/css/admin.css') }}">
+        <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
         <style>
             :root {
-                --tg-dark: #151515;
-                --tg-gold: #e4b353;
-                --tg-gold-hover: #c99b45;
-                --tg-bg: #f4f6f9;
+                --tg-dark: #111111;
+                --tg-gold: #e6a100;
+                --tg-gold-hover: #cf9000;
+                --tg-bg: #f8f9fa;
                 --tg-card: #ffffff;
-                --tg-border: #e2e8f0;
+                --tg-border: #e5e7eb;
+                --tg-cream: #fdf8f0;
             }
             body.admin-layout {
                 background-color: var(--tg-bg);
-                color: #1e293b;
+                color: #1f2937;
                 display: flex;
                 min-height: 100vh;
                 margin: 0;
-                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                font-family: 'Inter', system-ui, -apple-system, sans-serif;
             }
-            /* Sidebar Oscuro #151515 con Acentos Dorados #e4b353 */
+            /* Sidebar Blanco con Bloque Superior Compacto Oscuro #111111 */
             .admin-sidebar {
                 width: 260px;
-                background-color: var(--tg-dark);
-                color: #ffffff;
-                border-right: 3px solid var(--tg-gold);
+                background-color: #ffffff;
+                color: #1f2937;
+                border-right: 1px solid var(--tg-border);
                 display: flex;
                 flex-direction: column;
                 flex-shrink: 0;
@@ -42,77 +44,94 @@
                 z-index: 1000;
             }
             .admin-sidebar .brand {
-                padding: 22px 20px;
-                border-bottom: 1px solid #2a2a2a;
+                background-color: var(--tg-dark);
+                padding: 14px 18px;
+                border-bottom: 2px solid var(--tg-gold);
                 display: flex;
                 align-items: center;
                 gap: 12px;
+                height: 65px;
+                box-sizing: border-box;
             }
             .admin-sidebar .brand img {
-                width: 42px;
-                height: 42px;
+                width: 36px;
+                height: 36px;
                 object-fit: contain;
                 border-radius: 6px;
-                border: 1px solid var(--tg-gold);
+                background: #ffffff;
+                padding: 2px;
             }
             .admin-sidebar .brand h2 {
-                color: var(--tg-gold);
-                font-size: 1.15rem;
+                color: #ffffff;
+                font-size: 0.92rem;
+                font-weight: 800;
                 margin: 0;
-                letter-spacing: 0.5px;
+                letter-spacing: 0.6px;
+                line-height: 1.2;
             }
             .admin-sidebar .brand p {
-                color: #a1a1aa;
-                font-size: 0.75rem;
+                color: var(--tg-gold);
+                font-size: 0.72rem;
+                font-weight: 700;
                 margin: 2px 0 0 0;
                 text-transform: uppercase;
+                letter-spacing: 0.8px;
             }
             .admin-sidebar .menu {
                 list-style: none;
-                padding: 15px 0;
+                padding: 14px 0;
                 margin: 0;
                 flex: 1;
+                overflow-y: auto;
             }
             .admin-sidebar .menu li a {
                 display: flex;
                 align-items: center;
                 gap: 12px;
-                padding: 13px 22px;
-                color: #e2e8f0;
+                padding: 10px 22px;
+                color: #4b5563;
                 text-decoration: none;
-                font-size: 0.92rem;
+                font-size: 0.88rem;
                 font-weight: 500;
-                border-left: 4px solid transparent;
+                border-left: 3px solid transparent;
                 transition: all 0.2s ease;
             }
             .admin-sidebar .menu li a i {
                 width: 20px;
                 text-align: center;
-                color: var(--tg-gold);
+                color: #9ca3af;
                 transition: color 0.2s ease;
             }
-            .admin-sidebar .menu li.active a,
             .admin-sidebar .menu li a:hover {
-                background-color: var(--tg-gold);
+                background-color: #f9fafb;
                 color: var(--tg-dark);
-                font-weight: 700;
-                border-left-color: #ffffff;
+            }
+            .admin-sidebar .menu li a:hover i {
+                color: var(--tg-gold);
+            }
+            .admin-sidebar .menu li.active a,
+            .admin-sidebar .menu li.active a:hover {
+                background-color: var(--tg-cream) !important;
+                color: var(--tg-gold) !important;
+                border-left: 3px solid var(--tg-gold) !important;
+                font-weight: 700 !important;
             }
             .admin-sidebar .menu li.active a i,
-            .admin-sidebar .menu li a:hover i {
-                color: var(--tg-dark);
+            .admin-sidebar .menu li.active a:hover i {
+                color: var(--tg-gold) !important;
             }
             .admin-sidebar .sidebar-footer {
-                padding: 15px 20px;
-                border-top: 1px solid #2a2a2a;
+                padding: 14px 18px;
+                border-top: 1px solid var(--tg-border);
+                background-color: #ffffff;
             }
             .btn-logout-admin {
                 width: 100%;
-                background-color: #262626;
-                color: #f87171;
-                border: 1px solid #3f3f46;
-                padding: 10px 14px;
-                border-radius: 6px;
+                background-color: #ffffff;
+                color: #dc2626;
+                border: 1px solid #fee2e2;
+                padding: 9px 14px;
+                border-radius: 8px;
                 cursor: pointer;
                 font-weight: 600;
                 display: flex;
@@ -349,39 +368,64 @@
             </div>
 
             <ul class="menu">
-                <li class="{{ request()->routeIs('admin.inicio') ? 'active' : '' }}">
-                    <a href="{{ route('admin.inicio') }}">
-                        <i class="fa-solid fa-gauge-high"></i> Panel Principal
+                <li class="{{ request()->is('admin/inicio*') ? 'active' : '' }}">
+                    <a href="{{ url('/admin/inicio') }}">
+                        <i class="fa-solid fa-gauge"></i> Inicio
                     </a>
                 </li>
-                <li class="{{ request()->routeIs('admin.usuarios.*') ? 'active' : '' }}">
-                    <a href="{{ route('admin.usuarios.index') }}">
+                <li class="{{ (request()->is('admin/estadisticas*') || request()->is('admin/reportes*')) ? 'active' : '' }}">
+                    <a href="{{ url('/admin/estadisticas') }}">
+                        <i class="fa-solid fa-chart-line"></i> Estadísticas
+                    </a>
+                </li>
+                <li class="{{ request()->is('admin/pedidos*') ? 'active' : '' }}">
+                    <a href="{{ url('/admin/pedidos') }}">
+                        <i class="fa-solid fa-receipt"></i> Pedidos
+                    </a>
+                </li>
+                <li class="{{ request()->is('admin/productos*') ? 'active' : '' }}">
+                    <a href="{{ url('/admin/productos') }}">
+                        <i class="fa-solid fa-cubes"></i> Productos
+                    </a>
+                </li>
+                <li class="{{ (request()->is('admin/inventario*') && !request()->is('admin/alertas-stock*')) ? 'active' : '' }}">
+                    <a href="{{ url('/admin/inventario') }}">
+                        <i class="fa-solid fa-boxes-stacked"></i> Inventario
+                    </a>
+                </li>
+                <li class="{{ request()->is('admin/alertas-stock*') ? 'active' : '' }}">
+                    <a href="{{ url('/admin/alertas-stock') }}">
+                        <i class="fa-solid fa-triangle-exclamation"></i> Alertas Stock
+                        @if(isset($conteoAlertasStock) && $conteoAlertasStock > 0)
+                            <span class="badge-stock-danger">{{ $conteoAlertasStock }}</span>
+                        @else
+                            <span class="badge-stock-zero">0</span>
+                        @endif
+                    </a>
+                </li>
+                <li class="{{ request()->is('admin/promociones*') ? 'active' : '' }}">
+                    <a href="{{ url('/admin/promociones') }}">
+                        <i class="fa-solid fa-tags"></i> Promociones
+                    </a>
+                </li>
+                <li class="{{ request()->is('admin/chats*') ? 'active' : '' }}">
+                    <a href="{{ url('/admin/chats') }}">
+                        <i class="fa-solid fa-comments"></i> Chats
+                    </a>
+                </li>
+                <li class="{{ request()->is('admin/usuarios*') ? 'active' : '' }}">
+                    <a href="{{ url('/admin/usuarios') }}">
                         <i class="fa-solid fa-users"></i> Usuarios
                     </a>
                 </li>
-                <li class="{{ request()->routeIs('admin.productos.*') ? 'active' : '' }}">
-                    <a href="{{ route('admin.productos.index') }}">
-                        <i class="fa-solid fa-box-open"></i> Productos
+                <li class="{{ request()->is('admin/seguridad*') ? 'active' : '' }}">
+                    <a href="{{ url('/admin/seguridad') }}">
+                        <i class="fa-solid fa-shield-halved"></i> Seguridad
                     </a>
                 </li>
-                <li class="{{ request()->routeIs('admin.inventario.*') ? 'active' : '' }}">
-                    <a href="{{ route('admin.inventario.index') }}">
-                        <i class="fa-solid fa-warehouse"></i> Inventario y Kardex
-                    </a>
-                </li>
-                <li class="{{ request()->routeIs('admin.pedidos.*') ? 'active' : '' }}">
-                    <a href="{{ route('admin.pedidos.index') }}">
-                        <i class="fa-solid fa-cart-flatbed"></i> Pedidos
-                    </a>
-                </li>
-                <li class="{{ request()->routeIs('admin.reportes.*') ? 'active' : '' }}">
-                    <a href="{{ route('admin.reportes.ventas') }}">
-                        <i class="fa-solid fa-chart-line"></i> Reportes y CSV
-                    </a>
-                </li>
-                <li>
-                    <a href="{{ route('home') }}">
-                        <i class="fa-solid fa-store"></i> Ver Tienda Cliente
+                <li class="{{ request()->is('admin/ajustes*') ? 'active' : '' }}">
+                    <a href="{{ url('/admin/ajustes') }}">
+                        <i class="fa-solid fa-gear"></i> Ajustes
                     </a>
                 </li>
             </ul>

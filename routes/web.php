@@ -15,6 +15,7 @@ use App\Http\Controllers\Admin\ProductoAdminController;
 use App\Http\Controllers\Admin\InventarioAdminController;
 use App\Http\Controllers\Admin\PedidoAdminController;
 use App\Http\Controllers\Admin\UsuarioAdminController;
+use App\Http\Controllers\Admin\EstadisticaAdminController;
 use App\Http\Controllers\ReporteController;
 
 /*
@@ -99,30 +100,50 @@ Route::middleware(['auth'])->group(function () {
 |--------------------------------------------------------------------------
 */
 Route::middleware(['auth', 'role:Administrador'])->prefix('admin')->name('admin.')->group(function () {
+    // 1. Dashboard Principal
     Route::get('/inicio', [DashboardController::class, 'index'])->name('inicio');
     Route::get('/panel-data', [DashboardController::class, 'data'])->name('panel.data');
 
-    // Gestión de Usuarios (Conectado con Base de Datos MySQL)
+    // 2. Módulo Unificado de Estadísticas y Reportes
+    Route::get('/estadisticas', [EstadisticaAdminController::class, 'index'])->name('estadisticas');
+    Route::get('/estadisticas/exportar-csv', [EstadisticaAdminController::class, 'exportarCsv'])->name('estadisticas.csv');
+
+    // Redirección y compatibilidad con reportes anteriores
+    Route::get('/reportes/ventas', fn () => redirect()->route('admin.estadisticas'))->name('reportes.ventas');
+    Route::get('/reportes/ventas/exportar-csv', [EstadisticaAdminController::class, 'exportarCsv'])->name('reportes.ventas.csv');
+
+    // 3. Gestión y Seguimiento de Pedidos
+    Route::get('/pedidos', [PedidoAdminController::class, 'index'])->name('pedidos.index');
+    Route::get('/pedidos/{id_pedido}', [PedidoAdminController::class, 'show'])->name('pedidos.show');
+    Route::patch('/pedidos/{id_pedido}/estado', [PedidoAdminController::class, 'actualizarEstado'])->name('pedidos.estado');
+
+    // 4. Gestión de Productos (CRUD)
+    Route::resource('productos', ProductoAdminController::class)->except(['show']);
+    Route::post('/productos/{id_producto}/stock', [ProductoAdminController::class, 'ajustarStock'])->name('productos.stock');
+
+    // 5. Gestión de Inventario y Movimientos
+    Route::get('/inventario', [InventarioAdminController::class, 'index'])->name('inventario.index');
+    Route::post('/inventario/movimiento', [InventarioAdminController::class, 'registrarMovimiento'])->name('inventario.movimiento');
+
+    // 6. Alertas de Stock Bajo
+    Route::get('/alertas-stock', [InventarioAdminController::class, 'alertasStock'])->name('alertas-stock');
+
+    // 7. Promociones
+    Route::get('/promociones', [DashboardController::class, 'promociones'])->name('promociones.index');
+
+    // 8. Chats de Clientes
+    Route::get('/chats', [DashboardController::class, 'chats'])->name('chats.index');
+
+    // 9. Gestión de Usuarios
     Route::get('/usuarios', [UsuarioAdminController::class, 'index'])->name('usuarios.index');
     Route::post('/usuarios', [UsuarioAdminController::class, 'store'])->name('usuarios.store');
     Route::put('/usuarios/{id_usuario}', [UsuarioAdminController::class, 'update'])->name('usuarios.update');
     Route::patch('/usuarios/{id_usuario}/estado', [UsuarioAdminController::class, 'toggleEstado'])->name('usuarios.estado');
     Route::delete('/usuarios/{id_usuario}', [UsuarioAdminController::class, 'destroy'])->name('usuarios.destroy');
 
-    // Gestión de Productos (CRUD)
-    Route::resource('productos', ProductoAdminController::class)->except(['show']);
-    Route::post('productos/{id_producto}/stock', [ProductoAdminController::class, 'ajustarStock'])->name('productos.stock');
+    // 10. Seguridad y Roles
+    Route::get('/seguridad', [DashboardController::class, 'seguridad'])->name('seguridad.index');
 
-    // Gestión de Inventario (Existencias y Movimientos)
-    Route::get('inventario', [InventarioAdminController::class, 'index'])->name('inventario.index');
-    Route::post('inventario/movimiento', [InventarioAdminController::class, 'registrarMovimiento'])->name('inventario.movimiento');
-
-    // Gestión y Seguimiento de Estados de Pedidos
-    Route::get('pedidos', [PedidoAdminController::class, 'index'])->name('pedidos.index');
-    Route::get('pedidos/{id_pedido}', [PedidoAdminController::class, 'show'])->name('pedidos.show');
-    Route::patch('pedidos/{id_pedido}/estado', [PedidoAdminController::class, 'actualizarEstado'])->name('pedidos.estado');
-
-    // Módulo de Reportes de Ventas y Exportación CSV
-    Route::get('reportes/ventas', [ReporteController::class, 'ventas'])->name('reportes.ventas');
-    Route::get('reportes/ventas/exportar-csv', [ReporteController::class, 'exportarVentasCsv'])->name('reportes.ventas.csv');
+    // 11. Ajustes del Sistema
+    Route::get('/ajustes', [DashboardController::class, 'ajustes'])->name('ajustes.index');
 });

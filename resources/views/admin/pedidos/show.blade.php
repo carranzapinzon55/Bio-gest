@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.admin')
 
 @section('title', 'Detalle del Pedido ' . ($pedido->numero_pedido ?? 'PED-' . $pedido->id_pedido) . ' | BIO-GEST')
 @section('header_title', 'Detalle de Pedido ' . ($pedido->numero_pedido ?? 'PED-' . $pedido->id_pedido))

@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.admin')
 
 @section('title', 'Reporte de Ventas y Exportación CSV | BIO-GEST Tenebrios Gold')
 @section('header_title', 'Módulo de Reportes de Ventas y Exportación CSV')

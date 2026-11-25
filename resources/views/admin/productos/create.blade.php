@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.admin')
 
 @section('title', 'Registrar Producto | BIO-GEST Tenebrios Gold')
 @section('header_title', 'Registrar Nuevo Producto')

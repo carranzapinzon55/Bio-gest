@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.admin')
 
 @section('title', 'Gestión de Inventario y Kardex | BIO-GEST Tenebrios Gold')
 @section('header_title', 'Control de Inventario y Movimientos (Kardex)')
