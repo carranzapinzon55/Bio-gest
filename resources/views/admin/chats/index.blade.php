@@ -123,7 +123,7 @@
         </div>
         <div>
             <button type="button" class="tg-btn-dark" onclick="openFaqModal()">
-                <i class="fa-solid fa-plus"></i> Nueva FAQ Chatbot
+                <i class="fa-solid fa-plus"></i> Nueva pregunta frecuente
             </button>
         </div>
     </div>
@@ -206,7 +206,7 @@
                 </div>
 
                 @forelse($contactos as $con)
-                    <div class="conversation-item" onclick="verDetalleContacto({{ json_encode($con) }})" style="flex-direction:column; align-items:flex-start; gap:4px;">
+                    <div class="conversation-item" onclick="verDetalleContactoPorId({{ $con->id_mensaje }})" style="flex-direction:column; align-items:flex-start; gap:4px;">
                         <div style="display:flex; justify-content:space-between; width:100%; align-items:center;">
                             <strong style="font-size:0.85rem; color:#111111;">{{ $con->nombre }}</strong>
                             <span style="font-size:0.68rem; padding:1px 6px; border-radius:999px; font-weight:700; background:{{ $con->estado === 'Atendido' ? '#dcfce7' : '#fee2e2' }}; color:{{ $con->estado === 'Atendido' ? '#166534' : '#991b1b' }};">
@@ -355,12 +355,12 @@
             </div>
         </div>
 
-        <!-- COLUMNA 3: GESTOR DE FAQS DEL CHATBOT -->
+        <!-- COLUMNA 3: GESTOR DE PREGUNTAS FRECUENTES DEL CHATBOT -->
         <div class="tg-card col-faq" style="padding:16px; display:flex; flex-direction:column; height:calc(100vh - 190px);">
             <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #e2e8f0; padding-bottom:12px; margin-bottom:14px;">
                 <div>
                     <h2 style="font-size:1.05rem; font-weight:800; color:#111111; margin:0; display:flex; align-items:center; gap:8px;">
-                        <i class="fa-solid fa-robot" style="color:#e6a100;"></i> FAQ Chatbot
+                        <i class="fa-solid fa-robot" style="color:#e6a100;"></i> Preguntas Frecuentes
                     </h2>
                     <span style="font-size:0.74rem; color:#64748b;">Base de Respuestas Automáticas</span>
                 </div>
@@ -369,7 +369,7 @@
                 </button>
             </div>
 
-            <!-- Lista de FAQs -->
+            <!-- Lista de Preguntas Frecuentes -->
             <div style="flex:1; overflow-y:auto; padding-right:2px;">
                 @forelse($faqs as $faq)
                     <div class="faq-item-card">
@@ -378,13 +378,13 @@
                                 {{ $faq->categoria ?: 'General' }}
                             </span>
                             <div style="display:flex; gap:6px;">
-                                <button type="button" onclick="editFaq({{ json_encode($faq) }})" style="background:none; border:none; cursor:pointer; color:#64748b; font-size:0.8rem;" title="Editar FAQ">
+                                <button type="button" onclick="editFaqPorId({{ $faq->id_faq }})" style="background:none; border:none; cursor:pointer; color:#64748b; font-size:0.8rem;" title="Editar pregunta frecuente">
                                     <i class="fa-solid fa-pen"></i>
                                 </button>
                                 <form action="{{ route('admin.chats.faq.destroy', $faq->id_faq) }}" method="POST" onsubmit="return confirm('¿Seguro que deseas eliminar esta pregunta frecuente?');" style="margin:0; display:inline;">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" style="background:none; border:none; cursor:pointer; color:#dc2626; font-size:0.8rem;" title="Eliminar FAQ">
+                                    <button type="submit" style="background:none; border:none; cursor:pointer; color:#dc2626; font-size:0.8rem;" title="Eliminar pregunta frecuente">
                                         <i class="fa-solid fa-trash-can"></i>
                                     </button>
                                 </form>
@@ -465,6 +465,9 @@
 
 @push('scripts')
 <script>
+    const CONTACTOS_MAP = @json($contactos->keyBy('id_mensaje'));
+    const FAQS_MAP = @json($faqs->keyBy('id_faq'));
+
     function switchLeftTab(tab) {
         const btnChats = document.getElementById('tabBtnChats');
         const btnContactos = document.getElementById('tabBtnContactos');
@@ -484,7 +487,15 @@
         }
     }
 
+    function verDetalleContactoPorId(id) {
+        const contacto = CONTACTOS_MAP[id];
+        if (contacto) {
+            verDetalleContacto(contacto);
+        }
+    }
+
     function verDetalleContacto(contacto) {
+        if (!contacto) return;
         document.getElementById('viewChatArea').style.display = 'none';
         const detail = document.getElementById('viewContactoDetail');
         detail.style.display = 'flex';
@@ -496,7 +507,7 @@
         document.getElementById('contactoRespuestaAdmin').value = contacto.respuesta_admin || '';
 
         const form = document.getElementById('formAtenderContacto');
-        form.action = `/admin/chats/contacto/${contacto.id_mensaje}/atender`;
+        form.action = `{{ url('/admin/chats/contacto') }}/${contacto.id_mensaje}/atender`;
     }
 
     function volverAChats() {
@@ -515,10 +526,18 @@
         modal.classList.add('active');
     }
 
+    function editFaqPorId(id) {
+        const faq = FAQS_MAP[id];
+        if (faq) {
+            editFaq(faq);
+        }
+    }
+
     function editFaq(faq) {
+        if (!faq) return;
         const modal = document.getElementById('faqModal');
         const form = document.getElementById('faqForm');
-        form.action = `/admin/chats/faq/${faq.id_faq}`;
+        form.action = `{{ url('/admin/chats/faq') }}/${faq.id_faq}`;
         document.getElementById('faqFormMethod').value = 'PUT';
         document.getElementById('faqModalTitle').textContent = 'Editar Pregunta Frecuente';
 

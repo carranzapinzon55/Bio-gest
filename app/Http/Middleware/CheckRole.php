@@ -24,10 +24,11 @@ class CheckRole
         if (!$user) {
             return $isApi
                 ? response()->json([
-                    'success' => false,
-                    'message' => 'No autenticado. Token de acceso no proporcionado o inválido.'
+                    'success'  => false,
+                    'message'  => 'No autenticado. Token de acceso no proporcionado o inválido.',
+                    'redirect' => route('home'),
                 ], 401)
-                : redirect()->route('login');
+                : redirect()->route('home');
         }
 
         // Obtener el nombre del rol del usuario autenticado

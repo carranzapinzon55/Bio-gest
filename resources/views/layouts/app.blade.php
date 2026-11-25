@@ -428,6 +428,11 @@
                         <i class="fa-solid fa-gear"></i> Ajustes
                     </a>
                 </li>
+                <li class="{{ request()->is('admin/perfil*') ? 'active' : '' }}">
+                    <a href="{{ route('admin.perfil.index') }}">
+                        <i class="fa-solid fa-user-gear"></i> Mi Perfil
+                    </a>
+                </li>
             </ul>
 
             <div class="sidebar-footer">
@@ -450,10 +455,11 @@
                         @yield('header_title', 'Panel de Administración BIO-GEST')
                     </div>
                 </div>
-                <div class="admin-user-badge">
+                <a href="{{ route('admin.perfil.index') }}" class="admin-user-badge" style="text-decoration:none;" title="Ir a Mi Perfil de Administrador">
                     <i class="fa-solid fa-user-shield"></i>
                     <span>{{ auth()->user()->nombre_completo ?? 'Administrador' }}</span>
-                </div>
+                    <i class="fa-solid fa-pen-to-square" style="font-size:0.78rem; margin-left:4px;"></i>
+                </a>
             </header>
 
             <main class="admin-content-body">
@@ -542,8 +548,13 @@
                 <li><a href="{{ route('calculadora.index') }}" class="{{ request()->routeIs('calculadora.*') ? 'active' : '' }}">Calculadora de Alimento</a></li>
                 <li><a href="{{ route('envios') }}" class="{{ request()->routeIs('envios') ? 'active' : '' }}">Envíos y Garantías</a></li>
                 <li><a href="{{ route('nosotros') }}" class="{{ request()->routeIs('nosotros') ? 'active' : '' }}">¿Quiénes somos?</a></li>
-                <li><a href="{{ route('faq') }}" class="{{ request()->routeIs('faq') ? 'active' : '' }}">FAQ</a></li>
+                <li><a href="{{ route('faq') }}" class="{{ request()->routeIs('faq') ? 'active' : '' }}">Preguntas Frecuentes</a></li>
                 <li><a href="{{ route('contacto.index') }}" class="{{ request()->routeIs('contacto.*') ? 'active' : '' }}">Contacto</a></li>
+                @auth
+                    @if(!auth()->user()->esAdmin())
+                        <li><a href="{{ route('cliente.chat.index') }}" class="{{ request()->routeIs('cliente.chat.*') ? 'active' : '' }}"><i class="fas fa-comments"></i> Chat en Vivo</a></li>
+                    @endif
+                @endauth
             </ul>
         </nav>
 
@@ -584,9 +595,10 @@
                     <h4>S&iacute;guenos</h4>
                     <p>Novedades, cuidados y promociones en nuestras redes.</p>
                     <div class="social-icons">
-                        <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
-                        <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
-                        <a href="#" aria-label="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+                        <a href="https://www.facebook.com/p/Tenebrios-Gold-61582875604473/" target="_blank" rel="noopener noreferrer" aria-label="Facebook" title="Facebook Tenebrios Gold"><i class="fab fa-facebook-f"></i></a>
+                        <a href="https://www.instagram.com/tenebriosgold/" target="_blank" rel="noopener noreferrer" aria-label="Instagram" title="Instagram Tenebrios Gold"><i class="fab fa-instagram"></i></a>
+                        <a href="https://www.tiktok.com/@tenebriosgold?is_from_webapp=1&sender_device=pc" target="_blank" rel="noopener noreferrer" aria-label="TikTok" title="TikTok Tenebrios Gold"><i class="fab fa-tiktok"></i></a>
+                        <a href="https://api.whatsapp.com/send?phone=573243007206&token=eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6IjEyNSJ9.eyJleHAiOjE3OTU3MjEzNzEsInBob25lIjoiNTczMjQzMDA3MjA2IiwidGV4dCI6IiIsImNvbnRleHQiOiJBZmlBUlVBNV9HR21aZk8yRGVvczA0dEphUVB6MUxhMGtsdGdxdnV2TGQzQ2d2X19mYTBUTDMycGIwWDNRUTlXQWJJelEwT3M3SWMwb0lmWm81UlFudFFLenFmSkp4cVdWQWhBYk1TUXZrYUZGeGZCMGUxNWx3NEZyMEJqZ1lUeDBNVzRlUHB2UVlVSlBsa3o0bFVkSmFDTk9RIiwic291cmNlIjoiIiwiYXBwIjoiZmFjZWJvb2sifQ.Yz93kGA0GPrWyPWuHJfcjBA4RxazwiHBpXRtspQhxOd6UyuV5_jFsnLFHy-UWWCvIt3f2HderMNYV9Hpu7pXSQ&fbclid=IwVERDUAV0FnhleHRuA2FlbQIxMABwZG9mBXNydGMGYXBwX2lkDDM1MDY4NTUzMTcyOAABHwYd_5LL7FnP5LFtxCvKcKyIEiVPiHBnpJYJwAdBDjAvuE8oqCg0yWFx_aSc_aem_NnQ69G1mRvEqJxuHiJrRrA" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp" title="WhatsApp Tenebrios Gold"><i class="fab fa-whatsapp"></i></a>
                     </div>
                 </div>
             </div>
@@ -599,6 +611,21 @@
     @stack('scripts')
 
     <script>
+        // Bloqueo en tiempo real de números en campos de solo letras y de letras en campos numéricos
+        document.addEventListener('DOMContentLoaded', function () {
+            document.querySelectorAll('input[data-only-letters="true"]').forEach(function (input) {
+                input.addEventListener('input', function () {
+                    this.value = this.value.replace(/[^A-Za-zÁÉÍÓÚÜÑáéíóúüñ\s.'-]/g, '').replace(/\s{2,}/g, ' ');
+                });
+            });
+            document.querySelectorAll('input[data-only-digits]').forEach(function (input) {
+                const maxLen = parseInt(input.getAttribute('data-only-digits'), 10) || 10;
+                input.addEventListener('input', function () {
+                    this.value = this.value.replace(/\D/g, '').slice(0, maxLen);
+                });
+            });
+        });
+
         window.addEventListener('storage', event => {
             if (event.key === 'biogest_product_catalog_sync') window.location.reload();
         });
@@ -608,7 +635,7 @@
     <script>
         (function () {
             const checkUrl = "{{ route('auth.session.status') }}";
-            const loginUrl = "{{ route('login') }}";
+            const homeUrl = "{{ route('home') }}";
             setInterval(async function () {
                 try {
                     const res = await fetch(checkUrl, {
@@ -617,13 +644,13 @@
                             'X-Requested-With': 'XMLHttpRequest'
                         }
                     });
-                    if (res.status === 401) {
-                        window.location.href = loginUrl + '?deactivated=1';
+                    if (res.status === 401 || res.status === 419) {
+                        window.location.href = homeUrl;
                         return;
                     }
                     const data = await res.json();
                     if (data && data.active === false) {
-                        window.location.href = (data.redirect || loginUrl) + '?deactivated=1';
+                        window.location.href = data.redirect || homeUrl;
                     }
                 } catch (e) {
                     // Ignorar errores de red temporales

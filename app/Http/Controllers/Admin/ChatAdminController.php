@@ -49,16 +49,18 @@ class ChatAdminController extends Controller
                 ];
             });
 
-        // Si hay otros clientes sin mensajes aún, listarlos para iniciar chat
+        // Si hay otros clientes sin mensajes aún, listarlos todos para iniciar chat nuevo
         $otrosClientes = Usuario::where('id_rol', 2)
             ->whereNotIn('id_usuario', $usuariosConMensajesIds)
-            ->take(5)
+            ->orderByDesc('id_usuario')
             ->get();
 
         // Determinar usuario seleccionado para la columna central
         $usuarioActivoId = $request->input('usuario');
         if (!$usuarioActivoId && $clientesConversaciones->isNotEmpty()) {
             $usuarioActivoId = $clientesConversaciones->first()['id_usuario'];
+        } elseif (!$usuarioActivoId && $otrosClientes->isNotEmpty()) {
+            $usuarioActivoId = $otrosClientes->first()->id_usuario;
         }
 
         $usuarioActivo = $usuarioActivoId ? Usuario::find($usuarioActivoId) : null;

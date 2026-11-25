@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Shop;
 use App\Http\Controllers\Controller;
 use App\Models\Categoria;
 use App\Models\Producto;
+use App\Models\Promocion;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
@@ -29,7 +30,12 @@ class CatalogoController extends Controller
         $productos  = $query->orderBy('precio', 'asc')->get();
         $categorias = Categoria::all();
 
-        return view('shop.catalogo', compact('productos', 'categorias'));
+        $promocionesActivas = Promocion::where('estado', 'Activo')
+            ->where('fecha_fin', '>=', now()->subDay())
+            ->orderByDesc('id_promocion')
+            ->get();
+
+        return view('shop.catalogo', compact('productos', 'categorias', 'promocionesActivas'));
     }
 
     public function show(int $id_producto): View

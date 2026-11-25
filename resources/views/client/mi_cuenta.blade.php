@@ -34,6 +34,9 @@
                 <a href="{{ route('cliente.pedidos.index') }}" style="background:#f3f4f6; color:#374151; padding:10px; border-radius:6px; text-decoration:none; font-weight:600;">
                     <i class="fas fa-box"></i> Mis Pedidos
                 </a>
+                <a href="{{ route('cliente.chat.index') }}" style="background:#e4b353; color:#151515; padding:10px; border-radius:6px; text-decoration:none; font-weight:700;">
+                    <i class="fas fa-comments"></i> Chat en Vivo con Soporte
+                </a>
             </div>
         </div>
 
@@ -48,7 +51,7 @@
                 </div>
                 <div style="background:#fafafa; padding:15px; border-radius:8px;">
                     <span style="color:#888; font-size:0.85rem; display:block;">Fecha de Registro:</span>
-                    <strong style="color:#151515;">{{ optional($usuario->fecha_registro)->format('d/m/Y') }}</strong>
+                    <strong style="color:#151515;">{{ $usuario->fecha_registro ? \Carbon\Carbon::parse($usuario->fecha_registro)->format('d/m/Y') : now()->format('d/m/Y') }}</strong>
                 </div>
             </div>
 

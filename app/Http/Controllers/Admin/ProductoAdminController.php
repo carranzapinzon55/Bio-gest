@@ -58,7 +58,7 @@ class ProductoAdminController extends Controller
     {
         $datos = $request->validate([
             'id_categoria'               => ['required', 'integer', 'exists:categoria,id_categoria'],
-            'nombre_producto'            => ['required', 'string', 'min:3', 'max:150'],
+            'nombre_producto'            => ['required', 'string', 'min:3', 'max:150', 'regex:/[a-zA-ZÁÉÍÓÚÜÑáéíóúüñ]{2,}/u'],
             'descripcion'                => ['nullable', 'string', 'max:2000'],
             'beneficios'                 => ['nullable', 'string', 'max:2000'],
             'instrucciones_conservacion' => ['nullable', 'string', 'max:1000'],
@@ -73,6 +73,7 @@ class ProductoAdminController extends Controller
             'id_categoria.required'    => 'La categoría del producto es obligatoria.',
             'id_categoria.exists'      => 'La categoría seleccionada no es válida.',
             'nombre_producto.required' => 'El nombre del producto es obligatorio.',
+            'nombre_producto.regex'    => 'El nombre del producto debe contener texto descriptivo (no puede ser solo números).',
             'precio.required'          => 'El precio es obligatorio.',
             'precio.gt'                => 'El precio debe ser estrictamente mayor a 0.',
             'stock.required'           => 'El stock inicial es obligatorio.',
@@ -148,7 +149,7 @@ class ProductoAdminController extends Controller
 
         $datos = $request->validate([
             'id_categoria'               => ['required', 'integer', 'exists:categoria,id_categoria'],
-            'nombre_producto'            => ['required', 'string', 'min:3', 'max:150'],
+            'nombre_producto'            => ['required', 'string', 'min:3', 'max:150', 'regex:/[a-zA-ZÁÉÍÓÚÜÑáéíóúüñ]{2,}/u'],
             'descripcion'                => ['nullable', 'string', 'max:2000'],
             'beneficios'                 => ['nullable', 'string', 'max:2000'],
             'instrucciones_conservacion' => ['nullable', 'string', 'max:1000'],
@@ -160,8 +161,9 @@ class ProductoAdminController extends Controller
             'imagen'                     => ['nullable'],
             'estado'                     => ['required', 'in:Activo,Inactivo'],
         ], [
-            'precio.gt'  => 'El precio debe ser estrictamente mayor a 0.',
-            'stock.gte'  => 'El stock debe ser mayor o igual a 0.',
+            'nombre_producto.regex' => 'El nombre del producto debe contener letras válidas (no puede ser solo números).',
+            'precio.gt'             => 'El precio debe ser estrictamente mayor a 0.',
+            'stock.gte'             => 'El stock debe ser mayor o igual a 0.',
         ]);
 
         $datos['stock_minimo'] = $datos['stock_minimo'] ?? $productoModel->stock_minimo ?? 10;

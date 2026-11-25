@@ -45,7 +45,7 @@
                             <label for="nombre">Nombre *</label>
                             <div class="input-campo">
                                 <i class="fa-regular fa-user"></i>
-                                <input type="text" id="nombre" name="nombre" value="{{ old('nombre') }}" placeholder="Ingresa tu nombre" required>
+                                <input type="text" id="nombre" name="nombre" value="{{ old('nombre') }}" placeholder="Nombre" minlength="2" maxlength="100" pattern="^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ\s'-]+$" title="Solo se permiten letras y espacios (sin números)" required>
                             </div>
                         </div>
 
@@ -53,7 +53,7 @@
                             <label for="apellido">Apellido *</label>
                             <div class="input-campo">
                                 <i class="fa-regular fa-user"></i>
-                                <input type="text" id="apellido" name="apellido" value="{{ old('apellido') }}" placeholder="Ingresa tu apellido" required>
+                                <input type="text" id="apellido" name="apellido" value="{{ old('apellido') }}" placeholder="Apellido" minlength="2" maxlength="100" pattern="^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ\s'-]+$" title="Solo se permiten letras y espacios (sin números)" required>
                             </div>
                         </div>
                     </div>
@@ -93,10 +93,10 @@
 
                     <!-- Contraseña -->
                     <div class="input-form">
-                        <label for="password">Contraseña * (mínimo 6 caracteres)</label>
+                        <label for="password">Contraseña * (mínimo 8 caracteres, al menos 1 letra y 1 número)</label>
                         <div class="input-campo">
                             <i class="fa-solid fa-lock"></i>
-                            <input type="password" id="password" name="contrasena" placeholder="Crea una contraseña" required>
+                            <input type="password" id="password" name="contrasena" placeholder="Mínimo 8 caracteres (letras y números)" minlength="8" pattern="^(?=.*[A-Za-zÁÉÍÓÚÜÑáéíóúüñ])(?=.*\d).{8,}$" title="Mínimo 8 caracteres, incluyendo al menos una letra y un número" required>
                             <i class="fa-regular fa-eye toggle-password" onclick="const p=document.getElementById('password');p.type=p.type==='password'?'text':'password';" style="cursor:pointer;"></i>
                         </div>
                     </div>
@@ -106,7 +106,7 @@
                         <label for="confirm-password">Confirmar contraseña *</label>
                         <div class="input-campo">
                             <i class="fa-solid fa-lock"></i>
-                            <input type="password" id="confirm-password" name="contrasena_confirmation" placeholder="Confirma tu contraseña" required>
+                            <input type="password" id="confirm-password" name="contrasena_confirmation" placeholder="Confirma tu contraseña" minlength="8" required>
                         </div>
                     </div>
 
@@ -125,6 +125,22 @@
         </div>
     </div>
     <script>
+        // Bloquear números y símbolos en Nombre y Apellido en tiempo real
+        ['nombre', 'apellido'].forEach(id => {
+            const el = document.getElementById(id);
+            if (!el) return;
+            el.addEventListener('input', () => {
+                el.value = el.value.replace(/[^A-Za-zÁÉÍÓÚÜÑáéíóúüñ\s'-]/g, '').replace(/\s{2,}/g, ' ');
+            });
+            el.addEventListener('paste', event => {
+                event.preventDefault();
+                const text = (event.clipboardData || window.clipboardData).getData('text');
+                const clean = text.replace(/[^A-Za-zÁÉÍÓÚÜÑáéíóúüñ\s'-]/g, '').replace(/\s{2,}/g, ' ');
+                document.execCommand ? document.execCommand('insertText', false, clean) : (el.value += clean);
+            });
+        });
+
+        // Bloquear letras en Teléfono (solo dígitos, máx 10)
         const telefono = document.getElementById('telefono');
         telefono.addEventListener('input', () => {
             telefono.value = telefono.value.replace(/\D/g, '').slice(0, 10);

@@ -42,17 +42,38 @@ class ContactoFaqController extends Controller
         return view('shop.contacto');
     }
 
+    /**
+     * Solo usuarios registrados y autenticados pueden enviar mensajes al administrador.
+     */
     public function enviarContacto(Request $request): RedirectResponse
     {
+        if (!auth()->check()) {
+            return redirect()->route('login')
+                ->withErrors(['correo' => 'Debes iniciar sesión o registrarte para poder enviar mensajes al administrador.']);
+        }
+
+        $user = auth()->user();
+
         $datos = $request->validate([
-            'nombre'  => ['required', 'string', 'max:100'],
-            'correo'  => ['required', 'email', 'max:150'],
-            'asunto'  => ['nullable', 'string', 'max:150'],
-            'mensaje' => ['required', 'string', 'max:2000'],
+            'asunto'  => ['required', 'string', 'min:3', 'max:150', 'regex:/[a-zA-ZÁÉÍÓÚÜÑáéíóúüñ]/u'],
+            'mensaje' => ['required', 'string', 'min:5', 'max:2000', 'regex:/[a-zA-ZÁÉÍÓÚÜÑáéíóúüñ]/u'],
+        ], [
+            'asunto.required'  => 'El asunto es obligatorio.',
+            'asunto.regex'     => 'El asunto debe contener texto válido y no solo números.',
+            'mensaje.required' => 'El mensaje es obligatorio.',
+            'mensaje.min'      => 'El mensaje debe contener al menos 5 caracteres.',
+            'mensaje.regex'    => 'El mensaje debe contener texto descriptivo válido.',
         ]);
 
-        MensajeContacto::create($datos);
+        MensajeContacto::create([
+            'nombre'      => $user->nombre_completo,
+            'correo'      => $user->correo,
+            'asunto'      => trim($datos['asunto']),
+            'mensaje'     => trim($datos['mensaje']),
+            'estado'      => 'Pendiente',
+            'fecha_envio' => now(),
+        ]);
 
-        return back()->with('success', 'Hemos recibido tu mensaje. Te responderemos pronto.');
+        return back()->with('success', 'Hemos recibido tu mensaje. También puedes conversar en tiempo real desde nuestro Chat en Vivo.');
     }
 }

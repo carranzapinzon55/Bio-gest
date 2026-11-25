@@ -186,11 +186,11 @@ function validarFormulario() {
     const confirmPassword = inputConfirmPassword.value;
 
     if (!nombre || !PATRON_LETRAS.test(nombre)) {
-        return { valido: false, mensaje: "Ingresa un nombre válido (solo letras)." };
+        return { valido: false, mensaje: "Ingresa un nombre válido ." };
     }
 
     if (!apellido || !PATRON_LETRAS.test(apellido)) {
-        return { valido: false, mensaje: "Ingresa un apellido válido (solo letras)." };
+        return { valido: false, mensaje: "Ingresa un apellido válido ." };
     }
 
     if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
@@ -201,8 +201,8 @@ function validarFormulario() {
         return { valido: false, mensaje: "El teléfono debe contener entre 7 y 10 dígitos numéricos." };
     }
 
-    if (!password || password.length < 6) {
-        return { valido: false, mensaje: "La contraseña debe tener al menos 6 caracteres." };
+    if (!password || password.length < 8 || !/[A-Za-zÁÉÍÓÚÜÑáéíóúüñ]/.test(password) || !/\d/.test(password)) {
+        return { valido: false, mensaje: "La contraseña debe tener al menos 8 caracteres e incluir al menos una letra y un número." };
     }
 
     if (password !== confirmPassword) {

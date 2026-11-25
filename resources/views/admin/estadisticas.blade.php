@@ -45,6 +45,7 @@
                     name="fecha_inicio"
                     class="form-input-filter"
                     value="{{ $fechaInicio }}"
+                    max="{{ now()->format('Y-m-d') }}"
                     required
                 >
             </div>
@@ -58,6 +59,8 @@
                     name="fecha_fin"
                     class="form-input-filter"
                     value="{{ $fechaFin }}"
+                    min="{{ $fechaInicio }}"
+                    max="{{ now()->format('Y-m-d') }}"
                     required
                 >
             </div>
@@ -347,6 +350,34 @@
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function () {
+    // Sincronización lógica de calendarios (Fecha Desde <= Fecha Hasta <= Hoy)
+    const inputDesde = document.getElementById('fecha_inicio');
+    const inputHasta = document.getElementById('fecha_fin');
+    const hoyIso = "{{ now()->format('Y-m-d') }}";
+
+    function sincronizarRangoFechas() {
+        if (!inputDesde || !inputHasta) return;
+        inputDesde.max = inputHasta.value && inputHasta.value < hoyIso ? inputHasta.value : hoyIso;
+        inputHasta.max = hoyIso;
+        if (inputDesde.value) {
+            if (inputDesde.value > hoyIso) {
+                inputDesde.value = hoyIso;
+            }
+            inputHasta.min = inputDesde.value;
+            if (inputHasta.value && inputHasta.value < inputDesde.value) {
+                inputHasta.value = inputDesde.value;
+            }
+        }
+        if (inputHasta.value && inputHasta.value > hoyIso) {
+            inputHasta.value = hoyIso;
+        }
+    }
+
+    if (inputDesde && inputHasta) {
+        inputDesde.addEventListener('change', sincronizarRangoFechas);
+        inputHasta.addEventListener('change', sincronizarRangoFechas);
+        sincronizarRangoFechas();
+    }
     // -------------------------------------------------------------
     // GRÁFICA 1: INGRESOS VS. PEDIDOS POR MES (Barras #e6a100 y Línea #111111)
     // -------------------------------------------------------------

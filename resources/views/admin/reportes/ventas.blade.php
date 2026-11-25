@@ -28,7 +28,7 @@
                 <label style="display:block; font-size:0.82rem; font-weight:700; color:#e4b353; margin-bottom:6px;">
                     <i class="fa-regular fa-calendar"></i> Fecha Inicial *
                 </label>
-                <input type="date" name="fecha_inicio" value="{{ $fechaInicio }}" required
+                <input type="date" id="rep_fecha_inicio" name="fecha_inicio" value="{{ $fechaInicio }}" max="{{ now()->format('Y-m-d') }}" required
                        style="width:100%; padding:10px 12px; border:1px solid #e4b353; border-radius:6px; background:#242424; color:#ffffff; font-weight:600;">
             </div>
 
@@ -36,7 +36,7 @@
                 <label style="display:block; font-size:0.82rem; font-weight:700; color:#e4b353; margin-bottom:6px;">
                     <i class="fa-regular fa-calendar-check"></i> Fecha Final *
                 </label>
-                <input type="date" name="fecha_fin" value="{{ $fechaFin }}" required
+                <input type="date" id="rep_fecha_fin" name="fecha_fin" value="{{ $fechaFin }}" min="{{ $fechaInicio }}" max="{{ now()->format('Y-m-d') }}" required
                        style="width:100%; padding:10px 12px; border:1px solid #e4b353; border-radius:6px; background:#242424; color:#ffffff; font-weight:600;">
             </div>
 
@@ -281,3 +281,37 @@
         </div>
     </div>
 @endsection
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const inputDesde = document.getElementById('rep_fecha_inicio');
+    const inputHasta = document.getElementById('rep_fecha_fin');
+    const hoyIso = "{{ now()->format('Y-m-d') }}";
+
+    function sincronizarRangoReporte() {
+        if (!inputDesde || !inputHasta) return;
+        inputDesde.max = inputHasta.value && inputHasta.value < hoyIso ? inputHasta.value : hoyIso;
+        inputHasta.max = hoyIso;
+        if (inputDesde.value) {
+            if (inputDesde.value > hoyIso) {
+                inputDesde.value = hoyIso;
+            }
+            inputHasta.min = inputDesde.value;
+            if (inputHasta.value && inputHasta.value < inputDesde.value) {
+                inputHasta.value = inputDesde.value;
+            }
+        }
+        if (inputHasta.value && inputHasta.value > hoyIso) {
+            inputHasta.value = hoyIso;
+        }
+    }
+
+    if (inputDesde && inputHasta) {
+        inputDesde.addEventListener('change', sincronizarRangoReporte);
+        inputHasta.addEventListener('change', sincronizarRangoReporte);
+        sincronizarRangoReporte();
+    }
+});
+</script>
+@endpush

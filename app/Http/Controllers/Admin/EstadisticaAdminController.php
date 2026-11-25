@@ -6,17 +6,10 @@ use App\Http\Controllers\Controller;
 use App\Models\Pedido;
 use App\Models\PedidoDetalle;
 use App\Models\Producto;
-use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
-use PhpOffice\PhpSpreadsheet\Spreadsheet;
-use PhpOffice\PhpSpreadsheet\Style\Alignment;
-use PhpOffice\PhpSpreadsheet\Style\Border;
-use PhpOffice\PhpSpreadsheet\Style\Fill;
-use PhpOffice\PhpSpreadsheet\Style\NumberFormat;
-use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class EstadisticaAdminController extends Controller
@@ -27,14 +20,15 @@ class EstadisticaAdminController extends Controller
     public function index(Request $request): View
     {
         $request->validate([
-            'fecha_inicio'  => ['nullable', 'date'],
-            'fecha_fin'     => ['nullable', 'date', 'after_or_equal:fecha_inicio'],
+            'fecha_inicio'  => ['nullable', 'date', 'before_or_equal:today'],
+            'fecha_fin'     => ['nullable', 'date', 'after_or_equal:fecha_inicio', 'before_or_equal:today'],
             'estado_pedido' => ['nullable', 'string'],
         ], [
-            'fecha_fin.after_or_equal' => 'La fecha final debe ser igual o posterior a la fecha inicial.',
+            'fecha_inicio.before_or_equal' => 'La fecha inicial ("Fecha Desde") no puede ser una fecha futura.',
+            'fecha_fin.after_or_equal'     => 'La fecha final debe ser igual o posterior a la fecha inicial.',
+            'fecha_fin.before_or_equal'    => 'La fecha final ("Fecha Hasta") no puede ser una fecha futura.',
         ]);
 
-        // Filtro de fechas por defecto al mes/año actual (2026, nunca 2025)
         $fechaInicio  = $request->input('fecha_inicio', now()->startOfMonth()->format('Y-m-d'));
         $fechaFin     = $request->input('fecha_fin', now()->format('Y-m-d'));
         $estadoFiltro = $request->input('estado_pedido');
@@ -58,7 +52,6 @@ class EstadisticaAdminController extends Controller
 
         $pedidos = $pedidosQuery->get();
 
-        // Pedidos válidos para cálculos económicos (excluyendo cancelados salvo filtro explícito)
         $pedidosValidos = empty($estadoFiltro)
             ? $pedidos->where('estado_pedido', '!=', 'Cancelado')
             : ($estadoFiltro === 'Cancelado' ? $pedidos : $pedidos->where('estado_pedido', '!=', 'Cancelado'));
@@ -69,7 +62,7 @@ class EstadisticaAdminController extends Controller
         $ticketPromedio   = $totalPedidos > 0 ? ($ventasTotales / $totalPedidos) : 0;
         $unidadesVendidas = (int) $pedidosValidos->flatMap->detalles->sum('cantidad');
 
-        // 3. Salud y Rotación de Inventario (ventas agrupadas por producto en el período)
+        // 3. Salud y Rotación de Inventario
         $ventasPorProductoQuery = PedidoDetalle::select(
                 'pedido_detalle.id_producto',
                 DB::raw('SUM(pedido_detalle.cantidad) as total_unidades'),
@@ -105,7 +98,6 @@ class EstadisticaAdminController extends Controller
             $ingresos   = $venta ? (float) $venta->total_ingresos : 0;
             $numPedidos = $venta ? (int) $venta->total_pedidos : 0;
 
-            // Clasificación de rotación
             if ($unidades >= 5) {
                 $rotacion   = 'Alta';
                 $badgeClass = 'badge-rotacion-alta';
@@ -132,10 +124,9 @@ class EstadisticaAdminController extends Controller
             ];
         });
 
-        // Conteo de Productos con Baja Rotación
         $productosBajaRotacion = $tablaSaludInventario->where('rotacion', 'Baja')->count();
 
-        // 4. Gráfica Chart.js: "Ingresos vs. Pedidos por Mes" (Año 2026)
+        // 4. Gráfica Chart.js: "Ingresos vs. Pedidos por Mes"
         $añoActual = now()->year;
         $mensualRaw = Pedido::selectRaw('MONTH(fecha_pedido) as mes, SUM(total) as ingresos, COUNT(id_pedido) as pedidos')
             ->whereYear('fecha_pedido', $añoActual)
@@ -159,8 +150,8 @@ class EstadisticaAdminController extends Controller
 
         // 5. Gráfica Chart.js: "Top Productos Más Vendidos"
         $topProductos = $tablaSaludInventario->sortByDesc('unidades_vendidas')->take(5)->values();
-        $chartTopLabels    = $topProductos->pluck('nombre_producto')->toArray();
-        $chartTopUnidades  = $topProductos->pluck('unidades_vendidas')->toArray();
+        $chartTopLabels   = $topProductos->pluck('nombre_producto')->toArray();
+        $chartTopUnidades = $topProductos->pluck('unidades_vendidas')->toArray();
 
         return view('admin.estadisticas', compact(
             'fechaInicio',
@@ -200,7 +191,6 @@ class EstadisticaAdminController extends Controller
         return response()->stream(function () use ($d) {
             $handle = fopen('php://output', 'w');
 
-            // Cabecera BOM UTF-8
             fwrite($handle, "\xEF\xBB\xBF");
 
             fputcsv($handle, ['BIO-GEST | TENEBRIOS GOLD - REPORTE UNIFICADO DE ESTADÍSTICAS Y VENTAS'], ';', '"', "\\");
@@ -286,224 +276,621 @@ class EstadisticaAdminController extends Controller
     }
 
     /**
-     * Exportar reporte a formato Excel (.xlsx) real con estilos negro/dorado y formato COP.
+     * Exportar reporte a formato Excel (.xlsx) nativo OpenXML sin depender de ext-zip ni PhpSpreadsheet.
+     * Genera un paquete ZIP OpenXML (.xlsx) 100% compatible con Microsoft Excel, LibreOffice y Google Sheets,
+     * con estilos corporativos negro (#111111) y dorado (#E6A100).
      */
-    public function exportarExcel(Request $request): StreamedResponse
+    public function exportarExcel(Request $request): Response|StreamedResponse
     {
         $d = $this->obtenerDatosReporte($request);
 
-        $spreadsheet = new Spreadsheet();
-        $sheet = $spreadsheet->getActiveSheet();
-        $sheet->setTitle('Reporte BIO-GEST');
+        // Si PhpSpreadsheet y ZipArchive estuvieran instalados en otro servidor, usarlos;
+        // de lo contrario usar nuestro motor nativo OpenXML (.xlsx) que funciona sin extensiones externas.
+        if (class_exists('\PhpOffice\PhpSpreadsheet\Spreadsheet') && class_exists('\ZipArchive')) {
+            return $this->exportarExcelConPhpSpreadsheet($d);
+        }
 
-        // Paleta oficial
-        $colorNegro = '111111';
-        $colorDorado = 'E6A100';
-        $colorGrisClaro = 'F8FAFC';
-        $colorBorde = 'CBD5E1';
+        $xlsxBinary = $this->buildNativeXlsx($d);
+        $fileName   = "reporte_ejecutivo_biogest_{$d['fechaInicio']}_al_{$d['fechaFin']}.xlsx";
 
-        // 1. Título General
-        $sheet->mergeCells('A1:I1');
-        $sheet->setCellValue('A1', 'TENEBRIOS GOLD · REPORTE EJECUTIVO Y ESTADÍSTICAS BIO-GEST');
-        $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(14)->getColor()->setRGB($colorDorado);
-        $sheet->getStyle('A1')->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setRGB($colorNegro);
-        $sheet->getStyle('A1')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER)->setVertical(Alignment::VERTICAL_CENTER);
-        $sheet->getRowDimension(1)->setRowHeight(32);
+        return response($xlsxBinary, 200, [
+            'Content-Type'        => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'Content-Disposition' => "attachment; filename=\"{$fileName}\"",
+            'Content-Length'      => strlen($xlsxBinary),
+            'Cache-Control'       => 'max-age=0',
+        ]);
+    }
 
-        // Subtítulo
-        $sheet->mergeCells('A2:I2');
+    /**
+     * Exportar reporte ejecutivo en PDF (.pdf) nativo sin depender de DomPDF externo.
+     */
+    public function exportarPdf(Request $request): Response
+    {
+        $d = $this->obtenerDatosReporte($request);
+
+        if (class_exists('\Barryvdh\DomPDF\Facade\Pdf')) {
+            $logoPath = public_path('assets/img/LOGO PNG.png');
+            if (!file_exists($logoPath)) {
+                $logoPath = public_path('assets/img/Logo.jpeg');
+            }
+            $logoBase64 = null;
+            if (file_exists($logoPath)) {
+                $mime = mime_content_type($logoPath) ?: 'image/png';
+                $logoBase64 = 'data:' . $mime . ';base64,' . base64_encode(file_get_contents($logoPath));
+            }
+            $data = array_merge($d, ['logoBase64' => $logoBase64]);
+            $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.estadisticas.pdf_report', $data)
+                ->setPaper('a4', 'portrait')
+                ->setOption(['isHtml5ParserEnabled' => true, 'isRemoteEnabled' => true]);
+
+            $fileName = "reporte_ejecutivo_biogest_{$d['fechaInicio']}_al_{$d['fechaFin']}.pdf";
+            return $pdf->download($fileName);
+        }
+
+        $pdfBinary = $this->buildNativePdf($d);
+        $fileName  = "reporte_ejecutivo_biogest_{$d['fechaInicio']}_al_{$d['fechaFin']}.pdf";
+
+        return response($pdfBinary, 200, [
+            'Content-Type'        => 'application/pdf',
+            'Content-Disposition' => "attachment; filename=\"{$fileName}\"",
+            'Content-Length'      => strlen($pdfBinary),
+            'Cache-Control'       => 'private, max-age=0, must-revalidate',
+            'Pragma'              => 'public',
+        ]);
+    }
+
+    /**
+     * =========================================================================
+     * GENERADOR NATIVO DE EXCEL OPENXML (.XLSX) EN PHP PURO (SIN EXT-ZIP)
+     * =========================================================================
+     */
+    private function buildNativeXlsx(array $d): string
+    {
+        $rows = [];
+
+        // Estilos definidos en styles.xml:
+        // s=0: Normal
+        // s=1: Título principal (Fondo Negro #111111, Texto Dorado #E6A100, Bold 13pt)
+        // s=2: Subtítulo / Encabezado tabla (Fondo Gris Oscuro #222222, Texto Blanco, Bold 10pt)
+        // s=3: Celda de datos con borde fino
+        // s=4: Celda moneda COP ($#,##0) con borde fino
+        // s=5: Celda KPI Etiqueta (Fondo Gris Claro, Bold)
+        // s=6: Celda KPI Valor Moneda (Fondo Gris Claro, Bold, $#,##0)
+        // s=7: Celda KPI Valor Entero (Fondo Gris Claro, Bold, #,##0)
+
+        $rows[] = [
+            ['v' => 'TENEBRIOS GOLD · REPORTE EJECUTIVO Y ESTADÍSTICAS BIO-GEST', 't' => 's', 's' => 1],
+        ];
         $sub = "Período: {$d['fechaInicio']} al {$d['fechaFin']} | Filtro Estado: " . ($d['estadoFiltro'] ?: 'Todos') . " | Generado: " . now()->format('d/m/Y h:i a');
-        $sheet->setCellValue('A2', $sub);
-        $sheet->getStyle('A2')->getFont()->setSize(9)->getColor()->setRGB('FFFFFF');
-        $sheet->getStyle('A2')->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setRGB('222222');
-        $sheet->getStyle('A2')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+        $rows[] = [
+            ['v' => $sub, 't' => 's', 's' => 2],
+        ];
+        $rows[] = [];
 
-        // 2. Tarjetas KPI
-        $sheet->setCellValue('A4', 'RESUMEN DE INDICADORES CLAVE (KPIS)');
-        $sheet->getStyle('A4')->getFont()->setBold(true)->setSize(11)->getColor()->setRGB($colorNegro);
+        // KPIs
+        $rows[] = [
+            ['v' => 'RESUMEN DE INDICADORES CLAVE (KPIS)', 't' => 's', 's' => 1],
+            ['v' => '', 't' => 's', 's' => 1],
+        ];
+        $rows[] = [
+            ['v' => 'Ventas Totales (COP)', 't' => 's', 's' => 5],
+            ['v' => (float) $d['ventasTotales'], 't' => 'n', 's' => 6],
+        ];
+        $rows[] = [
+            ['v' => 'Total de Pedidos', 't' => 's', 's' => 5],
+            ['v' => (int) $d['totalPedidos'], 't' => 'n', 's' => 7],
+        ];
+        $rows[] = [
+            ['v' => 'Ticket Promedio (COP)', 't' => 's', 's' => 5],
+            ['v' => round((float) $d['ticketPromedio'], 2), 't' => 'n', 's' => 6],
+        ];
+        $rows[] = [
+            ['v' => 'Unidades Vendidas', 't' => 's', 's' => 5],
+            ['v' => (int) $d['unidadesVendidas'], 't' => 'n', 's' => 7],
+        ];
+        $rows[] = [];
 
-        $kpis = [
-            ['Ventas Totales (COP)', $d['ventasTotales'], '"$"#,##0'],
-            ['Total de Pedidos', $d['totalPedidos'], '#,##0'],
-            ['Ticket Promedio (COP)', $d['ticketPromedio'], '"$"#,##0'],
-            ['Unidades Vendidas', $d['unidadesVendidas'], '#,##0'],
+        // SECCIÓN 1: SALUD Y ROTACIÓN DE INVENTARIO
+        $rows[] = [
+            ['v' => '1. SALUD Y ROTACIÓN DE INVENTARIO', 't' => 's', 's' => 1],
+        ];
+        $rows[] = [
+            ['v' => 'ID Producto', 't' => 's', 's' => 2],
+            ['v' => 'Nombre del Producto', 't' => 's', 's' => 2],
+            ['v' => 'Categoría', 't' => 's', 's' => 2],
+            ['v' => 'Precio Actual (COP)', 't' => 's', 's' => 2],
+            ['v' => 'Stock Físico', 't' => 's', 's' => 2],
+            ['v' => 'Stock Mínimo', 't' => 's', 's' => 2],
+            ['v' => 'Unidades Vendidas', 't' => 's', 's' => 2],
+            ['v' => 'Total Ingresos (COP)', 't' => 's', 's' => 2],
+            ['v' => 'Rotación', 't' => 's', 's' => 2],
         ];
 
-        $filaKpi = 5;
-        foreach ($kpis as [$label, $val, $fmt]) {
-            $sheet->setCellValue("A{$filaKpi}", $label);
-            $sheet->setCellValue("B{$filaKpi}", $val);
-            $sheet->getStyle("A{$filaKpi}")->getFont()->setBold(true);
-            $sheet->getStyle("B{$filaKpi}")->getNumberFormat()->setFormatCode($fmt);
-            $sheet->getStyle("A{$filaKpi}:B{$filaKpi}")->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setRGB($colorGrisClaro);
-            $sheet->getStyle("A{$filaKpi}:B{$filaKpi}")->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN)->getColor()->setRGB($colorBorde);
-            $filaKpi++;
-        }
-
-        // 3. SECCIÓN 1: SALUD Y ROTACIÓN DE INVENTARIO
-        $filaInv = $filaKpi + 2;
-        $sheet->mergeCells("A{$filaInv}:I{$filaInv}");
-        $sheet->setCellValue("A{$filaInv}", '1. SALUD Y ROTACIÓN DE INVENTARIO');
-        $sheet->getStyle("A{$filaInv}")->getFont()->setBold(true)->setSize(11)->getColor()->setRGB($colorDorado);
-        $sheet->getStyle("A{$filaInv}")->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setRGB($colorNegro);
-        $sheet->getRowDimension($filaInv)->setRowHeight(24);
-
-        $filaInvHeader = $filaInv + 1;
-        $headersInv = [
-            'ID Producto',
-            'Nombre del Producto',
-            'Categoría',
-            'Precio Actual (COP)',
-            'Stock Físico',
-            'Stock Mínimo',
-            'Unidades Vendidas',
-            'Total Ingresos (COP)',
-            'Rotación'
-        ];
-
-        $col = 'A';
-        foreach ($headersInv as $headerText) {
-            $sheet->setCellValue("{$col}{$filaInvHeader}", $headerText);
-            $col++;
-        }
-
-        $sheet->getStyle("A{$filaInvHeader}:I{$filaInvHeader}")->getFont()->setBold(true)->getColor()->setRGB('FFFFFF');
-        $sheet->getStyle("A{$filaInvHeader}:I{$filaInvHeader}")->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setRGB('222222');
-        $sheet->getStyle("A{$filaInvHeader}:I{$filaInvHeader}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-
-        $filaDataInv = $filaInvHeader + 1;
         foreach ($d['todosProductos'] as $prod) {
             $venta    = $d['ventasPorProducto']->get($prod->id_producto);
             $unidades = $venta ? (int) $venta->total_unidades : 0;
             $ingresos = $venta ? (float) $venta->total_ingresos : 0;
             $rotacion = $unidades >= 5 ? 'Alta' : ($unidades >= 1 ? 'Media' : 'Baja');
 
-            $sheet->setCellValue("A{$filaDataInv}", 'PROD-' . str_pad((string) $prod->id_producto, 3, '0', STR_PAD_LEFT));
-            $sheet->setCellValue("B{$filaDataInv}", $prod->nombre_producto);
-            $sheet->setCellValue("C{$filaDataInv}", $prod->categoria?->nombre_categoria ?? 'General');
-            $sheet->setCellValue("D{$filaDataInv}", (float) $prod->precio);
-            $sheet->setCellValue("E{$filaDataInv}", (int) $prod->stock);
-            $sheet->setCellValue("F{$filaDataInv}", (int) ($prod->stock_minimo ?? 0));
-            $sheet->setCellValue("G{$filaDataInv}", $unidades);
-            $sheet->setCellValue("H{$filaDataInv}", $ingresos);
-            $sheet->setCellValue("I{$filaDataInv}", $rotacion);
-
-            $sheet->getStyle("D{$filaDataInv}")->getNumberFormat()->setFormatCode('"$"#,##0');
-            $sheet->getStyle("H{$filaDataInv}")->getNumberFormat()->setFormatCode('"$"#,##0');
-
-            if ($filaDataInv % 2 === 0) {
-                $sheet->getStyle("A{$filaDataInv}:I{$filaDataInv}")->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setRGB($colorGrisClaro);
-            }
-            $sheet->getStyle("A{$filaDataInv}:I{$filaDataInv}")->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN)->getColor()->setRGB($colorBorde);
-
-            $filaDataInv++;
+            $rows[] = [
+                ['v' => 'PROD-' . str_pad((string) $prod->id_producto, 3, '0', STR_PAD_LEFT), 't' => 's', 's' => 3],
+                ['v' => (string) $prod->nombre_producto, 't' => 's', 's' => 3],
+                ['v' => (string) ($prod->categoria?->nombre_categoria ?? 'General'), 't' => 's', 's' => 3],
+                ['v' => (float) $prod->precio, 't' => 'n', 's' => 4],
+                ['v' => (int) $prod->stock, 't' => 'n', 's' => 3],
+                ['v' => (int) ($prod->stock_minimo ?? 0), 't' => 'n', 's' => 3],
+                ['v' => $unidades, 't' => 'n', 's' => 3],
+                ['v' => $ingresos, 't' => 'n', 's' => 4],
+                ['v' => $rotacion, 't' => 's', 's' => 3],
+            ];
         }
 
-        // 4. SECCIÓN 2: DETALLE DE PEDIDOS
-        $filaPed = $filaDataInv + 2;
-        $sheet->mergeCells("A{$filaPed}:K{$filaPed}");
-        $sheet->setCellValue("A{$filaPed}", '2. DETALLE DE VENTAS Y PEDIDOS EN EL PERÍODO');
-        $sheet->getStyle("A{$filaPed}")->getFont()->setBold(true)->setSize(11)->getColor()->setRGB($colorDorado);
-        $sheet->getStyle("A{$filaPed}")->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setRGB($colorNegro);
-        $sheet->getRowDimension($filaPed)->setRowHeight(24);
+        $rows[] = [];
 
-        $filaPedHeader = $filaPed + 1;
-        $headersPed = [
-            'Número Pedido',
-            'Fecha y Hora',
-            'Cliente',
-            'Correo Electrónico',
-            'Ciudad Entrega',
-            'Subtotal (COP)',
-            'Costo Envío (COP)',
-            'Total (COP)',
-            'Método Pago',
-            'Estado Pago',
-            'Estado Pedido'
+        // SECCIÓN 2: DETALLE DE PEDIDOS
+        $rows[] = [
+            ['v' => '2. DETALLE DE VENTAS Y PEDIDOS EN EL PERÍODO', 't' => 's', 's' => 1],
+        ];
+        $rows[] = [
+            ['v' => 'Número Pedido', 't' => 's', 's' => 2],
+            ['v' => 'Fecha y Hora', 't' => 's', 's' => 2],
+            ['v' => 'Cliente', 't' => 's', 's' => 2],
+            ['v' => 'Correo Electrónico', 't' => 's', 's' => 2],
+            ['v' => 'Ciudad Entrega', 't' => 's', 's' => 2],
+            ['v' => 'Subtotal (COP)', 't' => 's', 's' => 2],
+            ['v' => 'Costo Envío (COP)', 't' => 's', 's' => 2],
+            ['v' => 'Total (COP)', 't' => 's', 's' => 2],
+            ['v' => 'Método Pago', 't' => 's', 's' => 2],
+            ['v' => 'Estado Pago', 't' => 's', 's' => 2],
+            ['v' => 'Estado Pedido', 't' => 's', 's' => 2],
         ];
 
-        $col = 'A';
-        foreach ($headersPed as $headerText) {
-            $sheet->setCellValue("{$col}{$filaPedHeader}", $headerText);
-            $col++;
-        }
-
-        $sheet->getStyle("A{$filaPedHeader}:K{$filaPedHeader}")->getFont()->setBold(true)->getColor()->setRGB('FFFFFF');
-        $sheet->getStyle("A{$filaPedHeader}:K{$filaPedHeader}")->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setRGB('222222');
-        $sheet->getStyle("A{$filaPedHeader}:K{$filaPedHeader}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-
-        $filaDataPed = $filaPedHeader + 1;
         foreach ($d['pedidos'] as $p) {
-            $sheet->setCellValue("A{$filaDataPed}", $p->numero_pedido ?: ('PED-' . (1000 + $p->id_pedido)));
-            $sheet->setCellValue("B{$filaDataPed}", optional($p->fecha_pedido)->format('Y-m-d H:i:s'));
-            $sheet->setCellValue("C{$filaDataPed}", optional($p->usuario)->nombre_completo ?? 'Cliente');
-            $sheet->setCellValue("D{$filaDataPed}", optional($p->usuario)->correo ?? 'N/A');
-            $sheet->setCellValue("E{$filaDataPed}", $p->ciudad_entrega ?? 'Bogotá D.C.');
-            $sheet->setCellValue("F{$filaDataPed}", (float) $p->subtotal);
-            $sheet->setCellValue("G{$filaDataPed}", (float) $p->costo_envio);
-            $sheet->setCellValue("H{$filaDataPed}", (float) $p->total);
-            $sheet->setCellValue("I{$filaDataPed}", $p->metodo_pago ?? 'Contraentrega');
-            $sheet->setCellValue("J{$filaDataPed}", $p->estado_pago ?? 'Aprobado');
-            $sheet->setCellValue("K{$filaDataPed}", $p->estado_pedido ?? 'Completado');
+            $rows[] = [
+                ['v' => (string) ($p->numero_pedido ?: ('PED-' . (1000 + $p->id_pedido))), 't' => 's', 's' => 3],
+                ['v' => (string) (optional($p->fecha_pedido)->format('Y-m-d H:i:s') ?? '-'), 't' => 's', 's' => 3],
+                ['v' => (string) (optional($p->usuario)->nombre_completo ?? 'Cliente'), 't' => 's', 's' => 3],
+                ['v' => (string) (optional($p->usuario)->correo ?? 'N/A'), 't' => 's', 's' => 3],
+                ['v' => (string) ($p->ciudad_entrega ?? 'Bogotá D.C.'), 't' => 's', 's' => 3],
+                ['v' => (float) $p->subtotal, 't' => 'n', 's' => 4],
+                ['v' => (float) $p->costo_envio, 't' => 'n', 's' => 4],
+                ['v' => (float) $p->total, 't' => 'n', 's' => 4],
+                ['v' => (string) ($p->metodo_pago ?? 'Contraentrega'), 't' => 's', 's' => 3],
+                ['v' => (string) ($p->estado_pago ?? 'Aprobado'), 't' => 's', 's' => 3],
+                ['v' => (string) ($p->estado_pedido ?? 'Completado'), 't' => 's', 's' => 3],
+            ];
+        }
 
-            $sheet->getStyle("F{$filaDataPed}")->getNumberFormat()->setFormatCode('"$"#,##0');
-            $sheet->getStyle("G{$filaDataPed}")->getNumberFormat()->setFormatCode('"$"#,##0');
-            $sheet->getStyle("H{$filaDataPed}")->getNumberFormat()->setFormatCode('"$"#,##0');
-
-            if ($filaDataPed % 2 === 0) {
-                $sheet->getStyle("A{$filaDataPed}:K{$filaDataPed}")->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setRGB($colorGrisClaro);
+        // Construir sheet1.xml
+        $colLetters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K'];
+        $sheetDataXml = '';
+        foreach ($rows as $rIdx => $rowCells) {
+            $rowNum = $rIdx + 1;
+            if (empty($rowCells)) {
+                $sheetDataXml .= "<row r=\"{$rowNum}\"/>";
+                continue;
             }
-            $sheet->getStyle("A{$filaDataPed}:K{$filaDataPed}")->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN)->getColor()->setRGB($colorBorde);
-
-            $filaDataPed++;
+            $sheetDataXml .= "<row r=\"{$rowNum}\">";
+            foreach ($rowCells as $cIdx => $cell) {
+                $col = $colLetters[$cIdx] ?? 'A';
+                $ref = "{$col}{$rowNum}";
+                $styleAttr = isset($cell['s']) ? " s=\"{$cell['s']}\"" : '';
+                if (($cell['t'] ?? 's') === 'n') {
+                    $val = is_numeric($cell['v']) ? $cell['v'] : 0;
+                    $sheetDataXml .= "<c r=\"{$ref}\" t=\"n\"{$styleAttr}><v>{$val}</v></c>";
+                } else {
+                    $escaped = htmlspecialchars((string) $cell['v'], ENT_XML1 | ENT_QUOTES, 'UTF-8');
+                    $sheetDataXml .= "<c r=\"{$ref}\" t=\"inlineStr\"{$styleAttr}><is><t>{$escaped}</t></is></c>";
+                }
+            }
+            $sheetDataXml .= "</row>";
         }
 
-        // Auto-ajustar ancho de todas las columnas (A a K)
-        foreach (range('A', 'K') as $colLetter) {
-            $sheet->getColumnDimension($colLetter)->setAutoSize(true);
-        }
+        $sheetXml = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+            . '<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">'
+            . '<cols>'
+            . '<col min="1" max="1" width="22" customWidth="1"/>'
+            . '<col min="2" max="2" width="36" customWidth="1"/>'
+            . '<col min="3" max="4" width="26" customWidth="1"/>'
+            . '<col min="5" max="11" width="18" customWidth="1"/>'
+            . '</cols>'
+            . '<sheetData>' . $sheetDataXml . '</sheetData>'
+            . '</worksheet>';
 
-        $fileName = "reporte_ejecutivo_biogest_{$d['fechaInicio']}_al_{$d['fechaFin']}.xlsx";
-        $headers = [
-            'Content-Type'        => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-            'Content-Disposition' => "attachment; filename=\"{$fileName}\"",
-            'Cache-Control'       => 'max-age=0',
-        ];
+        $stylesXml = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+            . '<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">'
+            . '<numFmts count="1">'
+            . '<numFmt numFmtId="164" formatCode="&quot;$&quot;#,##0"/>'
+            . '</numFmts>'
+            . '<fonts count="4">'
+            . '<font><sz val="10"/><color rgb="FF1E293B"/><name val="Calibri"/></font>'
+            . '<font><b/><sz val="12"/><color rgb="FFE6A100"/><name val="Calibri"/></font>'
+            . '<font><b/><sz val="10"/><color rgb="FFFFFFFF"/><name val="Calibri"/></font>'
+            . '<font><b/><sz val="10"/><color rgb="FF111111"/><name val="Calibri"/></font>'
+            . '</fonts>'
+            . '<fills count="5">'
+            . '<fill><patternFill patternType="none"/></fill>'
+            . '<fill><patternFill patternType="gray125"/></fill>'
+            . '<fill><patternFill patternType="solid"><fgColor rgb="FF111111"/></patternFill></fill>'
+            . '<fill><patternFill patternType="solid"><fgColor rgb="FF222222"/></patternFill></fill>'
+            . '<fill><patternFill patternType="solid"><fgColor rgb="FFF8FAFC"/></patternFill></fill>'
+            . '</fills>'
+            . '<borders count="2">'
+            . '<border><left/><right/><top/><bottom/><diagonal/></border>'
+            . '<border>'
+            . '<left style="thin"><color rgb="FFCBD5E1"/></left>'
+            . '<right style="thin"><color rgb="FFCBD5E1"/></right>'
+            . '<top style="thin"><color rgb="FFCBD5E1"/></top>'
+            . '<bottom style="thin"><color rgb="FFCBD5E1"/></bottom>'
+            . '<diagonal/>'
+            . '</border>'
+            . '</borders>'
+            . '<cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>'
+            . '<cellXfs count="8">'
+            . '<xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/>'
+            . '<xf numFmtId="0" fontId="1" fillId="2" borderId="0" xfId="0" applyFont="1" applyFill="1"/>'
+            . '<xf numFmtId="0" fontId="2" fillId="3" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1"/>'
+            . '<xf numFmtId="0" fontId="0" fillId="0" borderId="1" xfId="0" applyBorder="1"/>'
+            . '<xf numFmtId="164" fontId="0" fillId="0" borderId="1" xfId="0" applyNumberFormat="1" applyBorder="1"/>'
+            . '<xf numFmtId="0" fontId="3" fillId="4" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1"/>'
+            . '<xf numFmtId="164" fontId="3" fillId="4" borderId="1" xfId="0" applyNumberFormat="1" applyFont="1" applyFill="1" applyBorder="1"/>'
+            . '<xf numFmtId="3" fontId="3" fillId="4" borderId="1" xfId="0" applyNumberFormat="1" applyFont="1" applyFill="1" applyBorder="1"/>'
+            . '</cellXfs>'
+            . '</styleSheet>';
 
-        return response()->stream(function () use ($spreadsheet) {
-            $writer = new Xlsx($spreadsheet);
-            $writer->save('php://output');
-        }, 200, $headers);
+        $workbookXml = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+            . '<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" '
+            . 'xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">'
+            . '<sheets><sheet name="Reporte BIO-GEST" sheetId="1" r:id="rId1"/></sheets>'
+            . '</workbook>';
+
+        $workbookRels = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+            . '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'
+            . '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/>'
+            . '<Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>'
+            . '</Relationships>';
+
+        $rootRels = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+            . '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'
+            . '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/>'
+            . '</Relationships>';
+
+        $contentTypes = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+            . '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">'
+            . '<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>'
+            . '<Default Extension="xml" ContentType="application/xml"/>'
+            . '<Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>'
+            . '<Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>'
+            . '<Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>'
+            . '</Types>';
+
+        return $this->createZipArchive([
+            '[Content_Types].xml'        => $contentTypes,
+            '_rels/.rels'                => $rootRels,
+            'xl/workbook.xml'            => $workbookXml,
+            'xl/_rels/workbook.xml.rels' => $workbookRels,
+            'xl/styles.xml'              => $stylesXml,
+            'xl/worksheets/sheet1.xml'   => $sheetXml,
+        ]);
     }
 
     /**
-     * Exportar reporte ejecutivo en PDF oficial con DomPDF.
+     * Empaquetador ZIP en memoria 100% nativo en PHP usando gzdeflate (zlib) y crc32.
      */
-    public function exportarPdf(Request $request): Response
+    private function createZipArchive(array $files): string
     {
-        $d = $this->obtenerDatosReporte($request);
+        $localData = '';
+        $centralDir = '';
+        $offset = 0;
+        $count = 0;
 
-        // Logo en base64 para renderizado offline garantizado en DomPDF
-        $logoPath = public_path('assets/img/LOGO PNG.png');
-        if (!file_exists($logoPath)) {
-            $logoPath = public_path('assets/img/Logo.jpeg');
+        foreach ($files as $name => $content) {
+            $name = str_replace('\\', '/', $name);
+            $uncompressedSize = strlen($content);
+            $crc = crc32($content);
+            $compressed = gzdeflate($content, 6);
+            $compressedSize = strlen($compressed);
+            $nameLen = strlen($name);
+
+            // Local file header
+            $localHeader = pack(
+                'VvvvvvVVVvv',
+                0x04034b50,
+                20,
+                0,
+                8,
+                0,
+                0,
+                $crc,
+                $compressedSize,
+                $uncompressedSize,
+                $nameLen,
+                0
+            ) . $name;
+
+            $localEntry = $localHeader . $compressed;
+            $localData .= $localEntry;
+
+            // Central directory file header
+            $centralDir .= pack(
+                'VvvvvvvVVVvvvvvVV',
+                0x02014b50,
+                20,
+                20,
+                0,
+                8,
+                0,
+                0,
+                $crc,
+                $compressedSize,
+                $uncompressedSize,
+                $nameLen,
+                0,
+                0,
+                0,
+                0,
+                32,
+                $offset
+            ) . $name;
+
+            $offset += strlen($localEntry);
+            $count++;
         }
 
-        $logoBase64 = null;
-        if (file_exists($logoPath)) {
-            $mime = mime_content_type($logoPath) ?: 'image/png';
-            $logoBase64 = 'data:' . $mime . ';base64,' . base64_encode(file_get_contents($logoPath));
+        $eocd = pack(
+            'VvvvvVVv',
+            0x06054b50,
+            0,
+            0,
+            $count,
+            $count,
+            strlen($centralDir),
+            $offset,
+            0
+        );
+
+        return $localData . $centralDir . $eocd;
+    }
+
+    /**
+     * =========================================================================
+     * GENERADOR NATIVO DE PDF 1.4 EJECUTIVO EN PHP PURO (SIN DOMPDF EXTERNO)
+     * =========================================================================
+     */
+    private function buildNativePdf(array $d): string
+    {
+        $pages = [];
+        $ops = [];
+
+        $startNewPage = function () use (&$ops, &$pages, $d) {
+            if (!empty($ops)) {
+                $pages[] = implode("\n", $ops);
+            }
+            $ops = [];
+
+            // Header corporativo oscuro (#111111) con franja dorada (#E6A100)
+            $ops[] = "0.067 0.067 0.067 rg 30 765 535 48 re f";
+            $ops[] = "0.902 0.631 0.000 rg 30 762 535 3 re f";
+
+            // Título en dorado y subtítulo en blanco
+            $ops[] = $this->pdfText(44, 793, 'TENEBRIOS GOLD - BIO-GEST ADMIN', 'F2', 14, [0.902, 0.631, 0.000]);
+            $ops[] = $this->pdfText(44, 776, 'Reporte Ejecutivo de Ventas, Pedidos y Rotacion de Inventario', 'F1', 9.5, [1, 1, 1]);
+
+            $fechaGen = 'Generado: ' . now()->format('d/m/Y h:i a');
+            $ops[] = $this->pdfText(420, 793, $fechaGen, 'F1', 8.5, [0.85, 0.85, 0.85]);
+            $ops[] = $this->pdfText(420, 776, "Periodo: {$d['fechaInicio']} al {$d['fechaFin']}", 'F2', 8.5, [0.902, 0.631, 0.000]);
+
+            // Pie de página
+            $ops[] = "0.85 0.88 0.92 RG 0.6 w 30 35 m 565 35 l S";
+            $ops[] = $this->pdfText(30, 23, 'BIO-GEST · Tenebrios Gold S.A.S. — Documento Oficial de Auditoria y Estadisticas Comerciales', 'F1', 8, [0.45, 0.50, 0.58]);
+        };
+
+        $startNewPage();
+        $y = 735;
+
+        // 1. TARJETAS KPI
+        $kpis = [
+            ['VENTAS TOTALES', '$ ' . number_format((float) $d['ventasTotales'], 0, ',', '.') . ' COP'],
+            ['PEDIDOS REGISTRADOS', (string) $d['totalPedidos'] . ' pedido(s)'],
+            ['TICKET PROMEDIO', '$ ' . number_format((float) $d['ticketPromedio'], 0, ',', '.') . ' COP'],
+            ['UNIDADES VENDIDAS', (string) $d['unidadesVendidas'] . ' uds.'],
+        ];
+
+        $cardW = 126;
+        $gap = 10;
+        foreach ($kpis as $idx => [$label, $val]) {
+            $x = 30 + $idx * ($cardW + $gap);
+            $ops[] = "0.973 0.980 0.988 rg {$x} " . ($y - 36) . " {$cardW} 42 re f";
+            $ops[] = "0.902 0.631 0.000 rg {$x} " . ($y - 36) . " 3 42 re f";
+            $ops[] = $this->pdfText($x + 9, $y - 11, $label, 'F2', 7.5, [0.39, 0.45, 0.55]);
+            $ops[] = $this->pdfText($x + 9, $y - 27, $val, 'F2', 10.5, [0.067, 0.067, 0.067]);
         }
 
-        $data = array_merge($d, ['logoBase64' => $logoBase64]);
+        $y -= 58;
 
-        $pdf = Pdf::loadView('admin.estadisticas.pdf_report', $data)
-            ->setPaper('a4', 'portrait')
-            ->setOption(['isHtml5ParserEnabled' => true, 'isRemoteEnabled' => true]);
+        // 2. TABLA: SALUD Y ROTACIÓN DE INVENTARIO
+        $ops[] = $this->pdfText(30, $y, '1. SALUD Y ROTACION DE INVENTARIO OFICIAL', 'F2', 10.5, [0.067, 0.067, 0.067]);
+        $y -= 10;
 
-        $fileName = "reporte_ejecutivo_biogest_{$d['fechaInicio']}_al_{$d['fechaFin']}.pdf";
+        // Encabezado de tabla
+        $ops[] = "0.067 0.067 0.067 rg 30 " . ($y - 16) . " 535 18 re f";
+        $ops[] = $this->pdfText(35, $y - 11, 'CODIGO', 'F2', 8, [0.902, 0.631, 0.000]);
+        $ops[] = $this->pdfText(85, $y - 11, 'PRODUCTO', 'F2', 8, [0.902, 0.631, 0.000]);
+        $ops[] = $this->pdfText(255, $y - 11, 'CATEGORIA', 'F2', 8, [0.902, 0.631, 0.000]);
+        $ops[] = $this->pdfText(340, $y - 11, 'PRECIO', 'F2', 8, [0.902, 0.631, 0.000]);
+        $ops[] = $this->pdfText(400, $y - 11, 'STOCK', 'F2', 8, [0.902, 0.631, 0.000]);
+        $ops[] = $this->pdfText(440, $y - 11, 'VEND.', 'F2', 8, [0.902, 0.631, 0.000]);
+        $ops[] = $this->pdfText(475, $y - 11, 'INGRESOS', 'F2', 8, [0.902, 0.631, 0.000]);
+        $ops[] = $this->pdfText(530, $y - 11, 'ROT.', 'F2', 8, [0.902, 0.631, 0.000]);
+        $y -= 16;
 
-        return $pdf->download($fileName);
+        $rowAlt = 0;
+        foreach ($d['todosProductos'] as $prod) {
+            if ($y < 75) {
+                $startNewPage();
+                $y = 735;
+            }
+            $venta    = $d['ventasPorProducto']->get($prod->id_producto);
+            $unidades = $venta ? (int) $venta->total_unidades : 0;
+            $ingresos = $venta ? (float) $venta->total_ingresos : 0;
+            $rotacion = $unidades >= 5 ? 'Alta' : ($unidades >= 1 ? 'Media' : 'Baja');
+
+            if ($rowAlt % 2 === 1) {
+                $ops[] = "0.973 0.980 0.988 rg 30 " . ($y - 15) . " 535 16 re f";
+            }
+            $ops[] = "0.88 0.91 0.94 RG 0.4 w 30 " . ($y - 15) . " 535 16 re S";
+
+            $cod = 'PROD-' . str_pad((string) $prod->id_producto, 3, '0', STR_PAD_LEFT);
+            $nom = mb_strimwidth((string) $prod->nombre_producto, 0, 32, '...');
+            $cat = mb_strimwidth((string) ($prod->categoria?->nombre_categoria ?? 'General'), 0, 16, '...');
+            $pre = '$' . number_format((float) $prod->precio, 0, ',', '.');
+            $ing = '$' . number_format($ingresos, 0, ',', '.');
+
+            $ops[] = $this->pdfText(35, $y - 10, $cod, 'F2', 7.8, [0.2, 0.25, 0.33]);
+            $ops[] = $this->pdfText(85, $y - 10, $nom, 'F1', 8, [0.07, 0.07, 0.07]);
+            $ops[] = $this->pdfText(255, $y - 10, $cat, 'F1', 7.8, [0.35, 0.4, 0.48]);
+            $ops[] = $this->pdfText(340, $y - 10, $pre, 'F1', 8, [0.07, 0.07, 0.07]);
+            $ops[] = $this->pdfText(405, $y - 10, (string) $prod->stock, 'F2', 8, [0.07, 0.07, 0.07]);
+            $ops[] = $this->pdfText(445, $y - 10, (string) $unidades, 'F2', 8, [0.07, 0.07, 0.07]);
+            $ops[] = $this->pdfText(475, $y - 10, $ing, 'F2', 8, [0.02, 0.47, 0.34]);
+            $ops[] = $this->pdfText(530, $y - 10, $rotacion, 'F2', 7.8, [0.07, 0.07, 0.07]);
+
+            $y -= 16;
+            $rowAlt++;
+        }
+
+        $y -= 24;
+        if ($y < 120) {
+            $startNewPage();
+            $y = 735;
+        }
+
+        // 3. TABLA: DETALLE DE PEDIDOS Y VENTAS DEL PERÍODO
+        $ops[] = $this->pdfText(30, $y, '2. DETALLE DE PEDIDOS Y VENTAS DEL PERIODO (' . count($d['pedidos']) . ')', 'F2', 10.5, [0.067, 0.067, 0.067]);
+        $y -= 10;
+
+        $ops[] = "0.067 0.067 0.067 rg 30 " . ($y - 16) . " 535 18 re f";
+        $ops[] = $this->pdfText(35, $y - 11, 'N° PEDIDO', 'F2', 8, [0.902, 0.631, 0.000]);
+        $ops[] = $this->pdfText(95, $y - 11, 'FECHA / HORA', 'F2', 8, [0.902, 0.631, 0.000]);
+        $ops[] = $this->pdfText(175, $y - 11, 'CLIENTE', 'F2', 8, [0.902, 0.631, 0.000]);
+        $ops[] = $this->pdfText(310, $y - 11, 'CIUDAD', 'F2', 8, [0.902, 0.631, 0.000]);
+        $ops[] = $this->pdfText(380, $y - 11, 'METODO PAGO', 'F2', 8, [0.902, 0.631, 0.000]);
+        $ops[] = $this->pdfText(455, $y - 11, 'TOTAL (COP)', 'F2', 8, [0.902, 0.631, 0.000]);
+        $ops[] = $this->pdfText(515, $y - 11, 'ESTADO', 'F2', 8, [0.902, 0.631, 0.000]);
+        $y -= 16;
+
+        if (count($d['pedidos']) === 0) {
+            $ops[] = "0.88 0.91 0.94 RG 0.4 w 30 " . ($y - 18) . " 535 19 re S";
+            $ops[] = $this->pdfText(40, $y - 12, 'No se registraron pedidos dentro del periodo y filtro seleccionado.', 'F1', 8.5, [0.4, 0.45, 0.52]);
+            $y -= 19;
+        } else {
+            $rowAlt = 0;
+            foreach ($d['pedidos'] as $pedido) {
+                if ($y < 65) {
+                    $startNewPage();
+                    $y = 735;
+                }
+                if ($rowAlt % 2 === 1) {
+                    $ops[] = "0.973 0.980 0.988 rg 30 " . ($y - 15) . " 535 16 re f";
+                }
+                $ops[] = "0.88 0.91 0.94 RG 0.4 w 30 " . ($y - 15) . " 535 16 re S";
+
+                $numPed = (string) ($pedido->numero_pedido ?: ('PED-' . (1000 + $pedido->id_pedido)));
+                $fecPed = (string) (optional($pedido->fecha_pedido)->format('d/m/Y H:i') ?? '-');
+                $cliPed = mb_strimwidth((string) (optional($pedido->usuario)->nombre_completo ?? 'Cliente'), 0, 24, '...');
+                $ciuPed = mb_strimwidth((string) ($pedido->ciudad_entrega ?? 'Bogotá'), 0, 13, '...');
+                $metPed = mb_strimwidth((string) ($pedido->metodo_pago ?? 'Contraentrega'), 0, 14, '...');
+                $totPed = '$ ' . number_format((float) $pedido->total, 0, ',', '.');
+                $estPed = (string) ($pedido->estado_pedido ?? 'Pendiente');
+
+                $ops[] = $this->pdfText(35, $y - 10, $numPed, 'F2', 8, [0.07, 0.07, 0.07]);
+                $ops[] = $this->pdfText(95, $y - 10, $fecPed, 'F1', 7.8, [0.3, 0.35, 0.42]);
+                $ops[] = $this->pdfText(175, $y - 10, $cliPed, 'F1', 8, [0.07, 0.07, 0.07]);
+                $ops[] = $this->pdfText(310, $y - 10, $ciuPed, 'F1', 7.8, [0.25, 0.3, 0.38]);
+                $ops[] = $this->pdfText(380, $y - 10, $metPed, 'F1', 7.8, [0.25, 0.3, 0.38]);
+                $ops[] = $this->pdfText(455, $y - 10, $totPed, 'F2', 8, [0.02, 0.47, 0.34]);
+                $ops[] = $this->pdfText(515, $y - 10, $estPed, 'F2', 7.8, [0.07, 0.07, 0.07]);
+
+                $y -= 16;
+                $rowAlt++;
+            }
+        }
+
+        if (!empty($ops)) {
+            $pages[] = implode("\n", $ops);
+        }
+
+        return $this->compilePdfDocument($pages);
+    }
+
+    /**
+     * Genera una instrucción de texto PDF con codificación WinAnsi (CP1252) para soportar tildes y ñ.
+     */
+    private function pdfText(float $x, float $y, string $text, string $font = 'F1', float $size = 10, array $rgb = [0, 0, 0]): string
+    {
+        $winAnsi = @iconv('UTF-8', 'Windows-1252//TRANSLIT//IGNORE', $text);
+        if ($winAnsi === false) {
+            $winAnsi = $text;
+        }
+        $escaped = str_replace(['\\', '(', ')'], ['\\\\', '\\(', '\\)'], $winAnsi);
+        [$r, $g, $b] = $rgb;
+        return sprintf("BT /%s %.2f Tf %.3f %.3f %.3f rg %.2f %.2f Td (%s) Tj ET", $font, $size, $r, $g, $b, $x, $y, $escaped);
+    }
+
+    /**
+     * Ensambla objetos PDF 1.4 con tabla xref válida.
+     */
+    private function compilePdfDocument(array $pageStreams): string
+    {
+        $objects = [];
+        // 1: Catalog, 2: Pages, 3: Font Helvetica, 4: Font Helvetica-Bold
+        $objects[1] = "<< /Type /Catalog /Pages 2 0 R >>";
+        $objects[3] = "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>";
+        $objects[4] = "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>";
+
+        $kids = [];
+        $nextId = 5;
+
+        foreach ($pageStreams as $stream) {
+            $pageId = $nextId++;
+            $contentId = $nextId++;
+            $kids[] = "{$pageId} 0 R";
+
+            $len = strlen($stream);
+            $objects[$contentId] = "<< /Length {$len} >>\nstream\n{$stream}\nendstream";
+            $objects[$pageId] = "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595.28 841.89] "
+                . "/Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> "
+                . "/Contents {$contentId} 0 R >>";
+        }
+
+        $countPages = count($kids);
+        $kidsStr = implode(' ', $kids);
+        $objects[2] = "<< /Type /Pages /Kids [{$kidsStr}] /Count {$countPages} >>";
+
+        ksort($objects);
+
+        $pdf = "%PDF-1.4\n%\xE2\xE3\xCF\xD3\n";
+        $offsets = [0 => 0];
+
+        foreach ($objects as $id => $body) {
+            $offsets[$id] = strlen($pdf);
+            $pdf .= "{$id} 0 obj\n{$body}\nendobj\n";
+        }
+
+        $xrefOffset = strlen($pdf);
+        $maxId = max(array_keys($objects));
+        $totalObjs = $maxId + 1;
+
+        $pdf .= "xref\n0 {$totalObjs}\n";
+        $pdf .= "0000000000 65535 f \n";
+        for ($i = 1; $i <= $maxId; $i++) {
+            $pdf .= sprintf("%010d 00000 n \n", $offsets[$i] ?? 0);
+        }
+
+        $pdf .= "trailer\n<< /Size {$totalObjs} /Root 1 0 R >>\n";
+        $pdf .= "startxref\n{$xrefOffset}\n%%EOF";
+
+        return $pdf;
     }
 
     /**

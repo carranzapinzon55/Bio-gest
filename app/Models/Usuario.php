@@ -34,6 +34,10 @@ class Usuario extends Authenticatable
         'remember_token',
     ];
 
+    protected $casts = [
+        'fecha_registro' => 'datetime',
+    ];
+
     public function getAuthPassword(): string
     {
         return $this->contrasena;

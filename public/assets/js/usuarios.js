@@ -61,6 +61,25 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Abrir Modal "+ Nuevo Administrador"
+    const userNameInputEl = document.getElementById('userNameInput');
+    const userPhoneInputEl = document.getElementById('userPhoneInput');
+
+    // Bloquear números y caracteres especiales en el campo Nombre y Apellido
+    if (userNameInputEl) {
+        userNameInputEl.addEventListener('input', () => {
+            userNameInputEl.value = userNameInputEl.value
+                .replace(/[^A-Za-zÁÉÍÓÚÜÑáéíóúüñ\s'-]/g, '')
+                .replace(/\s{2,}/g, ' ');
+        });
+    }
+
+    // Bloquear letras en el campo Teléfono (solo dígitos, máx 10)
+    if (userPhoneInputEl) {
+        userPhoneInputEl.addEventListener('input', () => {
+            userPhoneInputEl.value = userPhoneInputEl.value.replace(/\D/g, '').slice(0, 10);
+        });
+    }
+
     if (btnOpenCreateModal) {
         btnOpenCreateModal.addEventListener('click', () => {
             if (userForm) userForm.reset();
@@ -79,20 +98,34 @@ document.addEventListener('DOMContentLoaded', () => {
             const nombre = document.getElementById('userNameInput')?.value.trim() || '';
             const correo = document.getElementById('userEmailInput')?.value.trim() || '';
             const contrasena = document.getElementById('userPasswordInput')?.value || '';
+            const contrasena_confirmation = document.getElementById('userPasswordConfirmInput')?.value || '';
             const telefono = document.getElementById('userPhoneInput')?.value.trim() || '';
             const estado = document.getElementById('userStatusInput')?.value || 'Activo';
 
+            const lettersOnlyRegex = /^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ\s'-]{3,}$/;
+            const passwordRegex = /^(?=.*[A-Za-zÁÉÍÓÚÜÑáéíóúüñ])(?=.*\d).{8,}$/;
             let hasError = false;
             if (!nombre) {
                 showFieldError('nameError', 'El nombre completo del nuevo administrador es obligatorio.');
+                hasError = true;
+            } else if (!lettersOnlyRegex.test(nombre)) {
+                showFieldError('nameError', 'El nombre y apellido solo pueden contener letras (sin números).');
                 hasError = true;
             }
             if (!correo) {
                 showFieldError('emailError', 'El correo corporativo es obligatorio.');
                 hasError = true;
             }
-            if (!contrasena || contrasena.length < 6) {
-                showFieldError('passwordError', 'La contraseña debe tener mínimo 6 caracteres.');
+            if (telefono && !/^[0-9]{7,10}$/.test(telefono)) {
+                showFieldError('phoneError', 'El teléfono debe tener entre 7 y 10 dígitos numéricos.');
+                hasError = true;
+            }
+            if (!contrasena || !passwordRegex.test(contrasena)) {
+                showFieldError('passwordError', 'La contraseña debe tener mínimo 8 caracteres e incluir al menos una letra y un número.');
+                hasError = true;
+            }
+            if (contrasena !== contrasena_confirmation) {
+                showFieldError('passwordConfirmError', 'La confirmación de la contraseña no coincide.');
                 hasError = true;
             }
             if (hasError) return;
@@ -116,6 +149,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         nombre,
                         correo,
                         contrasena,
+                        contrasena_confirmation,
                         telefono,
                         estado,
                         id_rol: 1
@@ -128,6 +162,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (data.errors) {
                         if (data.errors.nombre) showFieldError('nameError', data.errors.nombre[0]);
                         if (data.errors.correo) showFieldError('emailError', data.errors.correo[0]);
+                        if (data.errors.telefono) showFieldError('phoneError', data.errors.telefono[0]);
                         if (data.errors.contrasena) showFieldError('passwordError', data.errors.contrasena[0]);
                     }
                     throw new Error(data.message || 'Verifica los campos del formulario.');

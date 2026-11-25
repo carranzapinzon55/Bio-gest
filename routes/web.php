@@ -10,6 +10,7 @@ use App\Http\Controllers\Client\CarritoController;
 use App\Http\Controllers\Client\CheckoutController;
 use App\Http\Controllers\Client\PedidoClienteController;
 use App\Http\Controllers\Client\PerfilController;
+use App\Http\Controllers\Client\ChatClienteController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\ProductoAdminController;
 use App\Http\Controllers\Admin\InventarioAdminController;
@@ -61,7 +62,10 @@ Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth')->n
 
 Route::get('/auth/session-status', function () {
     if (!auth()->check()) {
-        return response()->json(['active' => false, 'redirect' => route('login')]);
+        return response()->json(['active' => false, 'redirect' => route('home')]);
+    }
+    if (auth()->user()->esAdmin()) {
+        \App\Models\Configuracion::set('admin_last_seen', (string) now()->timestamp, 'sistema', 'Última actividad del administrador');
     }
     return response()->json(['active' => true]);
 })->name('auth.session.status');
@@ -96,6 +100,10 @@ Route::middleware(['auth'])->group(function () {
 
         Route::get('/mis-pedidos', [PedidoClienteController::class, 'index'])->name('pedidos.index');
         Route::get('/mis-pedidos/{id_pedido}', [PedidoClienteController::class, 'show'])->name('pedidos.show');
+
+        // Chat en Vivo del Cliente Autenticado con el Administrador
+        Route::get('/chat', [ChatClienteController::class, 'index'])->name('chat.index');
+        Route::post('/chat', [ChatClienteController::class, 'enviar'])->name('chat.enviar');
     });
 });
 
@@ -166,4 +174,8 @@ Route::middleware(['auth', 'role:Administrador'])->prefix('admin')->name('admin.
     Route::get('/ajustes', [AjusteAdminController::class, 'index'])->name('ajustes.index');
     Route::post('/ajustes', [AjusteAdminController::class, 'update'])->name('ajustes.update');
     Route::get('/ajustes/respaldo-sql', [AjusteAdminController::class, 'descargarRespaldoSql'])->name('ajustes.respaldo.sql');
+
+    // 12. Mi Perfil del Administrador
+    Route::get('/perfil', [AjusteAdminController::class, 'perfil'])->name('perfil.index');
+    Route::put('/perfil', [AjusteAdminController::class, 'updatePerfil'])->name('perfil.update');
 });

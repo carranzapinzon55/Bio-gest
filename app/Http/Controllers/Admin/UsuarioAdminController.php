@@ -70,19 +70,25 @@ class UsuarioAdminController extends Controller
         $this->ensureRolesExist();
 
         $datos = $request->validate([
-            'nombre'     => ['required', 'string', 'max:190'],
-            'apellido'   => ['nullable', 'string', 'max:100'],
+            'nombre'     => ['required', 'string', 'min:3', 'max:190', 'regex:/^[\pL\s\'-]+$/u'],
+            'apellido'   => ['nullable', 'string', 'min:2', 'max:100', 'regex:/^[\pL\s\'-]+$/u'],
             'correo'     => ['required', 'email', 'max:150', 'unique:usuario,correo'],
-            'telefono'   => ['nullable', 'string', 'max:20'],
-            'contrasena' => ['required', 'string', 'min:6'],
+            'telefono'   => ['nullable', 'string', 'regex:/^[0-9]{7,10}$/'],
+            'contrasena' => ['required', 'string', 'min:8', 'regex:/^(?=.*[A-Za-zÁÉÍÓÚÜÑáéíóúüñ])(?=.*\d).+$/', 'confirmed'],
             'estado'     => ['nullable', 'in:Activo,Inactivo'],
         ], [
-            'nombre.required'     => 'El nombre del nuevo administrador es obligatorio.',
-            'correo.required'     => 'El correo corporativo es obligatorio.',
-            'correo.email'        => 'Ingresa un formato de correo electrónico válido.',
-            'correo.unique'       => 'Ya existe una cuenta registrada con este correo electrónico.',
-            'contrasena.required' => 'Debes asignar una contraseña de acceso inicial (mínimo 6 caracteres).',
-            'contrasena.min'      => 'La contraseña debe contener al menos 6 caracteres.',
+            'nombre.required'      => 'El nombre del nuevo administrador es obligatorio.',
+            'nombre.min'           => 'El nombre debe contener al menos 3 letras.',
+            'nombre.regex'         => 'El nombre y apellido solo pueden contener letras y espacios (no se permiten números).',
+            'apellido.regex'       => 'El apellido solo puede contener letras y espacios (no se permiten números).',
+            'correo.required'      => 'El correo corporativo es obligatorio.',
+            'correo.email'         => 'Ingresa un formato de correo electrónico válido.',
+            'correo.unique'        => 'Ya existe una cuenta registrada con este correo electrónico.',
+            'telefono.regex'       => 'El teléfono debe contener únicamente números (entre 7 y 10 dígitos).',
+            'contrasena.required'  => 'Debes asignar una contraseña de acceso inicial (mínimo 8 caracteres, al menos 1 letra y 1 número).',
+            'contrasena.min'       => 'La contraseña debe contener al menos 8 caracteres.',
+            'contrasena.regex'     => 'La contraseña debe incluir al menos una letra y al menos un número.',
+            'contrasena.confirmed' => 'La confirmación de la contraseña no coincide.',
         ]);
 
         if (!empty($datos['apellido'])) {

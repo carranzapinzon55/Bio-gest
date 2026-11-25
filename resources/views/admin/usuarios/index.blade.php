@@ -313,7 +313,7 @@
                     <div class="form-row">
                         <div class="form-group">
                             <label for="userNameInput">Nombre y Apellido <span class="required">*</span></label>
-                            <input type="text" id="userNameInput" name="nombre" value="{{ old('nombre') }}" class="form-control" placeholder="Ej. Camila Restrepo" required>
+                            <input type="text" id="userNameInput" name="nombre" value="{{ old('nombre') }}" class="form-control" placeholder="Ej. Camila Restrepo " minlength="3" maxlength="100" pattern="^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ\s'-]+$" title="Solo se permiten letras y espacios (sin números)" required>
                             <small class="error-msg" id="nameError">{{ isset($errors) ? $errors->first('nombre') : '' }}</small>
                         </div>
 
@@ -321,6 +321,20 @@
                             <label for="userEmailInput">Correo corporativo <span class="required">*</span></label>
                             <input type="email" id="userEmailInput" name="correo" value="{{ old('correo') }}" class="form-control" placeholder="Ej. camila@tenebriosgold.com" required>
                             <small class="error-msg" id="emailError">{{ isset($errors) ? $errors->first('correo') : '' }}</small>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="userPasswordInput">Contraseña inicial (mín. 8 caracteres, letra y número) <span class="required">*</span></label>
+                            <input type="password" id="userPasswordInput" name="contrasena" class="form-control" placeholder="Mín. 8 caracteres (letras y números)" required minlength="8" autocomplete="new-password">
+                            <small class="error-msg" id="passwordError">{{ isset($errors) ? $errors->first('contrasena') : '' }}</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="userPasswordConfirmInput">Confirmar contraseña <span class="required">*</span></label>
+                            <input type="password" id="userPasswordConfirmInput" name="contrasena_confirmation" class="form-control" placeholder="Repite la contraseña" required minlength="8" autocomplete="new-password">
+                            <small class="error-msg" id="passwordConfirmError"></small>
                         </div>
                     </div>
 
@@ -336,18 +350,13 @@
                         </div>
 
                         <div class="form-group">
-                            <label for="userPasswordInput">Contraseña de acceso inicial <span class="required">*</span></label>
-                            <input type="password" id="userPasswordInput" name="contrasena" class="form-control" placeholder="Mínimo 6 caracteres" required minlength="6">
-                            <small class="error-msg" id="passwordError">{{ isset($errors) ? $errors->first('contrasena') : '' }}</small>
+                            <label for="userPhoneInput">Teléfono de contacto</label>
+                            <input type="tel" id="userPhoneInput" name="telefono" value="{{ old('telefono') }}" class="form-control" placeholder="Ej. 3101234567 (solo números)" inputmode="numeric" maxlength="10" pattern="^[0-9]{7,10}$" title="Solo números (7 a 10 dígitos)">
+                            <small class="error-msg" id="phoneError">{{ isset($errors) ? $errors->first('telefono') : '' }}</small>
                         </div>
                     </div>
 
                     <div class="form-row">
-                        <div class="form-group">
-                            <label for="userPhoneInput">Teléfono de contacto</label>
-                            <input type="tel" id="userPhoneInput" name="telefono" value="{{ old('telefono') }}" class="form-control" placeholder="Ej. 3101234567">
-                        </div>
-
                         <div class="form-group">
                             <label for="userStatusInput">Estado inicial</label>
                             <div class="select-wrapper">

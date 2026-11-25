@@ -8,6 +8,26 @@
 
 @section('content')
 <div class="catalogo-container" style="max-width:1200px; margin:30px auto; padding:0 20px;">
+    @if(isset($promocionesActivas) && $promocionesActivas->isNotEmpty())
+        <div style="background:#111111; border:2px solid #e4b353; border-radius:10px; padding:14px 20px; margin-bottom:22px; color:#ffffff; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+            <div style="display:flex; align-items:center; gap:10px;">
+                <i class="fas fa-tags" style="color:#e4b353; font-size:1.3rem;"></i>
+                <div>
+                    <strong style="color:#e4b353;">Cupones de Descuento Disponibles:</strong>
+                    <span style="font-size:0.85rem; color:#cbd5e1; margin-left:6px;">Aplícalos al finalizar tu compra</span>
+                </div>
+            </div>
+            <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                @foreach($promocionesActivas as $promo)
+                    <span style="background:#222222; border:1px dashed #e4b353; padding:5px 12px; border-radius:6px; font-size:0.85rem; font-weight:700; color:#e4b353;">
+                        {{ $promo->codigo_cupon }}: <strong style="color:#4ade80;">-{{ number_format($promo->descuento_porcentaje, 0) }}%</strong>
+                        <small style="color:#9ca3af;">(hasta {{ optional($promo->fecha_fin)->format('d/m/Y') }})</small>
+                    </span>
+                @endforeach
+            </div>
+        </div>
+    @endif
+
     <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; margin-bottom:25px; border-bottom:2px solid #e4b353; padding-bottom:15px;">
         <h2 style="color:#151515; margin:0;"><i class="fas fa-boxes"></i> Catálogo de Alimento Vivo y Pie de Cría</h2>
         

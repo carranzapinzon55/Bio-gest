@@ -116,6 +116,9 @@
                             </tr>
                         </thead>
                         <tbody>
+                            @php
+                                $pedidosJsMap = [];
+                            @endphp
                             @forelse($pedidos as $ped)
                                 @php
                                     $badgeClass = match($ped->estado_pedido) {
@@ -124,7 +127,7 @@
                                         'Despachado', 'Procesando', 'Listo para retiro' => 'badge-info',
                                         default => 'badge-warning',
                                     };
-                                    $pedidoJson = htmlspecialchars(json_encode([
+                                    $pedidosJsMap[$ped->id_pedido] = [
                                         'id' => $ped->id_pedido,
                                         'numero' => $ped->numero_pedido ?? 'PED-' . $ped->id_pedido,
                                         'fecha' => optional($ped->fecha_pedido)->format('d/m/Y H:i'),
@@ -140,6 +143,7 @@
                                         'total' => (float) $ped->total,
                                         'estado' => $ped->estado_pedido,
                                         'action_url' => route('admin.pedidos.estado', $ped->id_pedido),
+                                        'show_url' => route('admin.pedidos.show', $ped->id_pedido),
                                         'productos' => $ped->detalles->map(function($d) {
                                             return [
                                                 'nombre' => optional($d->producto)->nombre_producto ?? ('Producto #' . $d->id_producto),
@@ -149,9 +153,9 @@
                                                 'imagen' => optional($d->producto)->imagen ? asset('assets/img/' . $d->producto->imagen) : asset('assets/img/Tenebrios_img.png'),
                                             ];
                                         })->values()
-                                    ], JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP), ENT_QUOTES, 'UTF-8');
+                                    ];
                                 @endphp
-                                <tr id="row-pedido-{{ $ped->id_pedido }}" class="pedido-table-row" style="cursor:pointer;" onclick="mostrarDetallePedido({{ $pedidoJson }})">
+                                <tr id="row-pedido-{{ $ped->id_pedido }}" class="pedido-table-row" data-pedido-id="{{ $ped->id_pedido }}" style="cursor:pointer;" onclick="mostrarDetallePedidoPorId({{ $ped->id_pedido }})">
                                     <td style="font-weight:800; color:#111111; white-space:nowrap;">
                                         <i class="fa-solid fa-receipt" style="color:#e6a100; margin-right:5px;"></i>
                                         {{ $ped->numero_pedido ?? 'PED-' . $ped->id_pedido }}
@@ -173,9 +177,12 @@
                                         </span>
                                     </td>
                                     <td style="text-align:right; white-space:nowrap;">
-                                        <button type="button" class="tg-btn-gold" style="padding:6px 12px; font-size:0.8rem;" onclick="event.stopPropagation(); mostrarDetallePedido({{ $pedidoJson }});">
+                                        <button type="button" class="tg-btn-gold" style="padding:6px 12px; font-size:0.8rem;" onclick="event.stopPropagation(); mostrarDetallePedidoPorId({{ $ped->id_pedido }});">
                                             <i class="fa-solid fa-eye"></i> Ver
                                         </button>
+                                        <a href="{{ route('admin.pedidos.show', $ped->id_pedido) }}" class="tg-btn-outline" style="padding:6px 10px; font-size:0.8rem; margin-left:4px;" onclick="event.stopPropagation();" title="Abrir ficha completa del pedido">
+                                            <i class="fa-solid fa-up-right-from-square"></i>
+                                        </a>
                                     </td>
                                 </tr>
                             @empty
@@ -216,9 +223,14 @@
                 <div id="drawerContent" style="display:none; flex-direction:column; gap:16px;">
                     <!-- Cabecera de pedido -->
                     <div style="background:#f8f9fa; border:1px solid #e5e7eb; border-radius:8px; padding:12px 14px;">
-                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px;">
                             <span style="font-weight:800; font-size:1.05rem; color:#111111;" id="detNumeroPedido">#PED-</span>
                             <span style="font-size:0.8rem; color:#6b7280;" id="detFechaPedido">-</span>
+                        </div>
+                        <div style="margin-top:8px;">
+                            <a id="detShowLink" href="#" class="tg-btn-outline" style="padding:4px 10px; font-size:0.76rem; width:100%; justify-content:center;">
+                                <i class="fa-solid fa-up-right-from-square"></i> Abrir Ficha Completa del Pedido
+                            </a>
                         </div>
                     </div>
 
@@ -318,11 +330,21 @@
 
 @push('scripts')
 <script>
+    const PEDIDOS_MAP = @json($pedidosJsMap ?? []);
+
     function fmtCOP(val) {
         return '$ ' + Number(val || 0).toLocaleString('es-CO');
     }
 
+    function mostrarDetallePedidoPorId(id) {
+        const p = PEDIDOS_MAP[id];
+        if (p) {
+            mostrarDetallePedido(p);
+        }
+    }
+
     function mostrarDetallePedido(p) {
+        if (!p) return;
         document.getElementById('drawerEmpty').style.display = 'none';
         const content = document.getElementById('drawerContent');
         content.style.display = 'flex';
@@ -331,6 +353,10 @@
         document.getElementById('drawerTitle').textContent = 'Pedido ' + p.numero;
         document.getElementById('detNumeroPedido').textContent = '#' + p.numero;
         document.getElementById('detFechaPedido').textContent = p.fecha || 'Reciente';
+        const showLink = document.getElementById('detShowLink');
+        if (showLink && p.show_url) {
+            showLink.href = p.show_url;
+        }
 
         // Badge
         const badge = document.getElementById('drawerBadgeEstado');

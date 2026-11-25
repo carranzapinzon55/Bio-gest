@@ -18,11 +18,13 @@ class ReporteController extends Controller
     public function ventas(Request $request): View
     {
         $request->validate([
-            'fecha_inicio'  => ['nullable', 'date'],
-            'fecha_fin'     => ['nullable', 'date', 'after_or_equal:fecha_inicio'],
+            'fecha_inicio'  => ['nullable', 'date', 'before_or_equal:today'],
+            'fecha_fin'     => ['nullable', 'date', 'after_or_equal:fecha_inicio', 'before_or_equal:today'],
             'estado_pedido' => ['nullable', 'string'],
         ], [
-            'fecha_fin.after_or_equal' => 'La fecha final debe ser igual o posterior a la fecha inicial.',
+            'fecha_inicio.before_or_equal' => 'La fecha inicial no puede ser una fecha futura.',
+            'fecha_fin.after_or_equal'     => 'La fecha final debe ser igual o posterior a la fecha inicial.',
+            'fecha_fin.before_or_equal'    => 'La fecha final no puede ser una fecha futura.',
         ]);
 
         $fechaInicio  = $request->input('fecha_inicio', now()->subDays(30)->format('Y-m-d'));

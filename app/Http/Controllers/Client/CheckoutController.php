@@ -8,6 +8,7 @@ use App\Models\MovimientoInventario;
 use App\Models\Pedido;
 use App\Models\PedidoDetalle;
 use App\Models\Producto;
+use App\Models\Promocion;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -18,7 +19,7 @@ class CheckoutController extends Controller
     /**
      * Pantalla de checkout para finalizar compra.
      */
-    public function index(): View|RedirectResponse
+    public function index(Request $request): View|RedirectResponse
     {
         $carrito = session('carrito', []);
         if (empty($carrito)) {
@@ -29,6 +30,40 @@ class CheckoutController extends Controller
         $direcciones = auth()->user()->direcciones;
         $subtotal = collect($carrito)->sum(fn ($item) => $item['precio'] * $item['cantidad']);
 
+        // Promociones activas vigentes
+        $promocionesActivas = Promocion::where('estado', 'Activo')
+            ->where('fecha_inicio', '<=', now()->addDay())
+            ->where('fecha_fin', '>=', now()->subDay())
+            ->orderByDesc('descuento_porcentaje')
+            ->get();
+
+        // Verificar si hay un cupón aplicado en sesión o por parámetro
+        if ($request->filled('cupon')) {
+            $codigoInput = strtoupper(trim($request->input('cupon')));
+            $promo = Promocion::where('codigo_cupon', $codigoInput)
+                ->where('estado', 'Activo')
+                ->where('fecha_fin', '>=', now()->subDay())
+                ->first();
+            if ($promo) {
+                session(['cupon_aplicado' => [
+                    'codigo' => $promo->codigo_cupon,
+                    'porcentaje' => (float) $promo->descuento_porcentaje,
+                ]]);
+            } else {
+                session()->forget('cupon_aplicado');
+            }
+        } elseif ($request->has('quitar_cupon')) {
+            session()->forget('cupon_aplicado');
+        }
+
+        $cuponAplicado = session('cupon_aplicado');
+        $descuentoMonto = 0.00;
+        if ($cuponAplicado && !empty($cuponAplicado['porcentaje'])) {
+            $descuentoMonto = round($subtotal * ($cuponAplicado['porcentaje'] / 100), 2);
+        }
+
+        $subtotalConDescuento = max(0, $subtotal - $descuentoMonto);
+
         $montoEnvioGratis = (float) Configuracion::get('monto_envio_gratis', 122900);
         $costoBogota = (float) Configuracion::get('costo_envio_bogota', 10000);
         $costoNacional = (float) Configuracion::get('costo_envio_nacional', 18000);
@@ -37,30 +72,41 @@ class CheckoutController extends Controller
         $esBogota = (stripos($ciudadPrincipal, 'bogot') !== false);
         $tarifaBase = $esBogota ? $costoBogota : $costoNacional;
 
-        $costoEnvio = $subtotal >= $montoEnvioGratis ? 0.00 : $tarifaBase;
-        $total = $subtotal + $costoEnvio;
+        $costoEnvio = $subtotalConDescuento >= $montoEnvioGratis ? 0.00 : $tarifaBase;
+        $total = $subtotalConDescuento + $costoEnvio;
 
-        return view('client.finalizar_compra', compact('carrito', 'direcciones', 'subtotal', 'costoEnvio', 'total'));
+        return view('client.finalizar_compra', compact(
+            'carrito',
+            'direcciones',
+            'subtotal',
+            'descuentoMonto',
+            'cuponAplicado',
+            'promocionesActivas',
+            'costoEnvio',
+            'total'
+        ));
     }
 
     /**
-     * Procesar pedido del cliente en transacción atómica:
-     * a) Registra el pedido y su detalle con estado inicial 'Pendiente'.
-     * b) Descuenta automáticamente el inventario disponible y registra el movimiento de SALIDA.
-     * c) Disponible de inmediato en el panel del administrador.
+     * Procesar pedido del cliente en transacción atómica.
      */
     public function procesar(Request $request): RedirectResponse
     {
         $datos = $request->validate([
             'id_direccion'      => ['nullable', 'exists:direccion_usuario,id_direccion'],
-            'direccion_entrega' => ['required', 'string', 'max:255'],
-            'ciudad_entrega'    => ['required', 'string', 'max:100'],
-            'telefono_contacto' => ['required', 'string', 'max:20'],
-            'metodo_pago'       => ['required', 'in:Contraentrega,Transferencia,PSE,Tarjeta'],
+            'direccion_entrega' => ['required', 'string', 'min:5', 'max:255', 'regex:/[a-zA-ZÁÉÍÓÚÜÑáéíóúüñ]/u'],
+            'ciudad_entrega'    => ['required', 'string', 'min:2', 'max:100', 'regex:/^[\pL\s\.\'-]+$/u'],
+            'telefono_contacto' => ['required', 'string', 'regex:/^[0-9]{7,10}$/'],
+            'metodo_pago'       => ['required', 'in:Contraentrega,Transferencia,Transferencia Bancaria,PSE,Tarjeta'],
+            'codigo_cupon'      => ['nullable', 'string', 'max:50'],
         ], [
             'direccion_entrega.required' => 'La dirección de entrega es obligatoria.',
+            'direccion_entrega.min'      => 'Ingresa una dirección de entrega válida y completa.',
+            'direccion_entrega.regex'    => 'La dirección de entrega debe incluir texto válido (ej. Calle, Carrera), no solo números.',
             'ciudad_entrega.required'    => 'La ciudad de entrega es obligatoria.',
+            'ciudad_entrega.regex'       => 'La ciudad solo puede contener letras y espacios (no se permiten números).',
             'telefono_contacto.required' => 'El teléfono de contacto es obligatorio.',
+            'telefono_contacto.regex'    => 'El teléfono de contacto debe contener únicamente números (entre 7 y 10 dígitos).',
             'metodo_pago.required'       => 'Selecciona un método de pago válido.',
         ]);
 
@@ -74,7 +120,6 @@ class CheckoutController extends Controller
                 $subtotal = 0;
                 $productosBloqueados = [];
 
-                // Validar existencias reales con bloqueo pesimista antes de insertar
                 foreach ($carrito as $item) {
                     $producto = Producto::lockForUpdate()->findOrFail($item['id_producto']);
 
@@ -90,6 +135,27 @@ class CheckoutController extends Controller
                     $productosBloqueados[$producto->id_producto] = $producto;
                 }
 
+                // Evaluar cupón de descuento si viene en el formulario o en sesión
+                $porcentajeDescuento = 0.0;
+                $codigoCupon = !empty($datos['codigo_cupon'])
+                    ? strtoupper(trim($datos['codigo_cupon']))
+                    : (session('cupon_aplicado.codigo') ?? null);
+
+                if ($codigoCupon) {
+                    $promo = Promocion::where('codigo_cupon', $codigoCupon)
+                        ->where('estado', 'Activo')
+                        ->where('fecha_fin', '>=', now()->subDay())
+                        ->first();
+                    if ($promo) {
+                        $porcentajeDescuento = (float) $promo->descuento_porcentaje;
+                    }
+                }
+
+                $descuentoMonto = $porcentajeDescuento > 0
+                    ? round($subtotal * ($porcentajeDescuento / 100), 2)
+                    : 0.00;
+                $subtotalConDescuento = max(0, $subtotal - $descuentoMonto);
+
                 $montoEnvioGratis = (float) Configuracion::get('monto_envio_gratis', 122900);
                 $costoBogota = (float) Configuracion::get('costo_envio_bogota', 10000);
                 $costoNacional = (float) Configuracion::get('costo_envio_nacional', 18000);
@@ -97,13 +163,13 @@ class CheckoutController extends Controller
                 $esBogota = (stripos($datos['ciudad_entrega'], 'bogot') !== false);
                 $tarifaEnvio = $esBogota ? $costoBogota : $costoNacional;
 
-                $costoEnvio = $subtotal >= $montoEnvioGratis ? 0.00 : $tarifaEnvio;
-                $total = $subtotal + $costoEnvio;
+                $costoEnvio = $subtotalConDescuento >= $montoEnvioGratis ? 0.00 : $tarifaEnvio;
+                $total = $subtotalConDescuento + $costoEnvio;
 
                 $nuevoPedido = Pedido::create([
                     'id_usuario'        => auth()->id(),
                     'id_direccion'      => $datos['id_direccion'] ?? null,
-                    'subtotal'          => $subtotal,
+                    'subtotal'          => $subtotalConDescuento,
                     'costo_envio'       => $costoEnvio,
                     'total'             => $total,
                     'metodo_pago'       => $datos['metodo_pago'],
@@ -136,15 +202,12 @@ class CheckoutController extends Controller
 
                     $conteoMovimientosAntes = MovimientoInventario::where('id_producto', $producto->id_producto)->count();
 
-                    // Descontar inventario disponible
                     $producto->decrement('stock', $cantidadCompra);
                     $producto->refresh();
 
                     $conteoMovimientosDespues = MovimientoInventario::where('id_producto', $producto->id_producto)->count();
                     $observacionVenta = "Salida por venta en tienda - Pedido {$numeroPedido} (Stock previo: {$stockAnterior}, nuevo: {$producto->stock})";
 
-                    // Si el trigger de MySQL no está instalado en el entorno, lo crea Eloquent directamente;
-                    // si el trigger ya lo insertó, actualiza la observación con el número de pedido.
                     if ($conteoMovimientosDespues === $conteoMovimientosAntes) {
                         MovimientoInventario::create([
                             'id_producto'      => $producto->id_producto,
@@ -161,8 +224,7 @@ class CheckoutController extends Controller
                     }
                 }
 
-                // Limpiar carrito en sesión y en base de datos si existiera
-                session()->forget('carrito');
+                session()->forget(['carrito', 'cupon_aplicado']);
                 if (auth()->user()->carrito) {
                     auth()->user()->carrito->detalles()->delete();
                 }

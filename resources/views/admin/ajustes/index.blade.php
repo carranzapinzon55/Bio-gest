@@ -165,7 +165,7 @@
                 </div>
 
                 <div style="border-top:1px solid #f1f5f9; padding-top:14px;">
-                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; font-size:0.84rem;">
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; font-size:0.84rem; margin-bottom:14px;">
                         <div>
                             <span style="color:#64748b; display:block; font-size:0.75rem;">Teléfono registrado:</span>
                             <strong style="color:#111111;">{{ $admin->telefono ?: 'No registrado' }}</strong>
@@ -175,6 +175,9 @@
                             <strong style="color:#059669;"><i class="fa-solid fa-circle-check"></i> Activo</strong>
                         </div>
                     </div>
+                    <a href="{{ route('admin.perfil.index') }}" class="tg-btn-gold" style="width:100%; justify-content:center; padding:9px 16px; font-size:0.86rem;">
+                        <i class="fa-solid fa-user-pen"></i> Editar Mi Perfil y Contraseña
+                    </a>
                 </div>
             </div>
 

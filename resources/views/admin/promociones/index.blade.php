@@ -43,9 +43,12 @@
                         </tr>
                     </thead>
                     <tbody>
+                        @php
+                            $promosJsMap = [];
+                        @endphp
                         @forelse($promociones as $promo)
                             @php
-                                $promoJson = htmlspecialchars(json_encode([
+                                $promosJsMap[$promo->id_promocion] = [
                                     'id' => $promo->id_promocion,
                                     'codigo' => $promo->codigo_cupon,
                                     'descuento' => (float) $promo->descuento_porcentaje,
@@ -53,9 +56,9 @@
                                     'fecha_fin' => optional($promo->fecha_fin)->format('Y-m-d\TH:i'),
                                     'estado' => $promo->estado,
                                     'update_url' => route('admin.promociones.update', $promo->id_promocion),
-                                ]), ENT_QUOTES, 'UTF-8');
+                                ];
                             @endphp
-                            <tr id="row-promo-{{ $promo->id_promocion }}" class="promo-table-row" style="cursor:pointer;" onclick="cargarPromocionEnPanel({{ $promoJson }})">
+                            <tr id="row-promo-{{ $promo->id_promocion }}" class="promo-table-row" style="cursor:pointer;" onclick="cargarPromocionPorId({{ $promo->id_promocion }})">
                                 <td>
                                     <strong style="font-size:0.95rem; color:#111111; letter-spacing:0.5px; display:inline-flex; align-items:center;">
                                         <i class="fa-solid fa-ticket" style="color:#e6a100; margin-right:6px;"></i>
@@ -76,7 +79,7 @@
                                 </td>
                                 <td style="text-align:right; white-space:nowrap;">
                                     <button type="button" class="tg-btn-gold" style="padding:5px 10px; font-size:0.8rem; margin-right:4px;"
-                                            onclick="event.stopPropagation(); cargarPromocionEnPanel({{ $promoJson }})">
+                                            onclick="event.stopPropagation(); cargarPromocionPorId({{ $promo->id_promocion }})">
                                         <i class="fa-solid fa-pen-to-square"></i>
                                     </button>
 
@@ -196,10 +199,59 @@
 
 @push('scripts')
 <script>
+    const PROMOS_MAP = @json($promosJsMap ?? []);
+
     function formatearFechaInput(d) {
         if (!d) return '';
         const pad = n => String(n).padStart(2, '0');
         return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()) + 'T' + pad(d.getHours()) + ':' + pad(d.getMinutes());
+    }
+
+    function sincronizarLimitesFechasPromo(esEdicion = false) {
+        const inicioInput = document.getElementById('promoFechaInicio');
+        const finInput = document.getElementById('promoFechaFin');
+        if (!inicioInput || !finInput) return;
+
+        const ahora = new Date();
+        const inicioHoy = new Date(ahora.getFullYear(), ahora.getMonth(), ahora.getDate(), 0, 0);
+        const mananaInicio = new Date(ahora.getFullYear(), ahora.getMonth(), ahora.getDate() + 1, 0, 0);
+
+        // Si es nueva promoción, la fecha de inicio no puede ser anterior a hoy
+        if (!esEdicion) {
+            inicioInput.min = formatearFechaInput(inicioHoy);
+            if (inicioInput.value && inicioInput.value < inicioInput.min) {
+                inicioInput.value = formatearFechaInput(ahora);
+            }
+        } else {
+            inicioInput.removeAttribute('min');
+        }
+
+        // La fecha de inicio nunca puede ser posterior a la fecha de cierre
+        if (finInput.value) {
+            inicioInput.max = finInput.value;
+        } else {
+            inicioInput.removeAttribute('max');
+        }
+
+        // La fecha de cierre/vencimiento debe ser mínimo mañana (no puede vencer hoy) y además >= fecha_inicio + 1 día
+        let minFinDate = mananaInicio;
+        if (inicioInput.value) {
+            const dInicio = new Date(inicioInput.value);
+            if (!isNaN(dInicio.getTime())) {
+                const dInicioMasUnDia = new Date(dInicio.getFullYear(), dInicio.getMonth(), dInicio.getDate() + 1, dInicio.getHours(), dInicio.getMinutes());
+                if (dInicioMasUnDia > minFinDate) {
+                    minFinDate = dInicioMasUnDia;
+                }
+            }
+        }
+
+        const minFinStr = formatearFechaInput(minFinDate);
+        finInput.min = minFinStr;
+
+        if (!finInput.value || finInput.value < minFinStr) {
+            finInput.value = minFinStr;
+        }
+        inicioInput.max = finInput.value;
     }
 
     function abrirCrearPromocion() {
@@ -215,8 +267,11 @@
         const in30Days = new Date();
         in30Days.setDate(in30Days.getDate() + 30);
 
-        document.getElementById('promoFechaInicio').value = formatearFechaInput(now);
-        document.getElementById('promoFechaFin').value = formatearFechaInput(in30Days);
+        const inicioInput = document.getElementById('promoFechaInicio');
+        const finInput = document.getElementById('promoFechaFin');
+        inicioInput.value = formatearFechaInput(now);
+        finInput.value = formatearFechaInput(in30Days);
+        sincronizarLimitesFechasPromo(false);
         document.getElementById('promoEstado').value = 'Activo';
 
         document.getElementById('btnGuardarPromo').innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Crear Promoción';
@@ -224,7 +279,15 @@
         document.querySelectorAll('.promo-table-row').forEach(tr => tr.style.backgroundColor = '');
     }
 
+    function cargarPromocionPorId(id) {
+        const p = PROMOS_MAP[id];
+        if (p) {
+            cargarPromocionEnPanel(p);
+        }
+    }
+
     function cargarPromocionEnPanel(p) {
+        if (!p) return;
         document.getElementById('panelTitle').textContent = 'Editar Cupón: ' + p.codigo;
         const form = document.getElementById('formPromocion');
         form.action = p.update_url;
@@ -234,6 +297,7 @@
         document.getElementById('promoDescuento').value = p.descuento;
         document.getElementById('promoFechaInicio').value = p.fecha_inicio;
         document.getElementById('promoFechaFin').value = p.fecha_fin;
+        sincronizarLimitesFechasPromo(true);
         document.getElementById('promoEstado').value = p.estado;
 
         document.getElementById('btnGuardarPromo').innerHTML = '<i class="fa-solid fa-check"></i> Guardar cambios';
@@ -243,14 +307,17 @@
         if (row) row.style.backgroundColor = '#fdf8f0';
     }
 
-    // Al cargar la vista, inicializar el panel
+    // Al cargar la vista, inicializar el panel y sincronización de fechas
     document.addEventListener('DOMContentLoaded', function() {
-        const firstRow = document.querySelector('.promo-table-row');
-        if (firstRow) {
-            firstRow.click();
-        } else {
-            abrirCrearPromocion();
-        }
+        const inicioInput = document.getElementById('promoFechaInicio');
+        const finInput = document.getElementById('promoFechaFin');
+        const esModoEdicion = () => document.getElementById('formMethod')?.value === 'PUT';
+
+        if (inicioInput) inicioInput.addEventListener('change', () => sincronizarLimitesFechasPromo(esModoEdicion()));
+        if (finInput) finInput.addEventListener('change', () => sincronizarLimitesFechasPromo(esModoEdicion()));
+
+        // Por defecto dejamos listo el formulario "Nueva Promoción" para crear cupones de inmediato
+        abrirCrearPromocion();
     });
 </script>
 @endpush

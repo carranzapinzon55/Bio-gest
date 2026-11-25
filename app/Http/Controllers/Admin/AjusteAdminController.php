@@ -10,11 +10,76 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class AjusteAdminController extends Controller
 {
+    /**
+     * Pantalla de Mi Perfil del Administrador Autenticado.
+     */
+    public function perfil(): View
+    {
+        $admin = auth()->user();
+        return view('admin.perfil.index', compact('admin'));
+    }
+
+    /**
+     * Actualiza los datos personales, correo y contraseña del Administrador Autenticado.
+     */
+    public function updatePerfil(Request $request): RedirectResponse
+    {
+        $admin = auth()->user();
+
+        $datos = $request->validate([
+            'nombre'     => ['required', 'string', 'min:2', 'max:100', 'regex:/^[\pL\s\'-]+$/u'],
+            'apellido'   => ['required', 'string', 'min:2', 'max:100', 'regex:/^[\pL\s\'-]+$/u'],
+            'correo'     => [
+                'required',
+                'email',
+                'max:150',
+                Rule::unique('usuario', 'correo')->ignore($admin->id_usuario, 'id_usuario'),
+            ],
+            'telefono'   => ['nullable', 'string', 'regex:/^[0-9]{7,10}$/'],
+            'contrasena' => ['nullable', 'string', 'min:8', 'regex:/^(?=.*[A-Za-zÁÉÍÓÚÜÑáéíóúüñ])(?=.*\d).+$/', 'confirmed'],
+        ], [
+            'nombre.required'      => 'El nombre es obligatorio.',
+            'nombre.min'           => 'El nombre debe tener al menos 2 letras.',
+            'nombre.regex'         => 'El nombre solo puede contener letras y espacios (sin números).',
+            'apellido.required'    => 'El apellido es obligatorio.',
+            'apellido.min'         => 'El apellido debe tener al menos 2 letras.',
+            'apellido.regex'       => 'El apellido solo puede contener letras y espacios (sin números).',
+            'correo.required'      => 'El correo electrónico es obligatorio.',
+            'correo.email'         => 'Ingresa un correo electrónico válido.',
+            'correo.unique'        => 'Ya existe otra cuenta registrada con este correo electrónico.',
+            'telefono.regex'       => 'El teléfono debe contener únicamente números (entre 7 y 10 dígitos).',
+            'contrasena.min'       => 'La nueva contraseña debe tener mínimo 8 caracteres.',
+            'contrasena.regex'     => 'La nueva contraseña debe incluir al menos una letra y al menos un número.',
+            'contrasena.confirmed' => 'La confirmación de la nueva contraseña no coincide.',
+        ]);
+
+        $admin->nombre   = trim($datos['nombre']);
+        $admin->apellido = trim($datos['apellido']);
+        $admin->correo   = strtolower(trim($datos['correo']));
+        $admin->telefono = !empty($datos['telefono']) ? trim($datos['telefono']) : null;
+
+        if (!empty($datos['contrasena'])) {
+            $admin->contrasena = Hash::make($datos['contrasena']);
+        }
+
+        $admin->save();
+
+        BitacoraSeguridad::registrar(
+            $admin->id_usuario,
+            'Actualización de Perfil Administrador',
+            "El administrador {$admin->nombre_completo} ({$admin->correo}) actualizó sus datos de perfil."
+        );
+
+        return redirect()->route('admin.perfil.index')
+            ->with('success', 'Tus datos de perfil de administrador fueron actualizados correctamente.');
+    }
+
     /**
      * Pantalla de Ajustes del Sistema y Parámetros Comerciales BIO-GEST.
      */
