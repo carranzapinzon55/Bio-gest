@@ -11,7 +11,7 @@ android {
 
     defaultConfig {
         applicationId = "com.biogest.app"
-        minSdk = 26
+        minSdk = 24
         targetSdk = 37
         versionCode = 1
         versionName = "1.0"
@@ -45,6 +45,17 @@ dependencies {
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
+
+    // Arquitectura ViewModel con Jetpack Compose
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
+
+    // Red: Retrofit y conversor JSON con Gson
+    implementation(libs.retrofit)
+    implementation(libs.retrofit.converter.gson)
+
+    // Cliente HTTP OkHttp y Logging Interceptor para depurar peticiones
+    implementation(libs.okhttp.logging.interceptor)
+
     testImplementation(libs.junit)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
