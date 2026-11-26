@@ -204,6 +204,39 @@
                 flex: 1;
             }
 
+            /* Transiciones y Microinteracciones Suaves */
+            .tg-card,
+            .kpi-card,
+            .tg-btn-gold,
+            .tg-btn-dark,
+            .tg-btn-outline,
+            .action-item,
+            .main-nav ul li a,
+            .alert-flash {
+                transition: all 0.22s ease !important;
+            }
+
+            .tg-card:hover,
+            .kpi-card:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+            }
+
+            @keyframes tgFadeInUp {
+                from {
+                    opacity: 0;
+                    transform: translateY(10px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+
+            .alert-flash {
+                animation: tgFadeInUp 0.22s ease forwards;
+            }
+
             /* Utilidades y Componentes Tenebrios Gold */
             .tg-card {
                 background: var(--tg-card);
@@ -504,32 +537,38 @@
                 </div>
             </a>
 
-            <form action="{{ route('catalogo.index') }}" method="GET" class="search-bar">
-                <input type="text" name="q" value="{{ request('q') }}" placeholder="Buscar larvas, pie de cría, kits...">
-                <button type="submit"><i class="fas fa-search"></i></button>
-            </form>
+            <!-- Buscador General con Desplegable de Sugerencias en Tiempo Real -->
+            <div class="search-container" style="position:relative; width:600px;">
+                <form action="{{ route('catalogo.index') }}" method="GET" class="search-bar" id="headerSearchForm" autocomplete="off" style="width:100%;">
+                    <input type="text" name="q" id="headerSearchInput" value="{{ request('q') }}" placeholder="Buscar larvas, pie de cría, kits..." autocomplete="off">
+                    <button type="submit" aria-label="Buscar"><i class="fas fa-search"></i></button>
+                </form>
+
+                <div id="searchSuggestionsDropdown" class="search-suggestions-dropdown" style="display:none; position:absolute; top:calc(100% + 8px); left:0; width:100%; min-width:520px; max-width:650px; background:#ffffff; border-radius:12px; box-shadow:0 12px 30px rgba(0,0,0,0.22); border:1px solid #e5e7eb; z-index:99999; max-height:520px; overflow-y:auto;">
+                    <!-- Rellenado dinámicamente vía JS -->
+                </div>
+            </div>
 
             <div class="user-actions">
                 @auth
-                    <div class="action-item">
+                    @php
+                        $userHeaderRoute = auth()->user()->esAdmin() ? route('admin.inicio') : route('cliente.cuenta');
+                    @endphp
+                    <a href="{{ $userHeaderRoute }}" class="action-item" style="text-decoration:none; color:inherit; display:flex; align-items:center; gap:8px;" title="Mi Cuenta">
                         <i class="far fa-user"></i>
-                        <span>
-                            <a href="{{ auth()->user()->esAdmin() ? route('admin.inicio') : route('cliente.cuenta') }}">
-                                Hola, {{ strtok(auth()->user()->nombre, ' ') }}
-                            </a>
-                        </span>
-                    </div>
-                    <form action="{{ route('logout') }}" method="POST" style="display:inline;">
+                        <span>Hola, {{ strtok(auth()->user()->nombre, ' ') }}</span>
+                    </a>
+                    <form action="{{ route('logout') }}" method="POST" style="display:inline; margin:0;">
                         @csrf
-                        <button type="submit" class="action-item" style="background:none;border:none;font-size:0.9rem;">
+                        <button type="submit" class="action-item" style="background:none; border:none; font-size:0.9rem; cursor:pointer; color:inherit; display:flex; align-items:center; gap:6px;">
                             <i class="fas fa-sign-out-alt"></i> Salir
                         </button>
                     </form>
                 @else
-                    <div class="action-item">
+                    <a href="{{ route('login') }}" class="action-item" style="text-decoration:none; color:inherit; display:flex; align-items:center; gap:8px;" title="Iniciar sesión">
                         <i class="far fa-user"></i>
-                        <span><a href="{{ route('login') }}">Iniciar sesión</a></span>
-                    </div>
+                        <span>Iniciar sesión</span>
+                    </a>
                 @endauth
 
                 <a href="{{ route('carrito.index') }}" class="action-item cart-btn">
@@ -608,8 +647,222 @@
         </footer>
     @endif
 
+    <!-- Contenedor Global de Notificaciones Toast -->
+    <div id="bioToastContainer" style="position:fixed; bottom:24px; right:24px; z-index:999999; display:flex; flex-direction:column; gap:10px; pointer-events:none;"></div>
+
     @stack('scripts')
 
+    <script>
+        // Función global para alternar visibilidad de contraseñas y clase de ícono (fa-eye / fa-eye-slash)
+        window.togglePasswordVisibility = function (inputId, iconEl) {
+            const input = document.getElementById(inputId);
+            if (!input) return;
+            if (input.type === 'password') {
+                input.type = 'text';
+                iconEl.classList.remove('fa-eye');
+                iconEl.classList.add('fa-eye-slash');
+            } else {
+                input.type = 'password';
+                iconEl.classList.remove('fa-eye-slash');
+                iconEl.classList.add('fa-eye');
+            }
+        };
+
+        // Función global de notificaciones Toast (BIO-GEST / Tenebrios Gold)
+        window.showToast = function (message, type = 'success') {
+            const container = document.getElementById('bioToastContainer');
+            if (!container) return;
+            const toast = document.createElement('div');
+            toast.style.pointerEvents = 'auto';
+            toast.style.background = '#151515';
+            toast.style.color = '#ffffff';
+            toast.style.border = type === 'error' ? '1px solid #ef4444' : '1px solid #e4b353';
+            toast.style.borderRadius = '8px';
+            toast.style.padding = '12px 18px';
+            toast.style.boxShadow = '0 8px 24px rgba(0,0,0,0.3)';
+            toast.style.display = 'flex';
+            toast.style.alignItems = 'center';
+            toast.style.gap = '10px';
+            toast.style.fontSize = '0.92rem';
+            toast.style.fontWeight = '600';
+            toast.style.opacity = '0';
+            toast.style.transform = 'translateY(15px)';
+            toast.style.transition = 'all 0.25s ease';
+
+            const iconClass = type === 'error' ? 'fa-circle-xmark' : (type === 'info' ? 'fa-circle-info' : 'fa-circle-check');
+            const iconColor = type === 'error' ? '#ef4444' : '#e4b353';
+
+            toast.innerHTML = `<i class="fa-solid ${iconClass}" style="color:${iconColor}; font-size:1.15rem;"></i><span>${message}</span>`;
+            container.appendChild(toast);
+
+            requestAnimationFrame(() => {
+                toast.style.opacity = '1';
+                toast.style.transform = 'translateY(0)';
+            });
+
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateY(15px)';
+                setTimeout(() => toast.remove(), 250);
+            }, 3500);
+        };
+
+        // Buscador General en Tiempo Real con Desplegable (Debounce 250ms)
+        document.addEventListener('DOMContentLoaded', function () {
+            const searchInput = document.getElementById('headerSearchInput');
+            const dropdown = document.getElementById('searchSuggestionsDropdown');
+            if (searchInput && dropdown) {
+                let debounceTimer = null;
+
+                searchInput.addEventListener('input', function () {
+                    clearTimeout(debounceTimer);
+                    const query = this.value.trim();
+
+                    if (query.length < 2) {
+                        dropdown.style.display = 'none';
+                        dropdown.innerHTML = '';
+                        return;
+                    }
+
+                    debounceTimer = setTimeout(() => {
+                        fetch(`/buscar-sugerencias?q=${encodeURIComponent(query)}`, {
+                            headers: {
+                                'Accept': 'application/json',
+                                'X-Requested-With': 'XMLHttpRequest'
+                            }
+                        })
+                        .then(res => res.json())
+                        .then(data => {
+                            renderSuggestions(data, query);
+                        })
+                        .catch(err => {
+                            console.error('Error fetching suggestions:', err);
+                        });
+                    }, 250);
+                });
+
+                // Cerrar al hacer clic fuera
+                document.addEventListener('click', function (e) {
+                    if (!searchInput.contains(e.target) && !dropdown.contains(e.target)) {
+                        dropdown.style.display = 'none';
+                    }
+                });
+
+                // Reabrir al enfocar si tiene contenido
+                searchInput.addEventListener('focus', function () {
+                    if (this.value.trim().length >= 2 && dropdown.innerHTML.trim() !== '') {
+                        dropdown.style.display = 'block';
+                    }
+                });
+
+                // Cerrar con Escape
+                searchInput.addEventListener('keydown', function (e) {
+                    if (e.key === 'Escape') {
+                        dropdown.style.display = 'none';
+                    }
+                });
+
+                function renderSuggestions(data, query) {
+                    if (!data || data.total === 0) {
+                        dropdown.innerHTML = `
+                            <div style="padding:18px; text-align:center; color:#64748b; font-size:0.9rem;">
+                                <i class="fas fa-search" style="font-size:1.4rem; color:#cbd5e1; margin-bottom:8px; display:block;"></i>
+                                No se encontraron coincidencias para "<strong>${escapeHtml(query)}</strong>"
+                            </div>
+                        `;
+                        dropdown.style.display = 'block';
+                        return;
+                    }
+
+                    let html = '';
+
+                    // 1. Productos Activos
+                    if (data.productos && data.productos.length > 0) {
+                        html += `<div style="padding:8px 14px 4px; font-size:0.75rem; font-weight:800; color:#e4b353; background:#151515; text-transform:uppercase; letter-spacing:0.5px; display:flex; align-items:center; gap:6px;">
+                            <i class="fas fa-box-open"></i> Productos (${data.productos.length})
+                        </div>`;
+                        data.productos.forEach(prod => {
+                            html += `
+                                <a href="${prod.url}" style="display:flex; align-items:center; gap:12px; padding:10px 14px; text-decoration:none; color:#151515; border-bottom:1px solid #f1f5f9; transition:background 0.15s;" onmouseover="this.style.background='#fdf8f0'" onmouseout="this.style.background='transparent'">
+                                    <img src="${prod.imagen}" alt="${escapeHtml(prod.titulo)}" style="width:40px; height:40px; object-fit:contain; border-radius:6px; background:#f8fafc; border:1px solid #e2e8f0; flex-shrink:0;" onerror="this.src='/assets/img/Tenebrios_img.png'">
+                                    <div style="flex:1; min-width:0;">
+                                        <div style="font-weight:700; font-size:0.88rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(prod.titulo)}</div>
+                                        <div style="font-size:0.8rem; color:#059669; font-weight:700;">${prod.subtitulo}</div>
+                                    </div>
+                                    <i class="fas fa-chevron-right" style="font-size:0.75rem; color:#cbd5e1;"></i>
+                                </a>
+                            `;
+                        });
+                    }
+
+                    // 2. Preguntas Frecuentes (FAQ)
+                    if (data.faqs && data.faqs.length > 0) {
+                        html += `<div style="padding:8px 14px 4px; font-size:0.75rem; font-weight:800; color:#e4b353; background:#151515; text-transform:uppercase; letter-spacing:0.5px; display:flex; align-items:center; gap:6px;">
+                            <i class="fas fa-circle-question"></i> Preguntas Frecuentes (${data.faqs.length})
+                        </div>`;
+                        data.faqs.forEach(faq => {
+                            html += `
+                                <a href="${faq.url}" style="display:block; padding:10px 14px; text-decoration:none; color:#151515; border-bottom:1px solid #f1f5f9; transition:background 0.15s;" onmouseover="this.style.background='#fdf8f0'" onmouseout="this.style.background='transparent'">
+                                    <div style="font-weight:700; font-size:0.86rem; color:#0f172a;"><i class="fas fa-question" style="color:#e4b353; margin-right:5px; font-size:0.8rem;"></i>${escapeHtml(faq.titulo)}</div>
+                                    <div style="font-size:0.78rem; color:#64748b; margin-top:2px; line-height:1.3;">${escapeHtml(faq.subtitulo)}</div>
+                                </a>
+                            `;
+                        });
+                    }
+
+                    // 3. Políticas de Envío (/envios)
+                    if (data.envios && data.envios.length > 0) {
+                        html += `<div style="padding:8px 14px 4px; font-size:0.75rem; font-weight:800; color:#e4b353; background:#151515; text-transform:uppercase; letter-spacing:0.5px; display:flex; align-items:center; gap:6px;">
+                            <i class="fas fa-truck-fast"></i> Políticas de Envío (${data.envios.length})
+                        </div>`;
+                        data.envios.forEach(env => {
+                            html += `
+                                <a href="${env.url}" style="display:block; padding:10px 14px; text-decoration:none; color:#151515; border-bottom:1px solid #f1f5f9; transition:background 0.15s;" onmouseover="this.style.background='#fdf8f0'" onmouseout="this.style.background='transparent'">
+                                    <div style="font-weight:700; font-size:0.86rem; color:#0f172a;"><i class="fas fa-shield-halved" style="color:#e4b353; margin-right:5px; font-size:0.8rem;"></i>${escapeHtml(env.titulo)}</div>
+                                    <div style="font-size:0.78rem; color:#64748b; margin-top:2px; line-height:1.3;">${escapeHtml(env.subtitulo)}</div>
+                                </a>
+                            `;
+                        });
+                    }
+
+                    // 4. Información Institucional (/nosotros)
+                    if (data.institucional && data.institucional.length > 0) {
+                        html += `<div style="padding:8px 14px 4px; font-size:0.75rem; font-weight:800; color:#e4b353; background:#151515; text-transform:uppercase; letter-spacing:0.5px; display:flex; align-items:center; gap:6px;">
+                            <i class="fas fa-building"></i> Institucional (${data.institucional.length})
+                        </div>`;
+                        data.institucional.forEach(inst => {
+                            html += `
+                                <a href="${inst.url}" style="display:block; padding:10px 14px; text-decoration:none; color:#151515; border-bottom:1px solid #f1f5f9; transition:background 0.15s;" onmouseover="this.style.background='#fdf8f0'" onmouseout="this.style.background='transparent'">
+                                    <div style="font-weight:700; font-size:0.86rem; color:#0f172a;"><i class="fas fa-seedling" style="color:#e4b353; margin-right:5px; font-size:0.8rem;"></i>${escapeHtml(inst.titulo)}</div>
+                                    <div style="font-size:0.78rem; color:#64748b; margin-top:2px; line-height:1.3;">${escapeHtml(inst.subtitulo)}</div>
+                                </a>
+                            `;
+                        });
+                    }
+
+                    // Enlace inferior a catálogo completo
+                    html += `
+                        <a href="/catalogo?q=${encodeURIComponent(query)}" style="display:block; padding:11px 14px; background:#f8fafc; color:#151515; text-decoration:none; font-size:0.84rem; font-weight:700; text-align:center; border-top:1px solid #e2e8f0; transition:background 0.15s;" onmouseover="this.style.background='#e4b353';" onmouseout="this.style.background='#f8fafc';">
+                            Ver todos los resultados en el catálogo <i class="fas fa-arrow-right" style="margin-left:4px;"></i>
+                        </a>
+                    `;
+
+                    dropdown.innerHTML = html;
+                    dropdown.style.display = 'block';
+                }
+
+                function escapeHtml(str) {
+                    if (!str) return '';
+                    return str
+                        .replace(/&/g, "&amp;")
+                        .replace(/</g, "&lt;")
+                        .replace(/>/g, "&gt;")
+                        .replace(/"/g, "&quot;")
+                        .replace(/'/g, "&#039;");
+                }
+            }
+        });
+    </script>
     <script>
         // Bloqueo en tiempo real de números en campos de solo letras y de letras en campos numéricos
         document.addEventListener('DOMContentLoaded', function () {

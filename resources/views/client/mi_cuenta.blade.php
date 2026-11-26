@@ -31,9 +31,15 @@
                 <a href="{{ route('cliente.direcciones.index') }}" style="background:#f3f4f6; color:#374151; padding:10px; border-radius:6px; text-decoration:none; font-weight:600;">
                     <i class="fas fa-map-marker-alt"></i> Mis Direcciones
                 </a>
-                <a href="{{ route('cliente.pedidos.index') }}" style="background:#f3f4f6; color:#374151; padding:10px; border-radius:6px; text-decoration:none; font-weight:600;">
-                    <i class="fas fa-box"></i> Mis Pedidos
-                </a>
+                @if(!$usuario->esAdmin())
+                    <a href="{{ route('cliente.pedidos.index') }}" style="background:#f3f4f6; color:#374151; padding:10px; border-radius:6px; text-decoration:none; font-weight:600;">
+                        <i class="fas fa-box"></i> Mis Pedidos
+                    </a>
+                @else
+                    <a href="{{ route('admin.inicio') }}" style="background:#111111; color:#e4b353; padding:10px; border-radius:6px; text-decoration:none; font-weight:700; border:1px solid #e4b353;">
+                        <i class="fas fa-gauge"></i> Ir al Panel Admin
+                    </a>
+                @endif
                 <a href="{{ route('cliente.chat.index') }}" style="background:#e4b353; color:#151515; padding:10px; border-radius:6px; text-decoration:none; font-weight:700;">
                     <i class="fas fa-comments"></i> Chat en Vivo con Soporte
                 </a>
@@ -55,19 +61,28 @@
                 </div>
             </div>
 
-            <h4 style="color:#151515; margin-bottom:10px;">Últimos Pedidos</h4>
-            @if($usuario->pedidos->isEmpty())
-                <p style="color:#777; font-size:0.9rem;">No tienes pedidos recientes.</p>
+            @if(!$usuario->esAdmin())
+                <h4 style="color:#151515; margin-bottom:10px;">Últimos Pedidos</h4>
+                @if($usuario->pedidos && $usuario->pedidos->isEmpty())
+                    <p style="color:#777; font-size:0.9rem;">No tienes pedidos recientes.</p>
+                @elseif($usuario->pedidos)
+                    <ul style="list-style:none; padding:0; margin:0;">
+                        @foreach($usuario->pedidos->take(3) as $ped)
+                            <li style="display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid #f0f0f0; font-size:0.9rem;">
+                                <span>{{ $ped->numero_pedido }}</span>
+                                <span style="font-weight:700;">${{ number_format($ped->total, 0, ',', '.') }}</span>
+                                <span style="color:#0284c7; font-weight:600;">{{ $ped->estado_pedido }}</span>
+                            </li>
+                        @endforeach
+                    </ul>
+                @endif
             @else
-                <ul style="list-style:none; padding:0; margin:0;">
-                    @foreach($usuario->pedidos->take(3) as $ped)
-                        <li style="display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid #f0f0f0; font-size:0.9rem;">
-                            <span>{{ $ped->numero_pedido }}</span>
-                            <span style="font-weight:700;">${{ number_format($ped->total, 0, ',', '.') }}</span>
-                            <span style="color:#0284c7; font-weight:600;">{{ $ped->estado_pedido }}</span>
-                        </li>
-                    @endforeach
-                </ul>
+                <div style="background:#fdf8f0; border-left:4px solid #e4b353; padding:16px 20px; border-radius:6px; margin-top:10px;">
+                    <h4 style="color:#111111; margin:0 0 6px 0;"><i class="fas fa-user-shield" style="color:#e4b353;"></i> Cuenta de Administrador</h4>
+                    <p style="margin:0; color:#555; font-size:0.88rem; line-height:1.45;">
+                        Esta cuenta posee privilegios administrativos completos en <strong>BIO-GEST</strong>. Las compras comerciales están reservadas a cuentas de clientes para mantener la integridad contable y de inventario de Tenebrios Gold.
+                    </p>
+                </div>
             @endif
         </div>
     </div>

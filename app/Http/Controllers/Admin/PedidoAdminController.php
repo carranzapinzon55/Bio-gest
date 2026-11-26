@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\MovimientoInventario;
 use App\Models\Pedido;
 use App\Models\Producto;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -42,10 +43,10 @@ class PedidoAdminController extends Controller
 
         // 4 KPIs reales desde MySQL
         $kpis = [
-            'total'      => Pedido::count(),
-            'pendientes' => Pedido::where('estado_pedido', 'Pendiente')->count(),
+            'total'                => Pedido::count(),
+            'pendientes'           => Pedido::where('estado_pedido', 'Pendiente')->count(),
             'confirmados_enviados' => Pedido::whereIn('estado_pedido', ['Confirmado', 'Procesando', 'Enviado', 'Despachado', 'Listo para retiro'])->count(),
-            'entregados' => Pedido::whereIn('estado_pedido', ['Entregado', 'Completado'])->count(),
+            'entregados'           => Pedido::whereIn('estado_pedido', ['Entregado', 'Completado'])->count(),
         ];
 
         return view('admin.pedidos.index', compact('pedidos', 'kpis'));
@@ -63,32 +64,61 @@ class PedidoAdminController extends Controller
     }
 
     /**
-     * Actualizar estado del pedido (soporta 'Enviado' -> 'Despachado' y restaura stock si se cancela).
+     * Calcula el siguiente estado lógico para avanzar el pedido a un solo clic:
+     * Pendiente -> Confirmado -> Enviado -> Entregado.
      */
-    public function actualizarEstado(Request $request, int $id_pedido): RedirectResponse
+    private function obtenerSiguienteEstado(string $estadoActual): string
     {
-        $datos = $request->validate([
-            'estado_pedido' => [
-                'required',
-                'in:Pendiente,Procesando,Enviado,Despachado,Listo para retiro,Entregado,Completado,Cancelado'
-            ],
-            'estado_pago' => [
-                'nullable',
-                'string',
-                'in:Pendiente,Aprobado,Rechazado,Reembolsado'
-            ],
-        ]);
+        return match ($estadoActual) {
+            'Pendiente'  => 'Confirmado',
+            'Confirmado', 'Procesando' => 'Enviado',
+            'Enviado', 'Despachado', 'Listo para retiro' => 'Entregado',
+            default => $estadoActual,
+        };
+    }
 
-        // Compatibilidad con el ENUM de la base de datos ('Despachado' representa 'Enviado')
-        $nuevoEstadoInput = $datos['estado_pedido'];
-        $nuevoEstadoDb    = $nuevoEstadoInput === 'Enviado' ? 'Despachado' : $nuevoEstadoInput;
-
+    /**
+     * Actualizar estado del pedido (soporta acción rápida, 'Confirmado', 'Enviado' -> 'Despachado' y restaura stock si se cancela).
+     */
+    public function actualizarEstado(Request $request, int $id_pedido): RedirectResponse|JsonResponse
+    {
         $pedido = Pedido::with('detalles.producto')->findOrFail($id_pedido);
+
+        // Soporte para acción rápida a un clic
+        $accionRapida = $request->input('accion_rapida');
+
+        if ($accionRapida === 'avanzar') {
+            $nuevoEstadoInput = $this->obtenerSiguienteEstado($pedido->estado_pedido);
+            $nuevoEstadoPago = ($nuevoEstadoInput === 'Entregado' && $pedido->metodo_pago === 'Contraentrega') ? 'Aprobado' : $pedido->estado_pago;
+        } elseif ($accionRapida === 'confirmar_pago') {
+            $nuevoEstadoInput = ($pedido->estado_pedido === 'Pendiente') ? 'Confirmado' : $pedido->estado_pedido;
+            $nuevoEstadoPago = 'Aprobado';
+        } elseif ($accionRapida === 'cancelar') {
+            $nuevoEstadoInput = 'Cancelado';
+            $nuevoEstadoPago = ($pedido->estado_pago === 'Aprobado') ? 'Reembolsado' : $pedido->estado_pago;
+        } else {
+            $datos = $request->validate([
+                'estado_pedido' => [
+                    'required',
+                    'in:Pendiente,Confirmado,Procesando,Enviado,Despachado,Listo para retiro,Entregado,Completado,Cancelado'
+                ],
+                'estado_pago' => [
+                    'nullable',
+                    'string',
+                    'in:Pendiente,Aprobado,Rechazado,Reembolsado'
+                ],
+            ]);
+            $nuevoEstadoInput = $datos['estado_pedido'];
+            $nuevoEstadoPago = $datos['estado_pago'] ?? $pedido->estado_pago;
+        }
+
+        // Compatibilidad con el ENUM de la base de datos ('Despachado' almacena 'Enviado')
+        $nuevoEstadoDb = ($nuevoEstadoInput === 'Enviado') ? 'Despachado' : $nuevoEstadoInput;
         $estadoAnterior = $pedido->estado_pedido;
 
         try {
-            DB::transaction(function () use ($pedido, $estadoAnterior, $nuevoEstadoDb, $datos) {
-                // Si cambia a 'Cancelado' desde un estado activo, reingresar stock al inventario
+            DB::transaction(function () use ($pedido, $estadoAnterior, $nuevoEstadoDb, $nuevoEstadoPago) {
+                // Si cambia a 'Cancelado' desde un estado activo, reingresar stock automáticamente al kardex
                 if ($nuevoEstadoDb === 'Cancelado' && $estadoAnterior !== 'Cancelado') {
                     foreach ($pedido->detalles as $detalle) {
                         $producto = Producto::lockForUpdate()->find($detalle->id_producto);
@@ -156,26 +186,26 @@ class PedidoAdminController extends Controller
                 }
 
                 $updateData = ['estado_pedido' => $nuevoEstadoDb];
-                if (!empty($datos['estado_pago'])) {
-                    $updateData['estado_pago'] = $datos['estado_pago'];
+                if (!empty($nuevoEstadoPago)) {
+                    $updateData['estado_pago'] = $nuevoEstadoPago;
                 }
 
                 $pedido->update($updateData);
             });
 
-            $etiquetaEstado = $nuevoEstadoInput === 'Enviado' ? 'Enviado (Despachado)' : $nuevoEstadoDb;
+            $etiquetaEstado = ($nuevoEstadoInput === 'Enviado' || $nuevoEstadoDb === 'Despachado') ? 'Enviado (Despachado)' : $nuevoEstadoDb;
 
-            if ($request->expectsJson()) {
+            if ($request->expectsJson() || $request->ajax()) {
                 return response()->json([
                     'success' => true,
-                    'message' => "Estado del pedido actualizado a '{$etiquetaEstado}' correctamente.",
-                    'data' => $pedido->fresh()->load(['usuario', 'detalles.producto', 'direccion']),
+                    'message' => "Estado del pedido {$pedido->numero_pedido} actualizado a '{$etiquetaEstado}'.",
+                    'data'    => $pedido->fresh()->load(['usuario', 'detalles.producto', 'direccion']),
                 ]);
             }
 
-            return back()->with('success', "Confirmación: El estado del pedido {$pedido->numero_pedido} fue actualizado exitosamente a '{$etiquetaEstado}'.");
+            return back()->with('success', "Confirmación: El pedido {$pedido->numero_pedido} avanzó a estado '{$etiquetaEstado}'.");
         } catch (\Exception $e) {
-            if ($request->expectsJson()) {
+            if ($request->expectsJson() || $request->ajax()) {
                 return response()->json([
                     'success' => false,
                     'message' => $e->getMessage(),

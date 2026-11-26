@@ -8,7 +8,7 @@
         <div>
             <h1 style="margin:0; font-size:1.45rem; color:#111111;">Gestión de Pedidos</h1>
             <p style="margin:4px 0 0 0; color:#6b7280; font-size:0.9rem;">
-                Consulta los pedidos recibidos desde MySQL, revisa el detalle y actualiza estados con control de inventario
+                Consulta los pedidos recibidos desde MySQL, avanza estados a un clic y gestiona inventario en tiempo real
             </p>
         </div>
         <a href="{{ route('admin.estadisticas') }}" class="tg-btn-gold">
@@ -79,63 +79,70 @@
                     <div style="min-width:180px;">
                         <label style="display:block; font-size:0.8rem; font-weight:700; color:#111111; margin-bottom:4px;">Filtrar por Estado</label>
                         <select name="estado" style="width:100%; padding:9px 12px; border:1px solid #cbd5e1; border-radius:6px; font-size:0.88rem;">
-                            <option value="">Todos los estados</option>
-                            @foreach(['Pendiente', 'Procesando', 'Despachado', 'Listo para retiro', 'Entregado', 'Completado', 'Cancelado'] as $est)
-                                <option value="{{ $est }}" {{ request('estado') === $est ? 'selected' : '' }}>
-                                    {{ $est === 'Despachado' ? 'Enviado / Despachado' : ($est === 'Procesando' ? 'Confirmado / En proceso' : $est) }}
-                                </option>
-                            @endforeach
+                            <option value="">Todos los Estados</option>
+                            <option value="Pendiente" {{ request('estado') === 'Pendiente' ? 'selected' : '' }}>Pendiente</option>
+                            <option value="Confirmado" {{ request('estado') === 'Confirmado' ? 'selected' : '' }}>Confirmado</option>
+                            <option value="Procesando" {{ request('estado') === 'Procesando' ? 'selected' : '' }}>Procesando</option>
+                            <option value="Despachado" {{ request('estado') === 'Despachado' ? 'selected' : '' }}>Enviado / Despachado</option>
+                            <option value="Entregado" {{ request('estado') === 'Entregado' ? 'selected' : '' }}>Entregado</option>
+                            <option value="Cancelado" {{ request('estado') === 'Cancelado' ? 'selected' : '' }}>Cancelado</option>
                         </select>
                     </div>
 
-                    <div style="display:flex; gap:8px;">
-                        <button type="submit" class="tg-btn-dark" style="padding:9px 16px;">
-                            <i class="fa-solid fa-magnifying-glass"></i> Buscar
-                        </button>
-                        @if(request()->hasAny(['q', 'estado']))
-                            <a href="{{ route('admin.pedidos.index') }}" style="padding:9px 14px; border:1px solid #cbd5e1; border-radius:6px; text-decoration:none; color:#475569; font-weight:600; font-size:0.88rem;">
-                                Limpiar
-                            </a>
-                        @endif
-                    </div>
+                    <button type="submit" class="tg-btn-dark" style="padding:9px 18px; font-size:0.88rem;">
+                        <i class="fa-solid fa-filter"></i> Filtrar
+                    </button>
+
+                    @if(request()->hasAny(['q', 'estado']))
+                        <a href="{{ route('admin.pedidos.index') }}" class="tg-btn-outline" style="padding:9px 14px; font-size:0.88rem;">
+                            <i class="fa-solid fa-rotate-left"></i> Limpiar
+                        </a>
+                    @endif
                 </form>
             </div>
 
             <!-- Tabla de Pedidos -->
-            <div class="tg-card">
+            <div class="tg-card" style="padding:0; overflow:hidden;">
+                <div style="padding:16px 20px; border-bottom:1px solid #e5e7eb; display:flex; justify-content:space-between; align-items:center;">
+                    <h3 style="margin:0; font-size:1.05rem; font-weight:800; color:#111111;">
+                        <i class="fa-solid fa-list-check" style="color:#e6a100;"></i> Listado de Pedidos
+                    </h3>
+                    <span style="font-size:0.82rem; color:#6b7280;">Mostrando {{ $pedidos->count() }} de {{ $pedidos->total() }} pedidos</span>
+                </div>
+
                 <div class="table-responsive">
-                    <table class="custom-table">
+                    <table class="tg-table" style="margin:0;">
                         <thead>
                             <tr>
-                                <th>N.º Pedido</th>
+                                <th>N° Pedido</th>
                                 <th>Cliente</th>
                                 <th>Fecha</th>
                                 <th>Total</th>
                                 <th>Estado</th>
-                                <th style="text-align:right;">Acción</th>
+                                <th style="text-align:center;">Acción Rápida</th>
+                                <th style="text-align:right;">Ficha</th>
                             </tr>
                         </thead>
                         <tbody>
-                            @php
-                                $pedidosJsMap = [];
-                            @endphp
+                            @php $pedidosJsMap = []; @endphp
                             @forelse($pedidos as $ped)
                                 @php
                                     $badgeClass = match($ped->estado_pedido) {
                                         'Entregado', 'Completado' => 'badge-active',
                                         'Cancelado' => 'badge-danger',
-                                        'Despachado', 'Procesando', 'Listo para retiro' => 'badge-info',
-                                        default => 'badge-warning',
+                                        'Despachado', 'Procesando', 'Enviado', 'Confirmado' => 'badge-info',
+                                        default => 'badge-warning'
                                     };
+
                                     $pedidosJsMap[$ped->id_pedido] = [
                                         'id' => $ped->id_pedido,
-                                        'numero' => $ped->numero_pedido ?? 'PED-' . $ped->id_pedido,
+                                        'numero' => $ped->numero_pedido ?? ('PED-' . $ped->id_pedido),
                                         'fecha' => optional($ped->fecha_pedido)->format('d/m/Y H:i'),
                                         'cliente' => optional($ped->usuario)->nombre_completo ?? (trim(($ped->usuario->nombre ?? '') . ' ' . ($ped->usuario->apellido ?? '')) ?: 'Cliente'),
                                         'correo' => optional($ped->usuario)->correo ?? 'Sin correo',
-                                        'telefono' => $ped->telefono_contacto ?: (optional($ped->usuario)->telefono ?? 'No registrado'),
-                                        'direccion' => $ped->direccion_entrega ?? 'Sin dirección especificada',
-                                        'ciudad' => $ped->ciudad_entrega ?? 'Sin ciudad especificada',
+                                        'telefono' => $ped->telefono_contacto ?? (optional($ped->usuario)->telefono ?: 'Sin teléfono'),
+                                        'direccion' => $ped->direccion_entrega ?? (optional($ped->direccion)->direccion ?: 'Dirección principal'),
+                                        'ciudad' => $ped->ciudad_entrega ?? (optional($ped->direccion)->ciudad ?: 'Bogotá'),
                                         'metodo_pago' => $ped->metodo_pago ?? 'Contraentrega',
                                         'estado_pago' => $ped->estado_pago ?? 'Pendiente',
                                         'subtotal' => (float) $ped->subtotal,
@@ -176,18 +183,66 @@
                                             {{ $ped->estado_pedido === 'Despachado' ? 'Enviado / Despachado' : ($ped->estado_pedido === 'Procesando' ? 'Confirmado' : $ped->estado_pedido) }}
                                         </span>
                                     </td>
+                                    <td style="text-align:center; white-space:nowrap;" onclick="event.stopPropagation();">
+                                        <!-- Botones de Acción Rápida a Un Clic -->
+                                        <div style="display:inline-flex; gap:4px; align-items:center;">
+                                            @if($ped->estado_pedido === 'Pendiente')
+                                                <form action="{{ route('admin.pedidos.estado', $ped->id_pedido) }}" method="POST" style="margin:0;">
+                                                    @csrf
+                                                    @method('PATCH')
+                                                    <input type="hidden" name="accion_rapida" value="avanzar">
+                                                    <button type="submit" class="tg-btn-gold" style="padding:4px 9px; font-size:0.75rem;" title="Confirmar Pedido (Avanzar)">
+                                                        <i class="fa-solid fa-check"></i> Confirmar
+                                                    </button>
+                                                </form>
+                                            @elseif(in_array($ped->estado_pedido, ['Confirmado', 'Procesando']))
+                                                <form action="{{ route('admin.pedidos.estado', $ped->id_pedido) }}" method="POST" style="margin:0;">
+                                                    @csrf
+                                                    @method('PATCH')
+                                                    <input type="hidden" name="accion_rapida" value="avanzar">
+                                                    <button type="submit" class="tg-btn-dark" style="padding:4px 9px; font-size:0.75rem; background:#0284c7; color:#fff;" title="Despachar Pedido">
+                                                        <i class="fa-solid fa-truck-fast"></i> Despachar
+                                                    </button>
+                                                </form>
+                                            @elseif(in_array($ped->estado_pedido, ['Enviado', 'Despachado', 'Listo para retiro']))
+                                                <form action="{{ route('admin.pedidos.estado', $ped->id_pedido) }}" method="POST" style="margin:0;">
+                                                    @csrf
+                                                    @method('PATCH')
+                                                    <input type="hidden" name="accion_rapida" value="avanzar">
+                                                    <button type="submit" class="tg-btn-dark" style="padding:4px 9px; font-size:0.75rem; background:#059669; color:#fff;" title="Marcar como Entregado">
+                                                        <i class="fa-solid fa-box-open"></i> Entregar
+                                                    </button>
+                                                </form>
+                                            @elseif(in_array($ped->estado_pedido, ['Entregado', 'Completado']))
+                                                <span style="font-size:0.75rem; color:#059669; font-weight:700;"><i class="fa-solid fa-circle-check"></i> Finalizado</span>
+                                            @elseif($ped->estado_pedido === 'Cancelado')
+                                                <span style="font-size:0.75rem; color:#dc2626; font-weight:700;"><i class="fa-solid fa-ban"></i> Cancelado</span>
+                                            @endif
+
+                                            @if($ped->estado_pedido !== 'Cancelado' && !in_array($ped->estado_pedido, ['Entregado', 'Completado']))
+                                                <form action="{{ route('admin.pedidos.estado', $ped->id_pedido) }}" method="POST" style="margin:0;" onsubmit="return confirm('¿Cancelar pedido {{ $ped->numero_pedido }}? Se restaurará automáticamente el stock al inventario.');">
+                                                    @csrf
+                                                    @method('PATCH')
+                                                    <input type="hidden" name="accion_rapida" value="cancelar">
+                                                    <button type="submit" style="background:#fee2e2; color:#991b1b; border:1px solid #fecaca; padding:4px 8px; border-radius:4px; font-size:0.75rem; cursor:pointer;" title="Cancelar y restaurar stock">
+                                                        <i class="fa-solid fa-xmark"></i>
+                                                    </button>
+                                                </form>
+                                            @endif
+                                        </div>
+                                    </td>
                                     <td style="text-align:right; white-space:nowrap;">
-                                        <button type="button" class="tg-btn-gold" style="padding:6px 12px; font-size:0.8rem;" onclick="event.stopPropagation(); mostrarDetallePedidoPorId({{ $ped->id_pedido }});">
+                                        <button type="button" class="tg-btn-gold" style="padding:6px 10px; font-size:0.78rem;" onclick="event.stopPropagation(); mostrarDetallePedidoPorId({{ $ped->id_pedido }});">
                                             <i class="fa-solid fa-eye"></i> Ver
                                         </button>
-                                        <a href="{{ route('admin.pedidos.show', $ped->id_pedido) }}" class="tg-btn-outline" style="padding:6px 10px; font-size:0.8rem; margin-left:4px;" onclick="event.stopPropagation();" title="Abrir ficha completa del pedido">
+                                        <a href="{{ route('admin.pedidos.show', $ped->id_pedido) }}" class="tg-btn-outline" style="padding:6px 8px; font-size:0.78rem; margin-left:3px;" onclick="event.stopPropagation();" title="Abrir ficha completa del pedido">
                                             <i class="fa-solid fa-up-right-from-square"></i>
                                         </a>
                                     </td>
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="6" style="text-align:center; padding:28px; color:#6b7280;">
+                                    <td colspan="7" style="text-align:center; padding:28px; color:#6b7280;">
                                         No se encontraron pedidos registrados en MySQL.
                                     </td>
                                 </tr>
@@ -196,7 +251,7 @@
                     </table>
                 </div>
 
-                <div style="margin-top:18px;">
+                <div style="margin-top:18px; padding:0 20px 16px 20px;">
                     {{ $pedidos->links() }}
                 </div>
             </div>
@@ -231,6 +286,39 @@
                             <a id="detShowLink" href="#" class="tg-btn-outline" style="padding:4px 10px; font-size:0.76rem; width:100%; justify-content:center;">
                                 <i class="fa-solid fa-up-right-from-square"></i> Abrir Ficha Completa del Pedido
                             </a>
+                        </div>
+                    </div>
+
+                    <!-- Botones de Acción Rápida en el Drawer -->
+                    <div style="background:#fefce8; border:1px solid #fef08a; border-radius:8px; padding:12px;">
+                        <div style="font-size:0.75rem; font-weight:800; text-transform:uppercase; color:#854d0e; margin-bottom:8px;">
+                            <i class="fa-solid fa-bolt" style="color:#e6a100;"></i> Acciones Rápidas (1 Clic)
+                        </div>
+                        <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                            <form id="formDrawerAvanzar" method="POST" style="margin:0; flex:1;">
+                                @csrf
+                                @method('PATCH')
+                                <input type="hidden" name="accion_rapida" value="avanzar">
+                                <button type="submit" class="tg-btn-gold" id="btnDrawerAvanzar" style="width:100%; justify-content:center; padding:8px; font-size:0.82rem;">
+                                    <i class="fa-solid fa-forward-step"></i> <span id="lblDrawerAvanzar">Avanzar Estado</span>
+                                </button>
+                            </form>
+                            <form id="formDrawerConfirmarPago" method="POST" style="margin:0;">
+                                @csrf
+                                @method('PATCH')
+                                <input type="hidden" name="accion_rapida" value="confirmar_pago">
+                                <button type="submit" class="tg-btn-dark" style="padding:8px 10px; font-size:0.82rem; background:#059669; color:#fff;" title="Aprobar Pago">
+                                    <i class="fa-solid fa-circle-check"></i> Pago OK
+                                </button>
+                            </form>
+                            <form id="formDrawerCancelar" method="POST" style="margin:0;" onsubmit="return confirm('¿Confirmas cancelar este pedido? Se restaurará automáticamente el stock al inventario.');">
+                                @csrf
+                                @method('PATCH')
+                                <input type="hidden" name="accion_rapida" value="cancelar">
+                                <button type="submit" style="background:#fee2e2; color:#991b1b; border:1px solid #fecaca; padding:8px 10px; border-radius:6px; font-size:0.82rem; cursor:pointer;" title="Cancelar y restaurar stock">
+                                    <i class="fa-solid fa-ban"></i> Cancelar
+                                </button>
+                            </form>
                         </div>
                     </div>
 
@@ -290,10 +378,10 @@
                         </div>
                     </div>
 
-                    <!-- Formulario de Cambio de Estado con Reintegro de Stock -->
+                    <!-- Formulario Manual de Cambio de Estado con Reintegro de Stock -->
                     <div style="background:#111111; color:#ffffff; padding:16px; border-radius:8px; border:1px solid #e6a100;">
                         <div style="font-size:0.78rem; font-weight:800; text-transform:uppercase; color:#e6a100; margin-bottom:8px;">
-                            <i class="fa-solid fa-truck-ramp-box"></i> Cambiar Estado del Pedido
+                            <i class="fa-solid fa-truck-ramp-box"></i> Ajuste Personalizado de Estado
                         </div>
                         <form id="formCambiarEstado" method="POST">
                             @csrf
@@ -302,10 +390,11 @@
                                 <label style="display:block; font-size:0.75rem; color:#d1d5db; margin-bottom:4px;">Estado Logístico:</label>
                                 <select name="estado_pedido" id="selectEstadoPedido" style="width:100%; padding:8px 10px; border-radius:6px; border:1px solid #e6a100; background:#222222; color:#ffffff; font-weight:600; font-size:0.85rem;">
                                     <option value="Pendiente">Pendiente</option>
-                                    <option value="Procesando">Confirmado / Procesando</option>
+                                    <option value="Confirmado">Confirmado</option>
+                                    <option value="Procesando">Procesando</option>
                                     <option value="Enviado">Enviado / Despachado</option>
                                     <option value="Entregado">Entregado</option>
-                                    <option value="Cancelado">Cancelado (Restaura Stock en Kardex)</option>
+                                    <option value="Cancelado">Cancelado (Restaura Stock al Inventario)</option>
                                 </select>
                             </div>
                             <div style="margin-bottom:12px;">
@@ -364,8 +453,37 @@
         badge.className = 'badge ' + (
             (p.estado === 'Entregado' || p.estado === 'Completado') ? 'badge-active' :
             (p.estado === 'Cancelado' ? 'badge-danger' :
-            (p.estado === 'Despachado' || p.estado === 'Procesando' || p.estado === 'Enviado' ? 'badge-info' : 'badge-warning'))
+            (p.estado === 'Despachado' || p.estado === 'Procesando' || p.estado === 'Enviado' || p.estado === 'Confirmado' ? 'badge-info' : 'badge-warning'))
         );
+
+        // Actualizar botón de avance rápido en el drawer
+        const formAvanzar = document.getElementById('formDrawerAvanzar');
+        const formConfirmarPago = document.getElementById('formDrawerConfirmarPago');
+        const formCancelar = document.getElementById('formDrawerCancelar');
+        const lblAvanzar = document.getElementById('lblDrawerAvanzar');
+        const btnAvanzar = document.getElementById('btnDrawerAvanzar');
+
+        if (formAvanzar) formAvanzar.action = p.action_url;
+        if (formConfirmarPago) formConfirmarPago.action = p.action_url;
+        if (formCancelar) formCancelar.action = p.action_url;
+
+        if (p.estado === 'Pendiente') {
+            lblAvanzar.textContent = 'Confirmar Pedido';
+            btnAvanzar.disabled = false;
+            btnAvanzar.style.opacity = '1';
+        } else if (p.estado === 'Confirmado' || p.estado === 'Procesando') {
+            lblAvanzar.textContent = 'Despachar / Enviar';
+            btnAvanzar.disabled = false;
+            btnAvanzar.style.opacity = '1';
+        } else if (p.estado === 'Enviado' || p.estado === 'Despachado' || p.estado === 'Listo para retiro') {
+            lblAvanzar.textContent = 'Marcar Entregado';
+            btnAvanzar.disabled = false;
+            btnAvanzar.style.opacity = '1';
+        } else {
+            lblAvanzar.textContent = 'Estado Final (' + p.estado + ')';
+            btnAvanzar.disabled = true;
+            btnAvanzar.style.opacity = '0.6';
+        }
 
         // Cliente y Entrega Completa
         document.getElementById('detClienteNombre').textContent = p.cliente;
@@ -401,7 +519,7 @@
         document.getElementById('detCostoEnvio').textContent = p.costo_envio > 0 ? fmtCOP(p.costo_envio) : 'GRATIS ($0)';
         document.getElementById('detTotal').textContent = fmtCOP(p.total);
 
-        // Formulario
+        // Formulario manual
         const form = document.getElementById('formCambiarEstado');
         form.action = p.action_url;
 

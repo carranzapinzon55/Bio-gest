@@ -79,11 +79,21 @@ class ChatAdminController extends Controller
         $faqs = Faq::orderBy('categoria')->orderBy('id_faq')->get();
         $categoriasFaq = Faq::select('categoria')->distinct()->pluck('categoria')->filter()->values();
 
-        if ($request->wantsJson()) {
+        if ($request->wantsJson() || $request->ajax()) {
             return response()->json([
                 'ok'            => true,
-                'conversacion'  => $mensajesHilo,
-                'usuarioActivo' => $usuarioActivo,
+                'usuarioActivo' => $usuarioActivo ? [
+                    'id_usuario' => $usuarioActivo->id_usuario,
+                    'nombre'     => $usuarioActivo->nombre_completo,
+                    'correo'     => $usuarioActivo->correo,
+                ] : null,
+                'mensajes'      => $mensajesHilo->map(fn ($m) => [
+                    'id_mensaje'  => $m->id_mensaje,
+                    'mensaje'     => $m->mensaje,
+                    'es_admin'    => (bool) $m->es_admin,
+                    'autor'       => $m->es_admin ? (optional($m->admin)->nombre ?? 'Administrador BIO-GEST') : (optional($usuarioActivo)->nombre ?? 'Cliente'),
+                    'fecha_envio' => $m->fecha_envio ? $m->fecha_envio->format('d/m/Y h:i a') : '',
+                ]),
             ]);
         }
 

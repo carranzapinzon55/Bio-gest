@@ -91,7 +91,7 @@ class AuthController extends Controller
 
         Auth::login($usuario);
 
-        return redirect()->route('home')
+        return redirect()->intended(route('home'))
             ->with('success', '¡Tu cuenta en Tenebrios-Gold ha sido creada con éxito!');
     }
 

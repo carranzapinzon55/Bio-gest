@@ -155,6 +155,85 @@ class AjusteAdminController extends Controller
     }
 
     /**
+     * Herramienta no técnica: Verificar estado de la tienda y optimizar/limpiar caché del sistema.
+     */
+    public function limpiarCacheTienda(): RedirectResponse
+    {
+        try {
+            \Illuminate\Support\Facades\Artisan::call('optimize:clear');
+            BitacoraSeguridad::registrar(
+                auth()->id(),
+                'Mantenimiento de Tienda',
+                'El administrador ejecutó la verificación de estado y limpieza de caché del sistema.'
+            );
+            return redirect()->route('admin.ajustes.index')
+                ->with('success', '¡Estado de la tienda verificado con éxito! Caché de rutas, vistas y configuración optimizada correctamente.');
+        } catch (\Throwable $e) {
+            return redirect()->route('admin.ajustes.index')
+                ->with('error', 'Error al optimizar la tienda: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Herramienta no técnica: Descargar resumen general del catálogo de productos y precios en formato CSV amigable para Excel.
+     */
+    public function descargarCatalogoPrecios(): StreamedResponse
+    {
+        $fecha = now()->format('Y-m-d');
+        $fileName = "catalogo_precios_tenebrios_gold_{$fecha}.csv";
+        $productos = \App\Models\Producto::with('categoria')->orderBy('id_producto')->get();
+
+        BitacoraSeguridad::registrar(
+            auth()->id(),
+            'Descarga de Catálogo y Precios',
+            "Descarga del resumen de catálogo y precios ({$productos->count()} referencias)."
+        );
+
+        $headers = [
+            'Content-Type'        => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => "attachment; filename=\"{$fileName}\"",
+            'Pragma'              => 'no-cache',
+            'Cache-Control'       => 'must-revalidate, post-check=0, pre-check=0',
+            'Expires'             => '0',
+        ];
+
+        return response()->stream(function () use ($productos, $fecha) {
+            $handle = fopen('php://output', 'w');
+            fprintf($handle, chr(0xEF) . chr(0xBB) . chr(0xBF));
+
+            fputcsv($handle, ['TENEBRIOS GOLD · LISTADO OFICIAL DE PRODUCTOS Y PRECIOS'], ';', '"', "\\");
+            fputcsv($handle, ["Generado el: {$fecha} | Total productos: " . $productos->count()], ';', '"', "\\");
+            fputcsv($handle, [], ';', '"', "\\");
+
+            fputcsv($handle, [
+                'ID Referencia',
+                'Nombre del Producto',
+                'Categoría',
+                'Precio Comercial (COP)',
+                'Stock Disponible (Uds)',
+                'Stock Mínimo (Alerta)',
+                'Estado en Tienda',
+                'Descripción'
+            ], ';', '"', "\\");
+
+            foreach ($productos as $p) {
+                fputcsv($handle, [
+                    'PROD-' . str_pad((string)$p->id_producto, 3, '0', STR_PAD_LEFT),
+                    $p->nombre_producto,
+                    $p->categoria?->nombre_categoria ?? 'General',
+                    number_format((float) $p->precio, 0, ',', '.'),
+                    $p->stock,
+                    $p->stock_minimo ?? 10,
+                    $p->estado,
+                    $p->descripcion ?? 'Sin descripción',
+                ], ';', '"', "\\");
+            }
+
+            fclose($handle);
+        }, 200, $headers);
+    }
+
+    /**
      * Genera y descarga una copia de respaldo completa (.sql) de la base de datos MySQL.
      */
     public function descargarRespaldoSql(): StreamedResponse

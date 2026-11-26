@@ -13,7 +13,10 @@ class PerfilController extends Controller
 {
     public function index(): View
     {
-        $usuario = auth()->user()->load(['direcciones', 'pedidos']);
+        $usuario = auth()->user()->load(['direcciones']);
+        if (!$usuario->esAdmin()) {
+            $usuario->load(['pedidos']);
+        }
         return view('client.mi_cuenta', compact('usuario'));
     }
 

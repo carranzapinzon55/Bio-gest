@@ -97,7 +97,7 @@
                         <div class="input-campo">
                             <i class="fa-solid fa-lock"></i>
                             <input type="password" id="password" name="contrasena" placeholder="Mínimo 8 caracteres (letras y números)" minlength="8" pattern="^(?=.*[A-Za-zÁÉÍÓÚÜÑáéíóúüñ])(?=.*\d).{8,}$" title="Mínimo 8 caracteres, incluyendo al menos una letra y un número" required>
-                            <i class="fa-regular fa-eye toggle-password" onclick="const p=document.getElementById('password');p.type=p.type==='password'?'text':'password';" style="cursor:pointer;"></i>
+                            <i class="fa-regular fa-eye toggle-password" onclick="togglePasswordVisibility('password', this)" style="cursor:pointer;" title="Mostrar / ocultar contraseña"></i>
                         </div>
                     </div>
 
@@ -107,6 +107,7 @@
                         <div class="input-campo">
                             <i class="fa-solid fa-lock"></i>
                             <input type="password" id="confirm-password" name="contrasena_confirmation" placeholder="Confirma tu contraseña" minlength="8" required>
+                            <i class="fa-regular fa-eye toggle-password" onclick="togglePasswordVisibility('confirm-password', this)" style="cursor:pointer;" title="Mostrar / ocultar contraseña"></i>
                         </div>
                     </div>
 
@@ -118,6 +119,12 @@
                     <a href="{{ route('login') }}">Inicia sesión</a>
                 </div>
 
+                <div style="text-align:center; margin-top:10px;">
+                    <a href="{{ route('contacto.index') }}" style="color:#64748b; font-size:0.85rem; text-decoration:none;">
+                        <i class="fa-regular fa-circle-question"></i> ¿Necesitas ayuda?
+                    </a>
+                </div>
+
                 <div class="back-home">
                     <a href="{{ route('home') }}"><i class="fa-solid fa-chevron-left"></i> Volver a la tienda</a>
                 </div>
@@ -125,6 +132,20 @@
         </div>
     </div>
     <script>
+        function togglePasswordVisibility(inputId, iconEl) {
+            const input = document.getElementById(inputId);
+            if (!input) return;
+            if (input.type === 'password') {
+                input.type = 'text';
+                iconEl.classList.remove('fa-eye');
+                iconEl.classList.add('fa-eye-slash');
+            } else {
+                input.type = 'password';
+                iconEl.classList.remove('fa-eye-slash');
+                iconEl.classList.add('fa-eye');
+            }
+        }
+
         // Bloquear números y símbolos en Nombre y Apellido en tiempo real
         ['nombre', 'apellido'].forEach(id => {
             const el = document.getElementById(id);

@@ -9,6 +9,44 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Chelsea+Market&family=IBM+Plex+Serif:wght@100;400;700&display=swap" rel="stylesheet"/>
+    <style>
+        /* Asegura que el campo no cambie de tamaño ni desplace el ícono al pasar de password a text */
+        .input-contenedor {
+            position: relative !important;
+            display: flex !important;
+            align-items: center !important;
+        }
+        .input-contenedor input[type="email"],
+        .input-contenedor input[type="password"],
+        .input-contenedor input[type="text"] {
+            width: 100% !important;
+            padding: 12px 42px 12px 40px !important;
+            box-sizing: border-box !important;
+            margin: 0 !important;
+        }
+        .input-contenedor > i:first-child {
+            position: absolute !important;
+            left: 14px !important;
+            top: 50% !important;
+            transform: translateY(-50%) !important;
+            pointer-events: none;
+            z-index: 2;
+        }
+        #togglePassword {
+            position: absolute !important;
+            right: 14px !important;
+            top: 50% !important;
+            transform: translateY(-50%) !important;
+            cursor: pointer;
+            color: #6b7280;
+            z-index: 3;
+            padding: 4px;
+            transition: color 0.2s ease;
+        }
+        #togglePassword:hover {
+            color: #e6a100;
+        }
+    </style>
 </head>
 <body>
     <header>
@@ -24,6 +62,12 @@
             @if(session('success'))
                 <div style="background:#dcfce7; color:#15803d; padding:10px; margin-bottom:15px; border-radius:5px; text-align:center; font-size:0.9rem;">
                     {{ session('success') }}
+                </div>
+            @endif
+
+            @if(session('info'))
+                <div style="background:#e0f2fe; color:#0369a1; padding:10px; margin-bottom:15px; border-radius:5px; text-align:center; font-size:0.9rem;">
+                    <i class="fas fa-info-circle"></i> {{ session('info') }}
                 </div>
             @endif
 
@@ -56,14 +100,14 @@
                 <div class="input-contenedor">
                     <i class="fas fa-lock"></i>
                     <input type="password" name="contrasena" id="contrasena" placeholder="Contraseña" required />
-                    <i class="fas fa-eye" id="togglePassword" style="cursor: pointer;" onclick="const p=document.getElementById('contrasena');p.type=p.type==='password'?'text':'password';"></i>
+                    <i class="fas fa-eye" id="togglePassword" onclick="togglePasswordVisibility('contrasena', this)" title="Mostrar / ocultar contraseña"></i>
                 </div>
 
                 <div class="contraseña-olvidada" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
                     <label style="font-size:0.85rem; color:#666; cursor:pointer;">
                         <input type="checkbox" name="remember" {{ old('remember') ? 'checked' : '' }}> Recordarme
                     </label>
-                    <a href="{{ route('faq') }}">¿Necesitas ayuda?</a>
+                    <a href="{{ route('contacto.index') }}">¿Necesitas ayuda?</a>
                 </div>
 
                 <button type="submit" class="btn-submit">Iniciar sesión</button>
@@ -83,5 +127,21 @@
             </div>
         </div>
     </main>
+
+    <script>
+        function togglePasswordVisibility(inputId, iconEl) {
+            const input = document.getElementById(inputId);
+            if (!input) return;
+            if (input.type === 'password') {
+                input.type = 'text';
+                iconEl.classList.remove('fa-eye');
+                iconEl.classList.add('fa-eye-slash');
+            } else {
+                input.type = 'password';
+                iconEl.classList.remove('fa-eye-slash');
+                iconEl.classList.add('fa-eye');
+            }
+        }
+    </script>
 </body>
 </html>

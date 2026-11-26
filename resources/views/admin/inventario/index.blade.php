@@ -1,14 +1,14 @@
 @extends('layouts.admin')
 
-@section('title', 'Gestión de Inventario y Kardex | BIO-GEST Tenebrios Gold')
-@section('header_title', 'Inventario y Kardex')
+@section('title', 'Gestión de Inventario y Movimientos | BIO-GEST Tenebrios Gold')
+@section('header_title', 'Inventario y Registro de Movimientos')
 
 @section('content')
     <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:15px; margin-bottom:20px;">
         <div>
-            <h1 style="margin:0; font-size:1.45rem; color:#111111;">Inventario y Kardex</h1>
+            <h1 style="margin:0; font-size:1.45rem; color:#111111;">Inventario y Movimientos</h1>
             <p style="margin:4px 0 0 0; color:#6b7280; font-size:0.9rem;">
-                Control de existencias, entradas, salidas y ajustes de productos
+                Control de existencias actuales y registro continuo de entradas, salidas y ajustes de productos
             </p>
         </div>
         <div style="display:flex; gap:10px; flex-wrap:wrap;">
@@ -90,7 +90,7 @@
     </section>
 
     <!-- SECCIÓN SUPERIOR: EXISTENCIAS ACTUALES POR PRODUCTO + FORMULARIO RÁPIDO DE MOVIMIENTOS -->
-    <div style="display:grid; grid-template-columns: minmax(0, 1.8fr) minmax(340px, 1fr); gap:20px; align-items:start; margin-bottom:24px;">
+    <div style="display:grid; grid-template-columns: minmax(0, 1.8fr) minmax(360px, 1fr); gap:20px; align-items:start; margin-bottom:24px;">
         <!-- Existencias por Producto -->
         <div class="tg-card">
             <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:16px;">
@@ -103,29 +103,35 @@
             </div>
 
             <div class="table-responsive">
-                <table class="custom-table">
+                <table class="custom-table" id="tablaExistenciasProductos">
                     <thead>
                         <tr>
                             <th style="width:50px;">Foto</th>
                             <th>Producto</th>
                             <th style="text-align:center;">Stock Actual</th>
                             <th style="text-align:center;">Stock Mín.</th>
-                            <th style="text-align:center;">Estado Stock</th>
+                            <th style="text-align:center;">Estado</th>
+                            <th style="text-align:right;">Acción</th>
                         </tr>
                     </thead>
                     <tbody>
+                        @php
+                            $preselectedId = request('id_producto') ?? request('producto_id');
+                        @endphp
                         @foreach($productos as $prod)
                             @php
                                 $minimo = (int) ($prod->stock_minimo ?? 10);
                                 $esAgotado = $prod->stock <= 0;
                                 $esBajo = !$esAgotado && $prod->stock <= $minimo;
                                 $imgSrc = $prod->imagen ? asset('assets/img/' . $prod->imagen) : asset('assets/img/Tenebrios_img.png');
+                                $esSeleccionado = ((string)$preselectedId === (string)$prod->id_producto);
                             @endphp
-                            <tr style="{{ $esAgotado ? 'background-color:#fff1f2;' : ($esBajo ? 'background-color:#fffbeb;' : '') }}">
+                            <tr id="fila-producto-{{ $prod->id_producto }}" class="fila-producto {{ $esSeleccionado ? 'fila-resaltada' : '' }}"
+                                style="{{ $esSeleccionado ? 'border-left:4px solid #e6a100; background-color:#fdf8f0;' : ($esAgotado ? 'background-color:#fff1f2;' : ($esBajo ? 'background-color:#fffbeb;' : '')) }}; transition:all 0.22s ease;">
                                 <td>
                                     <img src="{{ $imgSrc }}" alt="{{ $prod->nombre_producto }}"
                                          onerror="this.onerror=null; this.src='{{ asset('assets/img/Tenebrios_img.png') }}';"
-                                         style="width:36px; height:36px; object-fit:contain; border-radius:4px; background:#fff; border:1px solid #e5e7eb; padding:2px;">
+                                         style="width:38px; height:38px; object-fit:contain; border-radius:6px; background:#fff; border:1px solid #e5e7eb; padding:2px;">
                                 </td>
                                 <td>
                                     <div style="font-weight:700; color:#111111;">{{ $prod->nombre_producto }}</div>
@@ -148,6 +154,12 @@
                                         <span class="badge badge-active"><i class="fa-solid fa-circle-check"></i> DISPONIBLE</span>
                                     @endif
                                 </td>
+                                <td style="text-align:right;">
+                                    <button type="button" class="tg-btn-gold" style="padding:4px 10px; font-size:0.78rem;"
+                                            onclick="seleccionarProductoParaMovimiento({{ $prod->id_producto }})">
+                                        <i class="fa-solid fa-pen-to-square"></i> Mover
+                                    </button>
+                                </td>
                             </tr>
                         @endforeach
                     </tbody>
@@ -155,21 +167,45 @@
             </div>
         </div>
 
-        <!-- Formulario Manual: Registrar Movimiento en Kardex -->
-        <div class="tg-card" id="formMovimientoWrap">
+        <!-- Formulario Manual: Registrar Movimiento en Inventario -->
+        <div class="tg-card" id="formMovimientoWrap" style="border-top:3px solid #e6a100;">
             <h2 style="margin:0 0 14px 0; font-size:1.1rem; color:#111111; border-bottom:1px solid #e5e7eb; padding-bottom:10px;">
                 <i class="fa-solid fa-arrows-rotate" style="color:#e6a100;"></i> Registrar Movimiento Manual
             </h2>
 
+            <!-- Tarjeta Visual del Producto Seleccionado en Tiempo Real -->
+            <div id="previewProductoSeleccionado" style="display:none; background:#fdf8f0; border:1px solid #fde68a; border-radius:8px; padding:12px; margin-bottom:15px; align-items:center; gap:14px; transition:all 0.22s ease;">
+                <img id="previewImg" src="{{ asset('assets/img/Tenebrios_img.png') }}" alt="Preview"
+                     style="width:55px; height:55px; object-fit:contain; border-radius:6px; background:#ffffff; border:1px solid #fcd34d; padding:2px;">
+                <div style="flex:1; min-width:0;">
+                    <div style="font-weight:800; font-size:0.95rem; color:#111111;" id="previewNombre">-</div>
+                    <div style="font-size:0.8rem; color:#6b7280;" id="previewCategoria">-</div>
+                    <div style="font-size:0.82rem; margin-top:2px;">
+                        Stock actual: <strong id="previewStock" style="color:#e6a100; font-size:0.95rem;">0</strong> uds.
+                        <span id="previewStockMinimoBadge" style="font-size:0.75rem; color:#6b7280; margin-left:6px;"></span>
+                    </div>
+                </div>
+            </div>
+
             <form action="{{ route('admin.inventario.movimiento') }}" method="POST">
                 @csrf
                 <div style="margin-bottom:14px;">
-                    <label style="display:block; font-size:0.82rem; font-weight:700; color:#111111; margin-bottom:5px;">Producto *</label>
-                    <select name="id_producto" required style="width:100%; padding:9px 10px; border:1px solid #cbd5e1; border-radius:6px; font-size:0.88rem;">
-                        <option value="">-- Seleccionar producto --</option>
+                    <label style="display:block; font-size:0.82rem; font-weight:700; color:#111111; margin-bottom:5px;">Seleccionar Producto *</label>
+                    <select name="id_producto" id="selectProductoMovimiento" required onchange="actualizarPreviewProducto()"
+                            style="width:100%; padding:9px 10px; border:1px solid #cbd5e1; border-radius:6px; font-size:0.88rem;">
+                        <option value="">-- Seleccionar producto del catálogo --</option>
                         @foreach($productos as $prod)
-                            <option value="{{ $prod->id_producto }}" {{ old('id_producto') == $prod->id_producto ? 'selected' : '' }}>
-                                {{ $prod->nombre_producto }} (Stock: {{ $prod->stock }})
+                            @php
+                                $img = $prod->imagen ? asset('assets/img/' . $prod->imagen) : asset('assets/img/Tenebrios_img.png');
+                            @endphp
+                            <option value="{{ $prod->id_producto }}"
+                                    data-nombre="{{ $prod->nombre_producto }}"
+                                    data-stock="{{ $prod->stock }}"
+                                    data-minimo="{{ $prod->stock_minimo ?? 10 }}"
+                                    data-categoria="{{ optional($prod->categoria)->nombre_categoria ?? 'General' }}"
+                                    data-imagen="{{ $img }}"
+                                    {{ (string) old('id_producto', $preselectedId) === (string) $prod->id_producto ? 'selected' : '' }}>
+                                {{ $prod->nombre_producto }} (Stock actual: {{ $prod->stock }} uds.)
                             </option>
                         @endforeach
                     </select>
@@ -179,9 +215,9 @@
                     <div>
                         <label style="display:block; font-size:0.82rem; font-weight:700; color:#111111; margin-bottom:5px;">Tipo de Movimiento *</label>
                         <select name="tipo_movimiento" required style="width:100%; padding:9px 10px; border:1px solid #cbd5e1; border-radius:6px; font-size:0.88rem;">
-                            <option value="ENTRADA" {{ old('tipo_movimiento') === 'ENTRADA' ? 'selected' : '' }}>ENTRADA (+)</option>
-                            <option value="SALIDA" {{ old('tipo_movimiento') === 'SALIDA' ? 'selected' : '' }}>SALIDA (-)</option>
-                            <option value="AJUSTE" {{ old('tipo_movimiento') === 'AJUSTE' ? 'selected' : '' }}>AJUSTE (=)</option>
+                            <option value="ENTRADA" {{ old('tipo_movimiento') === 'ENTRADA' ? 'selected' : '' }}>ENTRADA (+ ingreso)</option>
+                            <option value="SALIDA" {{ old('tipo_movimiento') === 'SALIDA' ? 'selected' : '' }}>SALIDA (- despacho)</option>
+                            <option value="AJUSTE" {{ old('tipo_movimiento') === 'AJUSTE' ? 'selected' : '' }}>AJUSTE (= conteo físico)</option>
                         </select>
                     </div>
                     <div>
@@ -192,60 +228,69 @@
                 </div>
 
                 <div style="margin-bottom:16px;">
-                    <label style="display:block; font-size:0.82rem; font-weight:700; color:#111111; margin-bottom:5px;">Motivo / Observación *</label>
+                    <label style="display:block; font-size:0.82rem; font-weight:700; color:#111111; margin-bottom:5px;">Motivo / Observación del Movimiento *</label>
                     <input type="text" name="observacion" value="{{ old('observacion') }}" required maxlength="255"
                            placeholder="Ej. Cosecha lote semanal / Ajuste conteo físico"
                            style="width:100%; padding:9px 10px; border:1px solid #cbd5e1; border-radius:6px; font-size:0.88rem;">
                 </div>
 
                 <button type="submit" class="tg-btn-dark" style="width:100%; justify-content:center; padding:10px;">
-                    <i class="fa-solid fa-floppy-disk"></i> Aplicar al Kardex y MySQL
+                    <i class="fa-solid fa-floppy-disk"></i> Guardar Movimiento en MySQL
                 </button>
             </form>
         </div>
     </div>
 
-    <!-- SECCIÓN INFERIOR: HISTORIAL KARDEX COMPLETO -->
+    <!-- SECCIÓN INFERIOR: HISTORIAL DE MOVIMIENTOS (ENTRADAS Y SALIDAS) CON BUSCADOR EN TIEMPO REAL -->
     <div class="tg-card">
         <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:15px; margin-bottom:16px;">
             <div>
                 <h2 style="margin:0; font-size:1.15rem; color:#111111;">
-                    <i class="fa-solid fa-clock-rotate-left" style="color:#e6a100;"></i> Historial Kardex
+                    <i class="fa-solid fa-clock-rotate-left" style="color:#e6a100;"></i> Historial de Movimientos de Inventario
                 </h2>
                 <p style="margin:3px 0 0 0; font-size:0.84rem; color:#6b7280;">
-                    Registro de movimientos de inventario leyendo la tabla movimiento_inventario
+                    Registro continuo de entradas, salidas y ajustes de stock
                 </p>
             </div>
 
-            <!-- Filtros de Kardex -->
-            <form action="{{ route('admin.inventario.index') }}" method="GET" style="display:flex; flex-wrap:wrap; gap:8px; align-items:center;">
-                <select name="id_producto" style="padding:7px 10px; border:1px solid #cbd5e1; border-radius:6px; font-size:0.85rem;">
-                    <option value="">Todos los productos</option>
-                    @foreach($productos as $prod)
-                        <option value="{{ $prod->id_producto }}" {{ (string) request('id_producto') === (string) $prod->id_producto ? 'selected' : '' }}>
-                            {{ $prod->nombre_producto }}
-                        </option>
-                    @endforeach
-                </select>
+            <!-- Filtros y Buscador en Tiempo Real -->
+            <div style="display:flex; flex-wrap:wrap; gap:10px; align-items:center;">
+                <!-- Buscador en tiempo real de la tabla -->
+                <div style="position:relative;">
+                    <input type="text" id="buscadorTiempoRealMovimientos" placeholder="Buscar producto o motivo..."
+                           style="padding:7px 12px 7px 30px; border:1px solid #cbd5e1; border-radius:6px; font-size:0.85rem; width:220px;">
+                    <i class="fa-solid fa-magnifying-glass" style="position:absolute; left:10px; top:50%; transform:translateY(-50%); color:#9ca3af; font-size:0.8rem;"></i>
+                </div>
 
-                <select name="tipo_movimiento" style="padding:7px 10px; border:1px solid #cbd5e1; border-radius:6px; font-size:0.85rem;">
-                    <option value="">Todos los tipos</option>
-                    <option value="ENTRADA" {{ request('tipo_movimiento') === 'ENTRADA' ? 'selected' : '' }}>ENTRADA</option>
-                    <option value="SALIDA" {{ request('tipo_movimiento') === 'SALIDA' ? 'selected' : '' }}>SALIDA</option>
-                    <option value="AJUSTE" {{ request('tipo_movimiento') === 'AJUSTE' ? 'selected' : '' }}>AJUSTE</option>
-                </select>
+                <form action="{{ route('admin.inventario.index') }}" method="GET" style="display:flex; flex-wrap:wrap; gap:8px; align-items:center;">
+                    <select name="id_producto" style="padding:7px 10px; border:1px solid #cbd5e1; border-radius:6px; font-size:0.85rem;">
+                        <option value="">Todos los productos</option>
+                        @foreach($productos as $prod)
+                            <option value="{{ $prod->id_producto }}" {{ (string) request('id_producto') === (string) $prod->id_producto ? 'selected' : '' }}>
+                                {{ $prod->nombre_producto }}
+                            </option>
+                        @endforeach
+                    </select>
 
-                <button type="submit" class="tg-btn-gold" style="padding:7px 14px; font-size:0.84rem;">
-                    <i class="fa-solid fa-filter"></i> Filtrar
-                </button>
-                @if(request()->hasAny(['id_producto', 'tipo_movimiento']))
-                    <a href="{{ route('admin.inventario.index') }}" style="font-size:0.82rem; color:#6b7280; text-decoration:underline;">Limpiar</a>
-                @endif
-            </form>
+                    <select name="tipo_movimiento" style="padding:7px 10px; border:1px solid #cbd5e1; border-radius:6px; font-size:0.85rem;">
+                        <option value="">Todos los tipos</option>
+                        <option value="ENTRADA" {{ request('tipo_movimiento') === 'ENTRADA' ? 'selected' : '' }}>ENTRADA</option>
+                        <option value="SALIDA" {{ request('tipo_movimiento') === 'SALIDA' ? 'selected' : '' }}>SALIDA</option>
+                        <option value="AJUSTE" {{ request('tipo_movimiento') === 'AJUSTE' ? 'selected' : '' }}>AJUSTE</option>
+                    </select>
+
+                    <button type="submit" class="tg-btn-gold" style="padding:7px 14px; font-size:0.84rem;">
+                        <i class="fa-solid fa-filter"></i> Filtrar
+                    </button>
+                    @if(request()->hasAny(['id_producto', 'tipo_movimiento', 'producto_id']))
+                        <a href="{{ route('admin.inventario.index') }}" style="font-size:0.82rem; color:#6b7280; text-decoration:underline;">Limpiar</a>
+                    @endif
+                </form>
+            </div>
         </div>
 
         <div class="table-responsive">
-            <table class="custom-table">
+            <table class="custom-table" id="tablaMovimientosInventario">
                 <thead>
                     <tr>
                         <th>Fecha</th>
@@ -258,11 +303,11 @@
                 </thead>
                 <tbody>
                     @forelse($movimientos as $mov)
-                        <tr>
+                        <tr class="fila-movimiento">
                             <td style="white-space:nowrap; font-size:0.84rem; color:#4b5563;">
                                 {{ \Illuminate\Support\Carbon::parse($mov->fecha_movimiento)->format('d/m/Y H:i') }}
                             </td>
-                            <td style="font-weight:700; color:#111111;">
+                            <td style="font-weight:700; color:#111111;" class="col-producto">
                                 {{ optional($mov->producto)->nombre_producto ?? ('Producto #' . $mov->id_producto) }}
                             </td>
                             <td style="text-align:center;">
@@ -277,7 +322,7 @@
                             <td style="text-align:center; font-weight:800; font-size:0.95rem; color:{{ $mov->tipo_movimiento === 'ENTRADA' ? '#047857' : ($mov->tipo_movimiento === 'SALIDA' ? '#dc2626' : '#0369a1') }};">
                                 {{ $mov->tipo_movimiento === 'ENTRADA' ? '+' : ($mov->tipo_movimiento === 'SALIDA' ? '-' : '=') }}{{ number_format($mov->cantidad, 0, ',', '.') }} uds.
                             </td>
-                            <td style="color:#374151; font-size:0.85rem;">
+                            <td style="color:#374151; font-size:0.85rem;" class="col-observacion">
                                 {{ $mov->observacion }}
                             </td>
                             <td style="white-space:nowrap; font-size:0.82rem; color:#6b7280;">
@@ -287,7 +332,7 @@
                     @empty
                         <tr>
                             <td colspan="6" style="text-align:center; padding:28px; color:#6b7280;">
-                                No se encontraron movimientos de Kardex registrados.
+                                No se encontraron movimientos de inventario registrados.
                             </td>
                         </tr>
                     @endforelse
@@ -300,3 +345,77 @@
         </div>
     </div>
 @endsection
+
+@push('scripts')
+<script>
+    function actualizarPreviewProducto() {
+        const select = document.getElementById('selectProductoMovimiento');
+        const preview = document.getElementById('previewProductoSeleccionado');
+        const selected = select.options[select.selectedIndex];
+
+        // Quitar resaltado de todas las filas
+        document.querySelectorAll('.fila-producto').forEach(f => {
+            f.style.borderLeft = '';
+            f.style.backgroundColor = '';
+        });
+
+        if (selected && selected.value) {
+            const id = selected.value;
+            const nombre = selected.getAttribute('data-nombre');
+            const stock = selected.getAttribute('data-stock');
+            const min = selected.getAttribute('data-minimo');
+            const cat = selected.getAttribute('data-categoria');
+            const img = selected.getAttribute('data-imagen');
+
+            document.getElementById('previewNombre').textContent = nombre;
+            document.getElementById('previewStock').textContent = stock;
+            document.getElementById('previewCategoria').textContent = 'Categoría: ' + cat;
+            document.getElementById('previewStockMinimoBadge').textContent = '(Stock mínimo: ' + min + ' uds.)';
+            document.getElementById('previewImg').src = img;
+
+            preview.style.display = 'flex';
+
+            // Resaltar la fila en la tabla de existencias
+            const fila = document.getElementById('fila-producto-' + id);
+            if (fila) {
+                fila.style.borderLeft = '4px solid #e6a100';
+                fila.style.backgroundColor = '#fdf8f0';
+                fila.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+        } else {
+            preview.style.display = 'none';
+        }
+    }
+
+    function seleccionarProductoParaMovimiento(id) {
+        const select = document.getElementById('selectProductoMovimiento');
+        select.value = id;
+        actualizarPreviewProducto();
+        document.getElementById('formMovimientoWrap').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // Buscador en tiempo real de movimientos
+    document.addEventListener('DOMContentLoaded', function () {
+        actualizarPreviewProducto();
+
+        const inputBuscar = document.getElementById('buscadorTiempoRealMovimientos');
+        if (inputBuscar) {
+            inputBuscar.addEventListener('input', function () {
+                const term = this.value.toLowerCase().trim();
+                const filas = document.querySelectorAll('#tablaMovimientosInventario .fila-movimiento');
+
+                filas.forEach(fila => {
+                    const prod = fila.querySelector('.col-producto')?.textContent.toLowerCase() || '';
+                    const obs = fila.querySelector('.col-observacion')?.textContent.toLowerCase() || '';
+
+                    if (prod.includes(term) || obs.includes(term)) {
+                        fila.style.display = '';
+                    } else {
+                        fila.style.display = 'none';
+                    }
+                });
+            });
+        }
+    });
+</script>
+@endpush

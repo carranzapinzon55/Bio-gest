@@ -867,6 +867,60 @@ body {
 }
 
 /* ==========================================================================
+   ESTANDARIZACIÓN DE TRANSICIONES SUAVES Y MICROINTERACCIONES
+   ========================================================================== */
+.kpi-card,
+.tg-card,
+.custom-table tr,
+.tg-btn-gold,
+.tg-btn-dark,
+.tg-btn-outline,
+.btn-filter-secondary,
+.user-action-btn,
+.sidebar-menu li a,
+.modal-overlay,
+.modal-card,
+.alert-flash {
+    transition: all 0.22s ease !important;
+}
+
+.kpi-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.08);
+}
+
+.tg-card:hover {
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.07);
+}
+
+.custom-table tbody tr:hover {
+    background-color: #fdf8f0 !important;
+}
+
+/* Modales y Notificaciones Toast con apertura suave */
+@keyframes tgFadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(12px) scale(0.98);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.modal-card,
+.modal-container,
+#modalNuevaCategoria > div,
+#modalReabastecer > div {
+    animation: tgFadeInUp 0.24s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.alert-flash {
+    animation: tgFadeInUp 0.22s ease forwards;
+}
+
+/* ==========================================================================
    RESPONSIVIDAD
    ========================================================================== */
 @media (max-width: 1024px) {

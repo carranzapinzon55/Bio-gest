@@ -35,6 +35,13 @@ Route::prefix('catalogo')->name('catalogo.')->group(function () {
     Route::get('/producto/{id_producto}', [CatalogoController::class, 'show'])->name('show');
 });
 
+// Alias amigables para /productos y /productos/{id}
+Route::get('/productos', [CatalogoController::class, 'index'])->name('productos.index');
+Route::get('/productos/{id_producto}', [CatalogoController::class, 'show'])->name('productos.show');
+
+// Ruta JSON para sugerencias del buscador en tiempo real
+Route::get('/buscar-sugerencias', [CatalogoController::class, 'sugerencias'])->name('buscar.sugerencias');
+
 Route::get('/calculadora-alimento', [CalculadoraController::class, 'index'])->name('calculadora.index');
 Route::post('/calculadora-alimento/calcular', [CalculadoraController::class, 'calcular'])->name('calculadora.calcular');
 
@@ -80,6 +87,8 @@ Route::prefix('carrito')->name('carrito.')->group(function () {
     Route::post('/agregar', [CarritoController::class, 'agregar'])->name('agregar');
     Route::patch('/actualizar/{id_producto}', [CarritoController::class, 'actualizar'])->name('actualizar');
     Route::delete('/eliminar/{id_producto}', [CarritoController::class, 'eliminar'])->name('eliminar');
+    Route::post('/cupon', [CarritoController::class, 'aplicarCupon'])->name('cupon.aplicar');
+    Route::delete('/cupon', [CarritoController::class, 'quitarCupon'])->name('cupon.quitar');
 });
 
 Route::middleware(['auth'])->group(function () {
@@ -132,9 +141,10 @@ Route::middleware(['auth', 'role:Administrador'])->prefix('admin')->name('admin.
     Route::get('/pedidos/{id_pedido}', [PedidoAdminController::class, 'show'])->name('pedidos.show');
     Route::patch('/pedidos/{id_pedido}/estado', [PedidoAdminController::class, 'actualizarEstado'])->name('pedidos.estado');
 
-    // 4. Gestión de Productos (CRUD)
+    // 4. Gestión de Productos (CRUD y Categorías)
     Route::resource('productos', ProductoAdminController::class)->except(['show']);
     Route::post('/productos/{id_producto}/stock', [ProductoAdminController::class, 'ajustarStock'])->name('productos.stock');
+    Route::post('/categorias', [ProductoAdminController::class, 'storeCategoria'])->name('categorias.store');
 
     // 5. Gestión de Inventario y Movimientos
     Route::get('/inventario', [InventarioAdminController::class, 'index'])->name('inventario.index');
@@ -173,6 +183,8 @@ Route::middleware(['auth', 'role:Administrador'])->prefix('admin')->name('admin.
     // 11. Ajustes del Sistema y Parámetros Comerciales
     Route::get('/ajustes', [AjusteAdminController::class, 'index'])->name('ajustes.index');
     Route::post('/ajustes', [AjusteAdminController::class, 'update'])->name('ajustes.update');
+    Route::post('/ajustes/limpiar-cache', [AjusteAdminController::class, 'limpiarCacheTienda'])->name('ajustes.limpiar.cache');
+    Route::get('/ajustes/catalogo-precios', [AjusteAdminController::class, 'descargarCatalogoPrecios'])->name('ajustes.catalogo.precios');
     Route::get('/ajustes/respaldo-sql', [AjusteAdminController::class, 'descargarRespaldoSql'])->name('ajustes.respaldo.sql');
 
     // 12. Mi Perfil del Administrador

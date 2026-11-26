@@ -250,7 +250,10 @@
                                 </div>
                             </div>
                         </div>
-                        <div style="display:flex; gap:8px;">
+                        <div style="display:flex; gap:8px; align-items:center;">
+                            <span id="badgeNuevoMensajeAdmin" style="display:none; font-size:0.75rem; background:#dcfce7; color:#166534; font-weight:700; padding:3px 10px; border-radius:999px; animation: pulse 2s infinite;">
+                                <i class="fa-solid fa-bell fa-shake"></i> Nuevo Mensaje
+                            </span>
                             <span style="font-size:0.75rem; background:#ecfdf5; color:#065f46; font-weight:700; padding:3px 10px; border-radius:999px;">
                                 <i class="fa-solid fa-circle" style="font-size:0.5rem; vertical-align:middle;"></i> Chat Activo
                             </span>
@@ -262,7 +265,7 @@
                         @forelse($mensajesHilo as $msg)
                             @if($msg->es_admin)
                                 <!-- Mensaje Administrador -->
-                                <div class="chat-bubble admin">
+                                <div class="chat-bubble admin" data-msg-id="{{ $msg->id_mensaje }}">
                                     <span class="admin-badge-chat">
                                         <i class="fa-solid fa-shield-halved"></i> {{ optional($msg->admin)->nombre ?? 'Administrador BIO-GEST' }}
                                     </span>
@@ -273,7 +276,7 @@
                                 </div>
                             @else
                                 <!-- Mensaje Cliente -->
-                                <div class="chat-bubble cliente">
+                                <div class="chat-bubble cliente" data-msg-id="{{ $msg->id_mensaje }}">
                                     <div style="font-weight:700; font-size:0.75rem; color:#475569; margin-bottom:3px;">
                                         {{ $usuarioActivo->nombre }}
                                     </div>
@@ -284,7 +287,7 @@
                                 </div>
                             @endif
                         @empty
-                            <div style="text-align:center; padding:40px 10px; color:#94a3b8; font-size:0.86rem; margin:auto;">
+                            <div id="adminEmptyChatNotice" style="text-align:center; padding:40px 10px; color:#94a3b8; font-size:0.86rem; margin:auto;">
                                 <i class="fa-regular fa-comments" style="font-size:2.5rem; margin-bottom:10px; display:block; color:#cbd5e1;"></i>
                                 No hay mensajes intercambiados todavía con este cliente.<br>
                                 Escribe el primer mensaje a continuación para asesorarle.
@@ -294,12 +297,12 @@
 
                     <!-- Input Box Inferior -->
                     <div style="padding:14px 18px; border-top:1px solid #e2e8f0; background:#ffffff;">
-                        <form action="{{ route('admin.chats.responder') }}" method="POST" style="display:flex; gap:10px; align-items:center;">
+                        <form id="formAdminResponder" action="{{ route('admin.chats.responder') }}" method="POST" style="display:flex; gap:10px; align-items:center;">
                             @csrf
-                            <input type="hidden" name="id_usuario" value="{{ $usuarioActivo->id_usuario }}">
-                            <input type="text" name="mensaje" required placeholder="Escribe tu respuesta para {{ $usuarioActivo->nombre }}..."
+                            <input type="hidden" name="id_usuario" id="adminTargetUsuarioId" value="{{ $usuarioActivo->id_usuario }}">
+                            <input type="text" name="mensaje" id="adminInputMensaje" required placeholder="Escribe tu respuesta para {{ $usuarioActivo->nombre }}..."
                                    style="flex:1; padding:11px 14px; border:1px solid #cbd5e1; border-radius:8px; font-size:0.88rem; outline:none;" autocomplete="off">
-                            <button type="submit" class="tg-btn-dark" style="padding:11px 20px; white-space:nowrap;">
+                            <button type="submit" id="btnAdminEnviar" class="tg-btn-dark" style="padding:11px 20px; white-space:nowrap;">
                                 <i class="fa-solid fa-paper-plane" style="color:#e6a100;"></i> Enviar Respuesta
                             </button>
                         </form>
@@ -552,12 +555,108 @@
         document.getElementById('faqModal').classList.remove('active');
     }
 
-    // Auto-scroll chat al fondo
+    // Auto-scroll chat al fondo y Polling Web Audio
+    function playAdminNotificationSound() {
+        try {
+            const AudioCtx = window.AudioContext || window.webkitAudioContext;
+            if (!AudioCtx) return;
+            const ctx = new AudioCtx();
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(440, ctx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.15);
+
+            gain.gain.setValueAtTime(0.2, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.35);
+
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+
+            osc.start(ctx.currentTime);
+            osc.stop(ctx.currentTime + 0.35);
+        } catch (e) {
+            console.warn('AudioContext bloqueado:', e);
+        }
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
         const container = document.getElementById('chatMessagesContainer');
         if (container) {
             container.scrollTop = container.scrollHeight;
         }
+
+        const targetUserIdEl = document.getElementById('adminTargetUsuarioId');
+        if (!targetUserIdEl) return;
+
+        const targetUserId = targetUserIdEl.value;
+        const knownAdminMsgIds = new Set();
+        document.querySelectorAll('#chatMessagesContainer [data-msg-id]').forEach(el => {
+            const id = parseInt(el.getAttribute('data-msg-id'), 10);
+            if (id) knownAdminMsgIds.add(id);
+        });
+
+        // Polling cada 5 segundos para recibir nuevos mensajes del cliente en tiempo real
+        setInterval(() => {
+            fetch(`{{ route('admin.chats.index') }}?usuario=${targetUserId}`, {
+                headers: { 'Accept': 'application/json' }
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (!data.ok || !Array.isArray(data.mensajes)) return;
+
+                let hasNewClientMsg = false;
+                const notice = document.getElementById('adminEmptyChatNotice');
+
+                data.mensajes.forEach(m => {
+                    if (!knownAdminMsgIds.has(m.id_mensaje)) {
+                        knownAdminMsgIds.add(m.id_mensaje);
+                        if (notice) notice.remove();
+
+                        const div = document.createElement('div');
+                        div.className = m.es_admin ? 'chat-bubble admin' : 'chat-bubble cliente';
+                        div.setAttribute('data-msg-id', m.id_mensaje);
+
+                        if (m.es_admin) {
+                            div.innerHTML = `
+                                <span class="admin-badge-chat"><i class="fa-solid fa-shield-halved"></i> ${m.autor}</span>
+                                <div>${escapeAdminHtml(m.mensaje)}</div>
+                                <span class="chat-bubble-time" style="text-align:right;">${m.fecha_envio}</span>
+                            `;
+                        } else {
+                            hasNewClientMsg = true;
+                            div.innerHTML = `
+                                <div style="font-weight:700; font-size:0.75rem; color:#475569; margin-bottom:3px;">${escapeAdminHtml(m.autor)}</div>
+                                <div>${escapeAdminHtml(m.mensaje)}</div>
+                                <span class="chat-bubble-time">${m.fecha_envio}</span>
+                            `;
+                            div.style.boxShadow = '0 0 12px rgba(230,161,0,0.5)';
+                            div.style.backgroundColor = '#fef3c7';
+                        }
+
+                        container.appendChild(div);
+                        container.scrollTop = container.scrollHeight;
+                    }
+                });
+
+                if (hasNewClientMsg) {
+                    playAdminNotificationSound();
+                    const badge = document.getElementById('badgeNuevoMensajeAdmin');
+                    if (badge) {
+                        badge.style.display = 'inline-flex';
+                        setTimeout(() => { badge.style.display = 'none'; }, 8000);
+                    }
+                }
+            })
+            .catch(err => console.debug('Error en polling admin:', err));
+        }, 5000);
     });
+
+    function escapeAdminHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text || '';
+        return div.innerHTML;
+    }
 </script>
 @endpush

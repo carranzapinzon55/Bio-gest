@@ -181,28 +181,46 @@
                 </div>
             </div>
 
-            <!-- Respaldo de Base de Datos MySQL -->
+            <!-- Herramientas Administrativas para el Administrador No Técnico -->
             <div class="tg-card" style="border-left:4px solid #e6a100;">
                 <div class="card-header-flex" style="margin-bottom:12px;">
                     <h2 style="font-size:1.05rem; font-weight:800; color:#111111; margin:0; display:flex; align-items:center; gap:8px;">
-                        <i class="fa-solid fa-database" style="color:#e6a100;"></i> Respaldo de la Base de Datos
+                        <i class="fa-solid fa-toolbox" style="color:#e6a100;"></i> Herramientas de Mantenimiento de la Tienda
                     </h2>
-                    <span style="font-size:0.75rem; background:#f1f5f9; color:#475569; padding:2px 8px; border-radius:999px; font-weight:700;">
-                        MySQL / MariaDB
+                    <span style="font-size:0.75rem; background:#ecfdf5; color:#065f46; padding:2px 8px; border-radius:999px; font-weight:700;">
+                        Gestión Intuitiva
                     </span>
                 </div>
 
                 <p style="color:#475569; font-size:0.84rem; line-height:1.45; margin-bottom:16px;">
-                    Descarga en cualquier momento una copia de seguridad integral en formato <strong>.sql</strong> con la estructura DDL de las 17 tablas y todos los registros vigentes de usuarios, productos, inventario, pedidos y configuraciones.
+                    Utilidades diseñadas para la administración diaria de <strong>Tenebrios Gold</strong> sin requerir conocimientos técnicos en bases de datos o servidores:
                 </p>
 
-                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
-                    <span style="font-size:0.78rem; color:#64748b;">
-                        <i class="fa-solid fa-shield"></i> Incluye datos atómicos y llaves foráneas
-                    </span>
-                    <a href="{{ route('admin.ajustes.respaldo.sql') }}" class="tg-btn-dark" style="padding:9px 18px; font-size:0.88rem;">
-                        <i class="fa-solid fa-download" style="color:#e6a100;"></i> Descargar respaldo (.sql)
-                    </a>
+                <div style="display:flex; flex-direction:column; gap:12px;">
+                    <!-- Botón 1: Verificar estado y limpiar caché -->
+                    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; background:#f8fafc; padding:12px 14px; border-radius:8px; border:1px solid #e2e8f0;">
+                        <div>
+                            <strong style="font-size:0.86rem; color:#111111; display:block;">Verificar estado de la tienda y limpiar caché</strong>
+                            <span style="font-size:0.76rem; color:#64748b;">Refresca el catálogo, optimiza las rutas y asegura la carga inmediata de cambios.</span>
+                        </div>
+                        <form action="{{ route('admin.ajustes.limpiar.cache') }}" method="POST" style="margin:0;">
+                            @csrf
+                            <button type="submit" class="tg-btn-dark" style="padding:8px 14px; font-size:0.82rem; white-space:nowrap;">
+                                <i class="fa-solid fa-broom" style="color:#e6a100;"></i> Verificar y Limpiar
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Botón 2: Descargar resumen de catálogo y precios -->
+                    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; background:#f8fafc; padding:12px 14px; border-radius:8px; border:1px solid #e2e8f0;">
+                        <div>
+                            <strong style="font-size:0.86rem; color:#111111; display:block;">Descargar resumen general de catálogo y precios</strong>
+                            <span style="font-size:0.76rem; color:#64748b;">Exporta la lista de productos vigentes, existencias y precios compatible con Excel.</span>
+                        </div>
+                        <a href="{{ route('admin.ajustes.catalogo.precios') }}" class="tg-btn-gold" style="padding:8px 14px; font-size:0.82rem; white-space:nowrap; text-decoration:none;">
+                            <i class="fa-solid fa-file-excel"></i> Descargar Catálogo
+                        </a>
+                    </div>
                 </div>
             </div>
 

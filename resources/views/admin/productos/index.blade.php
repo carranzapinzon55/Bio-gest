@@ -12,8 +12,11 @@
             </p>
         </div>
         <div style="display:flex; gap:10px; flex-wrap:wrap;">
+            <button type="button" class="tg-btn-outline" onclick="abrirModalCategoria()">
+                <i class="fa-solid fa-folder-plus"></i> Nueva Categoría
+            </button>
             <a href="{{ route('admin.inventario.index') }}" class="tg-btn-gold">
-                <i class="fa-solid fa-boxes-stacked"></i> Ver Inventario y Kardex
+                <i class="fa-solid fa-boxes-stacked"></i> Ver Inventario y Movimientos
             </a>
             <a href="{{ route('admin.productos.create') }}" class="tg-btn-dark">
                 <i class="fa-solid fa-plus"></i> Registrar Producto
@@ -155,4 +158,60 @@
             </table>
         </div>
     </div>
+
+    <!-- MODAL PARA NUEVA CATEGORÍA -->
+    <div id="modalNuevaCategoria" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:9999; align-items:center; justify-content:center;">
+        <div style="background:#ffffff; border-radius:10px; width:100%; max-width:480px; box-shadow:0 20px 25px -5px rgba(0,0,0,0.2); overflow:hidden;">
+            <div style="padding:16px 20px; background:#111111; color:#ffffff; display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid #e6a100;">
+                <div style="display:flex; align-items:center; gap:8px;">
+                    <i class="fa-solid fa-folder-plus" style="color:#e6a100; font-size:1.1rem;"></i>
+                    <h3 style="margin:0; font-size:1rem; font-weight:800;">Crear Nueva Categoría de Productos</h3>
+                </div>
+                <button type="button" onclick="cerrarModalCategoria()" style="background:none; border:none; color:#ffffff; font-size:1.1rem; cursor:pointer;">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <form action="{{ route('admin.categorias.store') }}" method="POST" style="padding:20px;">
+                @csrf
+                <div style="margin-bottom:14px;">
+                    <label style="display:block; font-size:0.82rem; font-weight:700; color:#111111; margin-bottom:5px;">Nombre de la Categoría *</label>
+                    <input type="text" name="nombre_categoria" required minlength="2" maxlength="100" placeholder="Ej. Accesorios, Sustratos, Kits de inicio..."
+                           style="width:100%; padding:9px 12px; border:1px solid #cbd5e1; border-radius:6px; font-size:0.88rem;">
+                </div>
+
+                <div style="margin-bottom:18px;">
+                    <label style="display:block; font-size:0.82rem; font-weight:700; color:#111111; margin-bottom:5px;">Descripción (Opcional)</label>
+                    <textarea name="descripcion" rows="3" placeholder="Breve descripción comercial de la categoría..."
+                              style="width:100%; padding:9px 12px; border:1px solid #cbd5e1; border-radius:6px; font-size:0.88rem;"></textarea>
+                </div>
+
+                <div style="display:flex; justify-content:flex-end; gap:10px; border-top:1px solid #e5e7eb; padding-top:14px;">
+                    <button type="button" onclick="cerrarModalCategoria()" style="padding:9px 16px; border:1px solid #cbd5e1; border-radius:6px; background:#ffffff; color:#4b5563; font-weight:600; cursor:pointer;">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="tg-btn-dark" style="padding:9px 20px;">
+                        <i class="fa-solid fa-floppy-disk"></i> Guardar Categoría
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    @push('scripts')
+    <script>
+        function abrirModalCategoria() {
+            document.getElementById('modalNuevaCategoria').style.display = 'flex';
+        }
+        function cerrarModalCategoria() {
+            document.getElementById('modalNuevaCategoria').style.display = 'none';
+        }
+        window.addEventListener('click', function(e) {
+            const modal = document.getElementById('modalNuevaCategoria');
+            if (e.target === modal) {
+                cerrarModalCategoria();
+            }
+        });
+    </script>
+    @endpush
 @endsection

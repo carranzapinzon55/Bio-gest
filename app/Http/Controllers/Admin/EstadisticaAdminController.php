@@ -284,19 +284,115 @@ class EstadisticaAdminController extends Controller
     {
         $d = $this->obtenerDatosReporte($request);
 
-        // Si PhpSpreadsheet y ZipArchive estuvieran instalados en otro servidor, usarlos;
-        // de lo contrario usar nuestro motor nativo OpenXML (.xlsx) que funciona sin extensiones externas.
-        if (class_exists('\PhpOffice\PhpSpreadsheet\Spreadsheet') && class_exists('\ZipArchive')) {
-            return $this->exportarExcelConPhpSpreadsheet($d);
+        // Si PhpSpreadsheet y extensiones requeridas (zip y gd) están disponibles, usar PhpSpreadsheet.
+        // De lo contrario, usar fallback automático limpio y robusto para compatibilidad multi-PC en cualquier servidor XAMPP.
+        if (class_exists('\PhpOffice\PhpSpreadsheet\Spreadsheet') && extension_loaded('zip') && extension_loaded('gd')) {
+            try {
+                return $this->exportarExcelConPhpSpreadsheet($d);
+            } catch (\Throwable $e) {
+                // Fallback limpio si falla alguna librería en el entorno
+            }
         }
 
-        $xlsxBinary = $this->buildNativeXlsx($d);
-        $fileName   = "reporte_ejecutivo_biogest_{$d['fechaInicio']}_al_{$d['fechaFin']}.xlsx";
+        // Si ZipArchive o ext-zip no están cargados, generar HTML-table .xls nativo 100% compatible con Microsoft Excel
+        if (!class_exists('\ZipArchive') && !extension_loaded('zip')) {
+            return $this->exportarExcelHtmlFallback($d);
+        }
 
-        return response($xlsxBinary, 200, [
-            'Content-Type'        => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        try {
+            $xlsxBinary = $this->buildNativeXlsx($d);
+            $fileName   = "reporte_ejecutivo_biogest_{$d['fechaInicio']}_al_{$d['fechaFin']}.xlsx";
+
+            return response($xlsxBinary, 200, [
+                'Content-Type'        => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                'Content-Disposition' => "attachment; filename=\"{$fileName}\"",
+                'Content-Length'      => strlen($xlsxBinary),
+                'Cache-Control'       => 'max-age=0',
+            ]);
+        } catch (\Throwable $e) {
+            return $this->exportarExcelHtmlFallback($d);
+        }
+    }
+
+    /**
+     * Fallback limpio a tabla HTML .xls que abre directamente en Excel sin requerir extensiones en XAMPP.
+     */
+    private function exportarExcelHtmlFallback(array $d): Response
+    {
+        $fileName = "reporte_ejecutivo_biogest_{$d['fechaInicio']}_al_{$d['fechaFin']}.xls";
+        $html = '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">'
+            . '<head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">'
+            . '<!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet>'
+            . '<x:Name>Reporte BIO-GEST</x:Name>'
+            . '<x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions></x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]-->'
+            . '<style>'
+            . 'table { border-collapse: collapse; font-family: Calibri, Arial, sans-serif; }'
+            . 'th { background-color: #111111; color: #ffffff; border: 1px solid #333; padding: 6px 10px; font-weight: bold; }'
+            . 'td { border: 1px solid #e5e7eb; padding: 5px 8px; font-size: 11pt; }'
+            . '.title { background-color: #111111; color: #e6a100; font-size: 14pt; font-weight: bold; }'
+            . '.sub { background-color: #fdf8f0; color: #111111; font-size: 10pt; }'
+            . '.kpi-th { background-color: #f3f4f6; color: #111111; text-align: left; }'
+            . '.kpi-val { font-weight: bold; color: #047857; }'
+            . '</style></head><body>';
+
+        $html .= '<table>';
+        $html .= '<tr><td colspan="9" class="title">TENEBRIOS GOLD · REPORTE EJECUTIVO Y ESTADÍSTICAS BIO-GEST</td></tr>';
+        $html .= '<tr><td colspan="9" class="sub">Período: ' . $d['fechaInicio'] . ' al ' . $d['fechaFin'] . ' | Filtro: ' . ($d['estadoFiltro'] ?: 'Todos') . ' | Generado: ' . now()->format('d/m/Y h:i a') . '</td></tr>';
+        $html .= '<tr><td colspan="9"></td></tr>';
+
+        // KPIs
+        $html .= '<tr><td colspan="2" class="title" style="font-size:11pt;">RESUMEN DE INDICADORES CLAVE (KPIS)</td></tr>';
+        $html .= '<tr><td class="kpi-th">Ventas Totales (COP)</td><td class="kpi-val">$' . number_format($d['ventasTotales'], 0, ',', '.') . '</td></tr>';
+        $html .= '<tr><td class="kpi-th">Total de Pedidos</td><td>' . $d['totalPedidos'] . '</td></tr>';
+        $html .= '<tr><td class="kpi-th">Ticket Promedio (COP)</td><td>$' . number_format($d['ticketPromedio'], 0, ',', '.') . '</td></tr>';
+        $html .= '<tr><td class="kpi-th">Unidades Vendidas</td><td>' . $d['unidadesVendidas'] . '</td></tr>';
+        $html .= '<tr><td colspan="9"></td></tr>';
+
+        // Tabla 1: Inventario
+        $html .= '<tr><td colspan="9" class="title" style="font-size:11pt;">1. SALUD Y ROTACIÓN DE INVENTARIO</td></tr>';
+        $html .= '<tr><th>Código</th><th>Producto</th><th>Categoría</th><th>Precio Actual</th><th>Stock Físico</th><th>Stock Mínimo</th><th>Vendidas</th><th>Ingresos</th><th>Rotación</th></tr>';
+        foreach ($d['todosProductos'] as $prod) {
+            $venta    = $d['ventasPorProducto']->get($prod->id_producto);
+            $unidades = $venta ? (int) $venta->total_unidades : 0;
+            $ingresos = $venta ? (float) $venta->total_ingresos : 0;
+            $rotacion = $unidades >= 5 ? 'Alta' : ($unidades >= 1 ? 'Media' : 'Baja');
+
+            $html .= '<tr>'
+                . '<td>PROD-' . str_pad((string)$prod->id_producto, 3, '0', STR_PAD_LEFT) . '</td>'
+                . '<td>' . htmlspecialchars($prod->nombre_producto) . '</td>'
+                . '<td>' . htmlspecialchars($prod->categoria?->nombre_categoria ?? 'General') . '</td>'
+                . '<td>$' . number_format($prod->precio, 0, ',', '.') . '</td>'
+                . '<td>' . $prod->stock . '</td>'
+                . '<td>' . ($prod->stock_minimo ?? 0) . '</td>'
+                . '<td>' . $unidades . '</td>'
+                . '<td>$' . number_format($ingresos, 0, ',', '.') . '</td>'
+                . '<td>' . $rotacion . '</td>'
+                . '</tr>';
+        }
+        $html .= '<tr><td colspan="9"></td></tr>';
+
+        // Tabla 2: Pedidos
+        $html .= '<tr><td colspan="9" class="title" style="font-size:11pt;">2. DETALLE DE VENTAS Y PEDIDOS EN EL PERÍODO</td></tr>';
+        $html .= '<tr><th>N° Pedido</th><th>Fecha</th><th>Cliente</th><th>Correo</th><th>Ciudad</th><th>Subtotal</th><th>Envío</th><th>Total</th><th>Estado</th></tr>';
+        foreach ($d['pedidos'] as $p) {
+            $html .= '<tr>'
+                . '<td>' . ($p->numero_pedido ?: ('PED-' . (1000 + $p->id_pedido))) . '</td>'
+                . '<td>' . optional($p->fecha_pedido)->format('d/m/Y H:i') . '</td>'
+                . '<td>' . htmlspecialchars(optional($p->usuario)->nombre_completo ?? 'Cliente') . '</td>'
+                . '<td>' . htmlspecialchars(optional($p->usuario)->correo ?? 'N/A') . '</td>'
+                . '<td>' . htmlspecialchars($p->ciudad_entrega ?? 'Bogotá') . '</td>'
+                . '<td>$' . number_format($p->subtotal, 0, ',', '.') . '</td>'
+                . '<td>$' . number_format($p->costo_envio, 0, ',', '.') . '</td>'
+                . '<td>$' . number_format($p->total, 0, ',', '.') . '</td>'
+                . '<td>' . $p->estado_pedido . '</td>'
+                . '</tr>';
+        }
+
+        $html .= '</table></body></html>';
+
+        return response($html, 200, [
+            'Content-Type'        => 'application/vnd.ms-excel; charset=UTF-8',
             'Content-Disposition' => "attachment; filename=\"{$fileName}\"",
-            'Content-Length'      => strlen($xlsxBinary),
             'Cache-Control'       => 'max-age=0',
         ]);
     }

@@ -27,10 +27,10 @@
         </div>
     </div>
 
-    <!-- 2. CUATRO TARJETAS KPI (CONSULTADAS DESDE MYSQL) -->
+    <!-- 2. CUATRO TARJETAS KPI INTERACTIVAS (CONSULTADAS DESDE MYSQL) -->
     <section class="kpi-grid">
-        <!-- KPI 1: Ingresos del Mes -->
-        <div class="kpi-card" style="border-left-color: #e6a100;">
+        <!-- KPI 1: Ingresos del Mes (Navega a Estadísticas y Reportes) -->
+        <a href="{{ route('admin.estadisticas') }}" class="kpi-card" style="border-left-color: #e6a100; text-decoration:none; cursor:pointer;" title="Ver Reporte Completo de Ingresos">
             <div class="kpi-icon" style="background:#fdf8f0; color:#e6a100;">
                 <i class="fa-solid fa-sack-dollar"></i>
             </div>
@@ -38,13 +38,13 @@
                 <span class="kpi-title">Ingresos del Mes</span>
                 <span class="kpi-value">${{ number_format($kpis['ingresos_mes'], 0, ',', '.') }}</span>
                 <span class="kpi-subtext" style="color:#047857;">
-                    <i class="fa-solid fa-calendar-check"></i> Mes actual ({{ now()->translatedFormat('F Y') }})
+                    <i class="fa-solid fa-calendar-check"></i> Mes actual &rarr; Ver reporte
                 </span>
             </div>
-        </div>
+        </a>
 
-        <!-- KPI 2: Pedidos Pendientes -->
-        <div class="kpi-card" style="border-left-color: #f59e0b;">
+        <!-- KPI 2: Pedidos Pendientes (Navega a Pedidos con filtro Pendiente) -->
+        <a href="{{ route('admin.pedidos.index', ['estado' => 'Pendiente']) }}" class="kpi-card" style="border-left-color: #f59e0b; text-decoration:none; cursor:pointer;" title="Filtrar Pedidos Pendientes">
             <div class="kpi-icon" style="background:#fef3c7; color:#b45309;">
                 <i class="fa-solid fa-clock"></i>
             </div>
@@ -52,13 +52,13 @@
                 <span class="kpi-title">Pedidos Pendientes</span>
                 <span class="kpi-value">{{ $kpis['pedidos_pendientes'] }}</span>
                 <span class="kpi-subtext" style="color:#b45309;">
-                    <i class="fa-solid fa-hourglass-half"></i> Requieren gestión
+                    <i class="fa-solid fa-hourglass-half"></i> Requieren gestión &rarr; Atender
                 </span>
             </div>
-        </div>
+        </a>
 
-        <!-- KPI 3: Clientes Activos -->
-        <div class="kpi-card" style="border-left-color: #3b82f6;">
+        <!-- KPI 3: Clientes Activos (Navega a Usuarios con filtro Cliente y Activo) -->
+        <a href="{{ route('admin.usuarios.index', ['rol' => 'Cliente', 'estado' => 'Activo']) }}" class="kpi-card" style="border-left-color: #3b82f6; text-decoration:none; cursor:pointer;" title="Ver Clientes Activos">
             <div class="kpi-icon" style="background:#dbeafe; color:#1d4ed8;">
                 <i class="fa-solid fa-users"></i>
             </div>
@@ -66,13 +66,13 @@
                 <span class="kpi-title">Clientes Activos</span>
                 <span class="kpi-value">{{ $kpis['clientes_activos'] }}</span>
                 <span class="kpi-subtext" style="color:#1d4ed8;">
-                    <i class="fa-solid fa-user-check"></i> Rol Cliente y Estado Activo
+                    <i class="fa-solid fa-user-check"></i> Clientes activos &rarr; Ver directorio
                 </span>
             </div>
-        </div>
+        </a>
 
-        <!-- KPI 4: Alertas de Stock -->
-        <div class="kpi-card {{ $kpis['alertas_stock'] > 0 ? 'kpi-danger' : '' }}" style="border-left-color: {{ $kpis['alertas_stock'] > 0 ? '#ef4444' : '#10b981' }};">
+        <!-- KPI 4: Alertas de Stock (Navega a Alertas de Stock) -->
+        <a href="{{ route('admin.alertas-stock') }}" class="kpi-card {{ $kpis['alertas_stock'] > 0 ? 'kpi-danger' : '' }}" style="border-left-color: {{ $kpis['alertas_stock'] > 0 ? '#ef4444' : '#10b981' }}; text-decoration:none; cursor:pointer;" title="Ver Alertas de Reabastecimiento">
             <div class="kpi-icon" style="background:{{ $kpis['alertas_stock'] > 0 ? '#fee2e2' : '#d1fae5' }}; color:{{ $kpis['alertas_stock'] > 0 ? '#ef4444' : '#10b981' }};">
                 <i class="fa-solid fa-triangle-exclamation"></i>
             </div>
@@ -81,10 +81,10 @@
                 <span class="kpi-value" style="color:{{ $kpis['alertas_stock'] > 0 ? '#dc2626' : '#111111' }};">{{ $kpis['alertas_stock'] }}</span>
                 <span class="kpi-subtext" style="color:{{ $kpis['alertas_stock'] > 0 ? '#dc2626' : '#047857' }}; font-weight:600;">
                     <i class="fa-solid {{ $kpis['alertas_stock'] > 0 ? 'fa-circle-exclamation' : 'fa-circle-check' }}"></i>
-                    {{ $kpis['alertas_stock'] > 0 ? 'Stock <= Mínimo requerido' : 'Inventario en niveles óptimos' }}
+                    {{ $kpis['alertas_stock'] > 0 ? 'Stock <= Mínimo &rarr; Reabastecer' : 'Inventario en niveles óptimos' }}
                 </span>
             </div>
-        </div>
+        </a>
     </section>
 
     <!-- 3. DOS GRÁFICAS CON CHART.JS -->

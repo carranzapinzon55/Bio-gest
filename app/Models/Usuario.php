@@ -64,6 +64,12 @@ class Usuario extends Authenticatable
         return $this->hasOne(Carrito::class, 'id_usuario', 'id_usuario');
     }
 
+    public function promocionesRedimidas(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    {
+        return $this->belongsToMany(Promocion::class, 'promocion_usuario', 'id_usuario', 'id_promocion')
+            ->withPivot('id_pedido', 'fecha_uso');
+    }
+
     public function esAdmin(): bool
     {
         return $this->id_rol === 1 || optional($this->rol)->nombre_rol === 'Administrador';

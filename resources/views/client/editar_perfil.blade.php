@@ -62,11 +62,17 @@
                 <div style="display:flex; gap:15px; flex-wrap:wrap;">
                     <div style="flex:1; min-width:200px;">
                         <label style="display:block; font-weight:700; margin-bottom:5px; color:#333; font-size:0.85rem;">Nueva Contraseña</label>
-                        <input type="password" name="contrasena" minlength="8" pattern="^(?=.*[A-Za-zÁÉÍÓÚÜÑáéíóúüñ])(?=.*\d).{8,}$" title="Mínimo 8 caracteres, al menos una letra y un número" placeholder="Mín. 8 caracteres (letras y números)" autocomplete="new-password" style="width:100%; padding:10px; border:1px solid #ccc; border-radius:6px;">
+                        <div style="position:relative; display:flex; align-items:center;">
+                            <input type="password" id="perfilNuevaContrasena" name="contrasena" minlength="8" pattern="^(?=.*[A-Za-zÁÉÍÓÚÜÑáéíóúüñ])(?=.*\d).{8,}$" title="Mínimo 8 caracteres, al menos una letra y un número" placeholder="Mín. 8 caracteres (letras y números)" autocomplete="new-password" style="width:100%; padding:10px 38px 10px 10px; border:1px solid #ccc; border-radius:6px; box-sizing:border-box;">
+                            <i class="fas fa-eye" onclick="togglePasswordVisibility('perfilNuevaContrasena', this)" style="position:absolute; right:12px; cursor:pointer; color:#64748b;" title="Mostrar / ocultar contraseña"></i>
+                        </div>
                     </div>
                     <div style="flex:1; min-width:200px;">
                         <label style="display:block; font-weight:700; margin-bottom:5px; color:#333; font-size:0.85rem;">Confirmar Nueva Contraseña</label>
-                        <input type="password" name="contrasena_confirmation" minlength="8" placeholder="Repite la nueva contraseña" autocomplete="new-password" style="width:100%; padding:10px; border:1px solid #ccc; border-radius:6px;">
+                        <div style="position:relative; display:flex; align-items:center;">
+                            <input type="password" id="perfilConfirmarContrasena" name="contrasena_confirmation" minlength="8" placeholder="Repite la nueva contraseña" autocomplete="new-password" style="width:100%; padding:10px 38px 10px 10px; border:1px solid #ccc; border-radius:6px; box-sizing:border-box;">
+                            <i class="fas fa-eye" onclick="togglePasswordVisibility('perfilConfirmarContrasena', this)" style="position:absolute; right:12px; cursor:pointer; color:#64748b;" title="Mostrar / ocultar contraseña"></i>
+                        </div>
                     </div>
                 </div>
             </div>

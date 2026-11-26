@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Shop;
 
 use App\Http\Controllers\Controller;
+use App\Models\Configuracion;
 use App\Models\Faq;
 use App\Models\MensajeContacto;
 use Illuminate\Http\JsonResponse;
@@ -39,7 +40,21 @@ class ContactoFaqController extends Controller
 
     public function contactoForm(): View
     {
-        return view('shop.contacto');
+        $whatsappRaw = Configuracion::get('whatsapp_soporte', '+57 310 000 0000');
+        $whatsappDigits = preg_replace('/\D+/', '', $whatsappRaw);
+        if (!str_starts_with($whatsappDigits, '57') && strlen($whatsappDigits) === 10) {
+            $whatsappDigits = '57' . $whatsappDigits;
+        }
+        $whatsappUrl = 'https://wa.me/' . ($whatsappDigits ?: '573100000000');
+
+        $misMensajes = collect();
+        if (auth()->check()) {
+            $misMensajes = MensajeContacto::where('correo', auth()->user()->correo)
+                ->orderByDesc('fecha_envio')
+                ->get();
+        }
+
+        return view('shop.contacto', compact('whatsappRaw', 'whatsappUrl', 'misMensajes'));
     }
 
     /**
@@ -74,6 +89,6 @@ class ContactoFaqController extends Controller
             'fecha_envio' => now(),
         ]);
 
-        return back()->with('success', 'Hemos recibido tu mensaje. También puedes conversar en tiempo real desde nuestro Chat en Vivo.');
+        return back()->with('success', '¡Hemos recibido tu mensaje correctamente! El administrador te responderá a la brevedad y podrás ver su respuesta en esta misma página o por el Chat en Vivo.');
     }
 }

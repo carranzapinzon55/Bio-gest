@@ -252,8 +252,8 @@
                                 </span>
                             </td>
                             <td style="text-align:center; white-space:nowrap;">
-                                <a href="{{ route('admin.inventario.index', ['id_producto' => $item['id_producto']]) }}" class="tg-btn-outline" style="padding:4px 10px; font-size:0.78rem;" title="Ver Kardex del producto">
-                                    <i class="fa-solid fa-boxes-stacked"></i> Kardex
+                                <a href="{{ route('admin.inventario.index', ['id_producto' => $item['id_producto']]) }}" class="tg-btn-outline" style="padding:4px 10px; font-size:0.78rem;" title="Ver Movimientos del producto">
+                                    <i class="fa-solid fa-boxes-stacked"></i> Movimientos
                                 </a>
                             </td>
                         </tr>

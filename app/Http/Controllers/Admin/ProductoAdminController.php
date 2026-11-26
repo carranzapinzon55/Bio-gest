@@ -290,6 +290,35 @@ class ProductoAdminController extends Controller
         return back()->with('success', "Movimiento de {$datos['tipo_movimiento']} aplicado. Nuevo stock de '{$producto->nombre_producto}': {$producto->fresh()->stock} unidades.");
     }
 
+    /**
+     * Crear una nueva categoría directamente desde el catálogo de productos.
+     */
+    public function storeCategoria(Request $request): RedirectResponse|JsonResponse
+    {
+        $datos = $request->validate([
+            'nombre_categoria' => ['required', 'string', 'min:2', 'max:100', 'unique:categoria,nombre_categoria'],
+            'descripcion'      => ['nullable', 'string', 'max:255'],
+        ], [
+            'nombre_categoria.required' => 'El nombre de la categoría es obligatorio.',
+            'nombre_categoria.unique'   => 'Ya existe una categoría con este nombre.',
+        ]);
+
+        $categoria = Categoria::create([
+            'nombre_categoria' => trim($datos['nombre_categoria']),
+            'descripcion'      => !empty($datos['descripcion']) ? trim($datos['descripcion']) : null,
+        ]);
+
+        if ($request->expectsJson() || $request->wantsJson() || $request->ajax()) {
+            return response()->json([
+                'success'   => true,
+                'message'   => "Categoría '{$categoria->nombre_categoria}' creada exitosamente.",
+                'categoria' => $categoria,
+            ], 201);
+        }
+
+        return back()->with('success', "Categoría '{$categoria->nombre_categoria}' creada con éxito.");
+    }
+
     private function storeProductImage(UploadedFile $image): string
     {
         $directory = public_path('assets/img/productos');
