@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Crear Cuenta | BIO-GEST - Tenebrios Gold</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="{{ asset('assets/css/registro_style.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/css/registro_style.css') }}?v={{ file_exists(public_path('assets/css/registro_style.css')) ? filemtime(public_path('assets/css/registro_style.css')) : time() }}">
 </head>
 <body>
     <div class="contenedor-pagina">
@@ -40,19 +40,19 @@
                 <form action="{{ route('registro.post') }}" method="POST" id="registroForm">
                     @csrf
                     <!-- Nombre y Apellido -->
-                    <div style="display:flex; gap:10px;">
-                        <div class="input-form" style="flex:1;">
+                    <div class="form-row-doble">
+                        <div class="input-form">
                             <label for="nombre">Nombre *</label>
                             <div class="input-campo">
-                                <i class="fa-regular fa-user"></i>
+                                <i class="fa-regular fa-user" aria-hidden="true"></i>
                                 <input type="text" id="nombre" name="nombre" value="{{ old('nombre') }}" placeholder="Nombre" minlength="2" maxlength="100" pattern="^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ\s'-]+$" title="Solo se permiten letras y espacios (sin números)" required>
                             </div>
                         </div>
 
-                        <div class="input-form" style="flex:1;">
+                        <div class="input-form">
                             <label for="apellido">Apellido *</label>
                             <div class="input-campo">
-                                <i class="fa-regular fa-user"></i>
+                                <i class="fa-regular fa-user" aria-hidden="true"></i>
                                 <input type="text" id="apellido" name="apellido" value="{{ old('apellido') }}" placeholder="Apellido" minlength="2" maxlength="100" pattern="^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ\s'-]+$" title="Solo se permiten letras y espacios (sin números)" required>
                             </div>
                         </div>
@@ -94,20 +94,24 @@
                     <!-- Contraseña -->
                     <div class="input-form">
                         <label for="password">Contraseña * (mínimo 8 caracteres, al menos 1 letra y 1 número)</label>
-                        <div class="input-campo">
-                            <i class="fa-solid fa-lock"></i>
+                        <div class="input-campo has-toggle">
+                            <i class="fa-solid fa-lock" aria-hidden="true"></i>
                             <input type="password" id="password" name="contrasena" placeholder="Mínimo 8 caracteres (letras y números)" minlength="8" pattern="^(?=.*[A-Za-zÁÉÍÓÚÜÑáéíóúüñ])(?=.*\d).{8,}$" title="Mínimo 8 caracteres, incluyendo al menos una letra y un número" required>
-                            <i class="fa-regular fa-eye toggle-password" onclick="togglePasswordVisibility('password', this)" style="cursor:pointer;" title="Mostrar / ocultar contraseña"></i>
+                            <button type="button" class="toggle-password" onclick="togglePasswordVisibility('password', this.querySelector('i'))" aria-label="Mostrar u ocultar contraseña" title="Mostrar / ocultar contraseña">
+                                <i class="fa-regular fa-eye" aria-hidden="true"></i>
+                            </button>
                         </div>
                     </div>
 
                     <!-- Confirmar contraseña -->
                     <div class="input-form">
                         <label for="confirm-password">Confirmar contraseña *</label>
-                        <div class="input-campo">
-                            <i class="fa-solid fa-lock"></i>
+                        <div class="input-campo has-toggle">
+                            <i class="fa-solid fa-lock" aria-hidden="true"></i>
                             <input type="password" id="confirm-password" name="contrasena_confirmation" placeholder="Confirma tu contraseña" minlength="8" required>
-                            <i class="fa-regular fa-eye toggle-password" onclick="togglePasswordVisibility('confirm-password', this)" style="cursor:pointer;" title="Mostrar / ocultar contraseña"></i>
+                            <button type="button" class="toggle-password" onclick="togglePasswordVisibility('confirm-password', this.querySelector('i'))" aria-label="Mostrar u ocultar confirmación de contraseña" title="Mostrar / ocultar contraseña">
+                                <i class="fa-regular fa-eye" aria-hidden="true"></i>
+                            </button>
                         </div>
                     </div>
 

@@ -325,35 +325,6 @@ body {
    RESPONSIVE (DISPOSITIVOS MÓVILES Y TABLETS)
    ======================================================== */
 @media (max-width: 768px) {
-    .header-top {
-        flex-direction: column;
-        gap: 15px;
-    }
-
-    .search-container {
-    display: flex;
-    align-items: center;
-    background: #ffffff;
-    border-radius: 30px;
-    overflow: visible;      /* Antes estaba en hidden y cortaba las sugerencias */
-    position: relative;     /* Necesario para anclar el menú desplegable */
-    width: 100%;
-    max-width: 450px;
-}
-
-.search-container input {
-    border-radius: 30px 0 0 30px;
-}
-
-.search-btn {
-    border-radius: 0 30px 30px 0;
-}
-
-    .main-nav ul {
-        flex-wrap: wrap;
-        gap: 15px;
-    }
-
     .producto-detalle-grid {
         grid-template-columns: 1fr;
         gap: 30px;

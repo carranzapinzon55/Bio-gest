@@ -527,6 +527,15 @@
         <!-- MODO TIENDA PÚBLICA Y CLIENTE (TENEBRIOS GOLD)             -->
         <!-- ========================================================== -->
         <header class="main-header">
+            <button type="button"
+                    class="mobile-nav-toggle"
+                    id="mobileNavToggle"
+                    aria-label="Abrir menú de navegación"
+                    aria-expanded="false"
+                    aria-controls="mainNavDrawer">
+                <i class="fas fa-bars" aria-hidden="true"></i>
+            </button>
+
             <a href="{{ route('home') }}" class="logo-area">
                 <div class="placeholder-box logo-img logo-placeholder">
                     <img src="{{ asset('assets/img/LOGO PNG.png') }}" alt="Logo Tenebrios Gold" class="logo-img">
@@ -538,13 +547,13 @@
             </a>
 
             <!-- Buscador General con Desplegable de Sugerencias en Tiempo Real -->
-            <div class="search-container" style="position:relative; width:600px;">
-                <form action="{{ route('catalogo.index') }}" method="GET" class="search-bar" id="headerSearchForm" autocomplete="off" style="width:100%;">
+            <div class="search-container">
+                <form action="{{ route('catalogo.index') }}" method="GET" class="search-bar" id="headerSearchForm" autocomplete="off">
                     <input type="text" name="q" id="headerSearchInput" value="{{ request('q') }}" placeholder="Buscar larvas, pie de cría, kits..." autocomplete="off">
-                    <button type="submit" aria-label="Buscar"><i class="fas fa-search"></i></button>
+                    <button type="submit" aria-label="Buscar"><i class="fas fa-search" aria-hidden="true"></i></button>
                 </form>
 
-                <div id="searchSuggestionsDropdown" class="search-suggestions-dropdown" style="display:none; position:absolute; top:calc(100% + 8px); left:0; width:100%; min-width:520px; max-width:650px; background:#ffffff; border-radius:12px; box-shadow:0 12px 30px rgba(0,0,0,0.22); border:1px solid #e5e7eb; z-index:99999; max-height:520px; overflow-y:auto;">
+                <div id="searchSuggestionsDropdown" class="search-suggestions-dropdown" style="display:none;">
                     <!-- Rellenado dinámicamente vía JS -->
                 </div>
             </div>
@@ -554,25 +563,26 @@
                     @php
                         $userHeaderRoute = auth()->user()->esAdmin() ? route('admin.inicio') : route('cliente.cuenta');
                     @endphp
-                    <a href="{{ $userHeaderRoute }}" class="action-item" style="text-decoration:none; color:inherit; display:flex; align-items:center; gap:8px;" title="Mi Cuenta">
-                        <i class="far fa-user"></i>
-                        <span>Hola, {{ strtok(auth()->user()->nombre, ' ') }}</span>
+                    <a href="{{ $userHeaderRoute }}" class="action-item account-action" title="Mi Cuenta" aria-label="Mi Cuenta">
+                        <i class="far fa-user" aria-hidden="true"></i>
+                        <span class="action-label">Hola, {{ strtok(auth()->user()->nombre, ' ') }}</span>
                     </a>
-                    <form action="{{ route('logout') }}" method="POST" style="display:inline; margin:0;">
+                    <form action="{{ route('logout') }}" method="POST" class="logout-form">
                         @csrf
-                        <button type="submit" class="action-item" style="background:none; border:none; font-size:0.9rem; cursor:pointer; color:inherit; display:flex; align-items:center; gap:6px;">
-                            <i class="fas fa-sign-out-alt"></i> Salir
+                        <button type="submit" class="action-item logout-action" title="Cerrar sesión" aria-label="Cerrar sesión">
+                            <i class="fas fa-sign-out-alt" aria-hidden="true"></i>
+                            <span class="action-label">Salir</span>
                         </button>
                     </form>
                 @else
-                    <a href="{{ route('login') }}" class="action-item" style="text-decoration:none; color:inherit; display:flex; align-items:center; gap:8px;" title="Iniciar sesión">
-                        <i class="far fa-user"></i>
-                        <span>Iniciar sesión</span>
+                    <a href="{{ route('login') }}" class="action-item account-action" title="Iniciar sesión" aria-label="Iniciar sesión">
+                        <i class="far fa-user" aria-hidden="true"></i>
+                        <span class="action-label">Iniciar sesión</span>
                     </a>
                 @endauth
 
-                <a href="{{ route('carrito.index') }}" class="action-item cart-btn">
-                    <i class="fas fa-shopping-cart"></i>
+                <a href="{{ route('carrito.index') }}" class="action-item cart-btn" title="Ver carrito" aria-label="Ver carrito de compras">
+                    <i class="fas fa-shopping-cart" aria-hidden="true"></i>
                     <span class="cart-count" id="cart-count">
                         {{ session('carrito') ? collect(session('carrito'))->sum('cantidad') : 0 }}
                     </span>
@@ -580,7 +590,15 @@
             </div>
         </header>
 
-        <nav class="main-nav">
+        <div class="mobile-nav-backdrop" id="mobileNavBackdrop" aria-hidden="true"></div>
+
+        <nav class="main-nav" id="mainNavDrawer" aria-label="Navegación principal">
+            <div class="mobile-drawer-header">
+                <span class="mobile-drawer-brand">TENEBRIOS <span>GOLD</span></span>
+                <button type="button" class="mobile-nav-close" id="mobileNavClose" aria-label="Cerrar menú de navegación">
+                    <i class="fas fa-times" aria-hidden="true"></i>
+                </button>
+            </div>
             <ul>
                 <li><a href="{{ route('home') }}" class="{{ request()->routeIs('home') ? 'active' : '' }}">Inicio</a></li>
                 <li><a href="{{ route('catalogo.index') }}" class="{{ request()->routeIs('catalogo.*') ? 'active' : '' }}">Productos</a></li>
@@ -591,10 +609,30 @@
                 <li><a href="{{ route('contacto.index') }}" class="{{ request()->routeIs('contacto.*') ? 'active' : '' }}">Contacto</a></li>
                 @auth
                     @if(!auth()->user()->esAdmin())
-                        <li><a href="{{ route('cliente.chat.index') }}" class="{{ request()->routeIs('cliente.chat.*') ? 'active' : '' }}"><i class="fas fa-comments"></i> Chat en Vivo</a></li>
+                        <li><a href="{{ route('cliente.chat.index') }}" class="{{ request()->routeIs('cliente.chat.*') ? 'active' : '' }}"><i class="fas fa-comments" aria-hidden="true"></i> Chat en Vivo</a></li>
                     @endif
                 @endauth
             </ul>
+            <div class="mobile-drawer-footer">
+                @auth
+                    <a href="{{ $userHeaderRoute }}" class="drawer-account-btn">
+                        <i class="far fa-user" aria-hidden="true"></i> Mi cuenta ({{ strtok(auth()->user()->nombre, ' ') }})
+                    </a>
+                    <form action="{{ route('logout') }}" method="POST" style="margin:0;">
+                        @csrf
+                        <button type="submit" class="drawer-logout-btn">
+                            <i class="fas fa-sign-out-alt" aria-hidden="true"></i> Cerrar sesión
+                        </button>
+                    </form>
+                @else
+                    <a href="{{ route('login') }}" class="drawer-account-btn">
+                        <i class="far fa-user" aria-hidden="true"></i> Iniciar sesión
+                    </a>
+                    <a href="{{ route('registro') }}" class="drawer-register-btn">
+                        <i class="fas fa-user-plus" aria-hidden="true"></i> Crear cuenta
+                    </a>
+                @endauth
+            </div>
         </nav>
 
         @if(session('success'))
@@ -648,7 +686,7 @@
     @endif
 
     <!-- Contenedor Global de Notificaciones Toast -->
-    <div id="bioToastContainer" style="position:fixed; bottom:24px; right:24px; z-index:999999; display:flex; flex-direction:column; gap:10px; pointer-events:none;"></div>
+    <div id="bioToastContainer" class="bio-toast-container" style="position:fixed; bottom:24px; right:24px; z-index:999999; display:flex; flex-direction:column; gap:10px; pointer-events:none;"></div>
 
     @stack('scripts')
 
@@ -706,6 +744,57 @@
                 setTimeout(() => toast.remove(), 250);
             }, 3500);
         };
+
+        // Menú móvil accesible (Drawer de navegación)
+        document.addEventListener('DOMContentLoaded', function () {
+            const toggleBtn = document.getElementById('mobileNavToggle');
+            const closeBtn = document.getElementById('mobileNavClose');
+            const drawer = document.getElementById('mainNavDrawer');
+            const backdrop = document.getElementById('mobileNavBackdrop');
+
+            if (toggleBtn && drawer && backdrop) {
+                const setDrawerOpen = (isOpen) => {
+                    drawer.classList.toggle('is-open', isOpen);
+                    backdrop.classList.toggle('is-open', isOpen);
+                    document.body.classList.toggle('nav-drawer-open', isOpen);
+                    toggleBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+                    backdrop.setAttribute('aria-hidden', isOpen ? 'false' : 'true');
+                    if (isOpen && closeBtn) {
+                        closeBtn.focus();
+                    }
+                };
+
+                toggleBtn.addEventListener('click', () => {
+                    setDrawerOpen(!drawer.classList.contains('is-open'));
+                });
+
+                if (closeBtn) {
+                    closeBtn.addEventListener('click', () => {
+                        setDrawerOpen(false);
+                        toggleBtn.focus();
+                    });
+                }
+
+                backdrop.addEventListener('click', () => setDrawerOpen(false));
+
+                drawer.querySelectorAll('a').forEach(link => {
+                    link.addEventListener('click', () => setDrawerOpen(false));
+                });
+
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'Escape' && drawer.classList.contains('is-open')) {
+                        setDrawerOpen(false);
+                        toggleBtn.focus();
+                    }
+                });
+
+                window.addEventListener('resize', () => {
+                    if (window.innerWidth >= 992 && drawer.classList.contains('is-open')) {
+                        setDrawerOpen(false);
+                    }
+                });
+            }
+        });
 
         // Buscador General en Tiempo Real con Desplegable (Debounce 250ms)
         document.addEventListener('DOMContentLoaded', function () {

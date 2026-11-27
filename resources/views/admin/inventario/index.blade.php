@@ -90,7 +90,7 @@
     </section>
 
     <!-- SECCIÓN SUPERIOR: EXISTENCIAS ACTUALES POR PRODUCTO + FORMULARIO RÁPIDO DE MOVIMIENTOS -->
-    <div style="display:grid; grid-template-columns: minmax(0, 1.8fr) minmax(360px, 1fr); gap:20px; align-items:start; margin-bottom:24px;">
+    <div class="admin-split-layout split-wide" style="margin-bottom:24px;">
         <!-- Existencias por Producto -->
         <div class="tg-card">
             <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:16px;">
@@ -211,7 +211,7 @@
                     </select>
                 </div>
 
-                <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:14px;">
+                <div class="admin-form-grid-2-compact" style="margin-bottom:14px;">
                     <div>
                         <label style="display:block; font-size:0.82rem; font-weight:700; color:#111111; margin-bottom:5px;">Tipo de Movimiento *</label>
                         <select name="tipo_movimiento" required style="width:100%; padding:9px 10px; border:1px solid #cbd5e1; border-radius:6px; font-size:0.88rem;">

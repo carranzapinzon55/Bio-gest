@@ -5,6 +5,13 @@
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
+html,
+body {
+    max-width: 100%;
+    overflow-x: hidden;
+    overflow-x: clip;
+}
+
 body {
     background-color: #ffffff;
     color: #2c3e50;
@@ -20,6 +27,7 @@ body {
     display: flex;
     width: 100%;
     max-width: 1100px;
+    min-width: 0;
     background-color: #ffffff;
     border-radius: 16px;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
@@ -30,6 +38,7 @@ body {
 /*ESTILO PANEL IZQUIERDO LOGO,SLOGAN,TENEBRIOS*/
 .panel-izquierdo{
     width: 42%;
+    min-width: 0;
     background-color: #eef2ed; /* Verde muy claro corporativo */
     padding: 50px 30px;
     display: flex;
@@ -40,10 +49,15 @@ body {
     position: relative;
 }
 
+.logo-contenedor {
+    width: 100%;
+    max-width: 100%;
+}
 
 /* ESTILO LOGO*/
 .logo-img {
     width: 110px;
+    max-width: 100%;
     height: auto;
     margin-bottom: 15px;
 }
@@ -53,6 +67,8 @@ body {
     color: #3b5343;
     font-weight: 800;
     letter-spacing: 1px;
+    line-height: 1.2;
+    overflow-wrap: break-word;
 }
 
 .slogan{
@@ -60,14 +76,21 @@ body {
     color: #617968;
     margin-top: 5px;
     margin-bottom: 40px;
+    line-height: 1.45;
 }
 
 /*PANEL DERECHO (FORMULARIO)*/
 .panel-derecho {
     width: 58%;
+    min-width: 0;
     padding: 40px 50px;
     max-height: 90vh;
     overflow-y: auto;
+}
+
+.tarjeta-registro {
+    width: 100%;
+    min-width: 0;
 }
 
 .header-tarjeta h2 {
@@ -80,11 +103,21 @@ body {
     font-size: 13px;
     color: #7f8c8d;
     margin-bottom: 25px;
+    line-height: 1.4;
+}
+
+/* FILA DOBLE NOMBRE / APELLIDO */
+.form-row-doble {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
 }
 
 /*INPUTS GROUP CAMPOS DEL FORMULARIO*/
 .input-form {
     margin-bottom: 15px;
+    width: 100%;
+    min-width: 0;
 }
 
 .input-form label {
@@ -93,32 +126,44 @@ body {
     font-weight: 600;
     color: #34495e;
     margin-bottom: 6px;
+    line-height: 1.35;
 }
 
 .input-campo {
     position: relative;
     display: flex;
     align-items: center;
+    width: 100%;
+    min-width: 0;
 }
 
-.input-campo i:not(.toggle-password):not(.select-arrow) {
+.input-campo > i:not(.toggle-password):not(.select-arrow) {
     position: absolute;
     left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
     color: #95a5a6;
     font-size: 15px;
+    pointer-events: none;
+    z-index: 2;
 }
 
 .input-campo input, 
 .input-campo select {
     width: 100%;
+    min-width: 0;
     padding: 11px 15px 11px 40px;
     border: 1px solid #dcdde1;
     border-radius: 8px;
-    font-size: 13px;
+    font-size: 14px;
     color: #2c3e50;
     outline: none;
     background-color: #fafbfc;
     transition: border-color 0.3s;
+}
+
+.input-campo.has-toggle input {
+    padding-right: 44px;
 }
 
 .input-campo input:focus, 
@@ -131,9 +176,10 @@ body {
 .input-campo select {
     appearance: none;
     cursor: pointer;
-    height: 42px;
+    min-height: 42px;
     padding: 10px 38px 10px 40px;
     line-height: 1.4;
+    text-overflow: ellipsis;
 }
 
 .input-campo select option {
@@ -149,16 +195,35 @@ body {
     color: #7f8c8d;
     font-size: 12px;
     pointer-events: none;
+    z-index: 2;
 }
 
-
-/* Icono del ojo para contraseña */
+/* Botón del ojo para contraseña */
 .toggle-password {
     position: absolute;
-    right: 15px;
-    color: #95a5a6;
+    right: 6px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 34px;
+    height: 34px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    border-radius: 6px;
+    color: #7f8c8d;
     cursor: pointer;
-    font-size: 14px;
+    font-size: 15px;
+    z-index: 3;
+    transition: color 0.2s ease, background-color 0.2s ease;
+}
+
+.toggle-password:hover,
+.toggle-password:focus-visible {
+    color: #3b5343;
+    background-color: rgba(85, 122, 97, 0.08);
+    outline: none;
 }
 
 /* Botón Registrarse */
@@ -228,17 +293,98 @@ body {
     color: #2c3e50;
 }
 
-/* Diseño responsivo para pantallas pequeñas */
+/* Diseño responsivo para tablets y móviles */
 @media (max-width: 768px) {
-    .page-container {
+    body {
+        align-items: flex-start;
+        padding: 14px 12px 24px;
+        background-color: #f4f6f4;
+    }
+
+    .contenedor-pagina {
         flex-direction: column;
-    }
-    .left-panel {
         width: 100%;
-        padding: 30px 20px;
+        max-width: 100%;
+        border-radius: 14px;
     }
-    .right-panel {
+
+    .panel-izquierdo {
         width: 100%;
-        padding: 30px 20px;
+        padding: 24px 20px 20px;
+        justify-content: center;
+        border-bottom: 2px solid rgba(228, 179, 83, 0.45);
+    }
+
+    .logo-img {
+        width: 78px;
+        margin: 0 auto 10px;
+        display: block;
+    }
+
+    .logo-contenedor h1 {
+        font-size: clamp(1.35rem, 6vw, 1.75rem);
+        letter-spacing: 0.8px;
+    }
+
+    .slogan {
+        font-size: 0.9rem;
+        margin: 6px auto 0;
+        max-width: 320px;
+    }
+
+    .panel-derecho {
+        width: 100%;
+        padding: 24px 20px 28px;
+        max-height: none;
+        overflow-y: visible;
+    }
+
+    .header-tarjeta h2 {
+        font-size: 1.35rem;
+    }
+
+    .header-tarjeta p {
+        font-size: 0.88rem;
+        margin-bottom: 20px;
+    }
+
+    .input-form label {
+        font-size: 0.85rem;
+    }
+
+    .input-campo input,
+    .input-campo select {
+        font-size: 16px;
+        min-height: 44px;
+        padding-top: 11px;
+        padding-bottom: 11px;
+    }
+
+    .btn-registrar {
+        min-height: 46px;
+        font-size: 1rem;
+    }
+}
+
+@media (max-width: 540px) {
+    body {
+        padding: 10px 10px 20px;
+    }
+
+    .panel-izquierdo {
+        padding: 20px 16px 18px;
+    }
+
+    .logo-img {
+        width: 68px;
+    }
+
+    .panel-derecho {
+        padding: 20px 16px 24px;
+    }
+
+    .form-row-doble {
+        grid-template-columns: 1fr;
+        gap: 0;
     }
 }

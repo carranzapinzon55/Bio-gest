@@ -20,7 +20,7 @@
         </div>
     </div>
 
-    <div style="display:grid; grid-template-columns: minmax(280px, 340px) minmax(0, 1fr); gap:24px; align-items:start;">
+    <div class="admin-split-profile">
         <!-- Tarjeta Resumen del Administrador -->
         <div class="tg-card" style="text-align:center;">
             <div style="width:82px; height:82px; border-radius:50%; background:#111111; color:#e6a100; font-size:2rem; font-weight:800; display:flex; align-items:center; justify-content:center; margin:0 auto 14px auto; border:2px solid #e6a100; box-shadow:0 4px 12px rgba(230,161,0,0.25);">
@@ -73,7 +73,7 @@
                 @csrf
                 @method('PUT')
 
-                <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px;">
+                <div class="admin-form-grid-2" style="margin-bottom:16px;">
                     <div>
                         <label style="display:block; font-weight:700; font-size:0.84rem; color:#111111; margin-bottom:6px;">
                             Nombre(s) *
@@ -95,7 +95,7 @@
                     </div>
                 </div>
 
-                <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:20px;">
+                <div class="admin-form-grid-2" style="margin-bottom:20px;">
                     <div>
                         <label style="display:block; font-weight:700; font-size:0.84rem; color:#111111; margin-bottom:6px;">
                             Correo Electrónico *
@@ -127,7 +127,7 @@
                         Deja estos campos vacíos si deseas conservar tu contraseña actual. Si ingresas una nueva contraseña, debe cumplir con el estándar obligatorio: <strong>mínimo 8 caracteres, al menos una letra, al menos un número y confirmación</strong>.
                     </p>
 
-                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+                    <div class="admin-form-grid-2">
                         <div>
                             <label style="display:block; font-weight:700; font-size:0.82rem; color:#111111; margin-bottom:5px;">
                                 Nueva Contraseña
@@ -159,7 +159,7 @@
                 </div>
 
                 <div style="display:flex; justify-content:flex-end; gap:12px;">
-                    <button type="submit" class="tg-btn-dark" style="padding:10px 24px;">
+                    <button type="submit" class="tg-btn-dark admin-mobile-full-btn" style="padding:10px 24px;">
                         <i class="fa-solid fa-floppy-disk"></i> Guardar Cambios en Mi Perfil
                     </button>
                 </div>

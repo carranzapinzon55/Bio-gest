@@ -64,19 +64,19 @@
     </section>
 
     <!-- Layout Dividido: Tabla de Pedidos y Panel Lateral "Detalle del Pedido" -->
-    <div style="display:grid; grid-template-columns: minmax(0, 1.45fr) minmax(360px, 1fr); gap:20px; align-items:start;">
+    <div class="admin-split-layout">
         <!-- Columna Izquierda: Filtros y Tabla -->
-        <div>
+        <div style="min-width:0;">
             <!-- Filtros por Estado y Búsqueda -->
             <div class="tg-card" style="padding:16px 20px; margin-bottom:18px;">
                 <form action="{{ route('admin.pedidos.index') }}" method="GET" style="display:flex; flex-wrap:wrap; gap:12px; align-items:flex-end;">
-                    <div style="flex:1; min-width:200px;">
+                    <div style="flex:1 1 200px; min-width:0;">
                         <label style="display:block; font-size:0.8rem; font-weight:700; color:#111111; margin-bottom:4px;">Buscar pedido o cliente</label>
                         <input type="text" name="q" value="{{ request('q') }}" placeholder="Ej. PED-1001, nombre o correo..."
                                style="width:100%; padding:9px 12px; border:1px solid #cbd5e1; border-radius:6px; font-size:0.88rem;">
                     </div>
 
-                    <div style="min-width:180px;">
+                    <div style="flex:1 1 180px; min-width:0;">
                         <label style="display:block; font-size:0.8rem; font-weight:700; color:#111111; margin-bottom:4px;">Filtrar por Estado</label>
                         <select name="estado" style="width:100%; padding:9px 12px; border:1px solid #cbd5e1; border-radius:6px; font-size:0.88rem;">
                             <option value="">Todos los Estados</option>
@@ -258,7 +258,7 @@
         </div>
 
         <!-- Columna Derecha: Panel Lateral "Detalle del Pedido" Con Scroll Interno Limpio -->
-        <div class="tg-card" id="panelDetallePedido" style="position:sticky; top:85px; max-height:calc(100vh - 110px); display:flex; flex-direction:column; padding:0; overflow:hidden;">
+        <div class="tg-card admin-sticky-panel" id="panelDetallePedido" style="position:sticky; top:85px; max-height:calc(100vh - 110px); display:flex; flex-direction:column; padding:0; overflow:hidden;">
             <div style="padding:16px 20px; border-bottom:1px solid #e5e7eb; background:#ffffff; display:flex; justify-content:space-between; align-items:center;">
                 <div style="display:flex; align-items:center; gap:8px;">
                     <i class="fa-solid fa-file-invoice" style="color:#e6a100; font-size:1.1rem;"></i>

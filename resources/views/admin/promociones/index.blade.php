@@ -19,7 +19,7 @@
     </div>
 
     <!-- Layout Dividido: Tabla de Promociones a la Izquierda y Panel Lateral a la Derecha con scroll interno limpio -->
-    <div style="display:grid; grid-template-columns: minmax(0, 1.45fr) minmax(360px, 1fr); gap:20px; align-items:start;">
+    <div class="admin-split-layout">
         <!-- Columna Izquierda: Tabla de Promociones -->
         <div class="tg-card">
             <div class="card-header-flex" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
@@ -116,7 +116,7 @@
         </div>
 
         <!-- Columna Derecha: Panel Lateral Formulario con Scroll Interno Limpio -->
-        <div class="tg-card" id="panelPromocionLateral" style="position:sticky; top:85px; max-height:calc(100vh - 110px); display:flex; flex-direction:column; padding:0; overflow:hidden;">
+        <div class="tg-card admin-sticky-panel" id="panelPromocionLateral" style="position:sticky; top:85px; max-height:calc(100vh - 110px); display:flex; flex-direction:column; padding:0; overflow:hidden;">
             <!-- Encabezado fijo del panel -->
             <div style="padding:16px 20px; border-bottom:1px solid #e5e7eb; background:#ffffff; display:flex; justify-content:space-between; align-items:center; flex-shrink:0;">
                 <div style="display:flex; align-items:center; gap:8px;">

@@ -3,88 +3,94 @@
 @section('title', 'Mi Cuenta | Tenebrios Gold')
 
 @push('styles')
-<link rel="stylesheet" href="{{ asset('assets/css/mi_cuenta_style.css') }}">
+<link rel="stylesheet" href="{{ asset('assets/css/mi_cuenta_style.css') }}?v={{ file_exists(public_path('assets/css/mi_cuenta_style.css')) ? filemtime(public_path('assets/css/mi_cuenta_style.css')) : time() }}">
 @endpush
 
 @section('content')
-<div style="max-width:1000px; margin:40px auto; padding:0 20px;">
-    <h1 style="color:#151515; border-bottom:3px solid #e4b353; padding-bottom:12px; margin-bottom:25px;">
-        <i class="fas fa-user-circle" style="color:#e4b353;"></i> Mi Cuenta en BIO-GEST
+<div class="mi-cuenta-wrapper">
+    <h1 class="mi-cuenta-titulo">
+        <i class="fas fa-user-circle" aria-hidden="true"></i>
+        <span>Mi Cuenta en BIO-GEST</span>
     </h1>
 
-    <div style="display:grid; grid-template-columns:1fr 2fr; gap:30px;">
+    <div class="mi-cuenta-grid">
         <!-- Tarjeta de Perfil -->
-        <div style="background:#fff; border-radius:10px; padding:25px; box-shadow:0 3px 12px rgba(0,0,0,0.06); text-align:center;">
-            <div style="width:80px; height:80px; border-radius:50%; background:#e4b353; color:#151515; display:flex; align-items:center; justify-content:center; font-size:2rem; font-weight:800; margin:0 auto 15px auto;">
+        <aside class="mi-cuenta-perfil-card">
+            <div class="mi-cuenta-avatar" aria-hidden="true">
                 {{ substr($usuario->nombre, 0, 1) }}{{ substr($usuario->apellido, 0, 1) }}
             </div>
-            <h2 style="color:#151515; margin:0 0 5px 0;">{{ $usuario->nombre_completo }}</h2>
-            <p style="color:#666; margin:0 0 15px 0; font-size:0.9rem;">{{ $usuario->correo }}</p>
-            <span style="background:#fef3c7; color:#92400e; padding:4px 12px; border-radius:15px; font-size:0.8rem; font-weight:700;">
+            <h2 class="mi-cuenta-nombre">{{ $usuario->nombre_completo }}</h2>
+            <p class="mi-cuenta-correo">{{ $usuario->correo }}</p>
+            <span class="mi-cuenta-perfil-badge">
                 Perfil: {{ $usuario->perfil_uso }}
             </span>
 
-            <div style="margin-top:25px; display:flex; flex-direction:column; gap:10px;">
-                <a href="{{ route('cliente.perfil.editar') }}" style="background:#151515; color:#e4b353; padding:10px; border-radius:6px; text-decoration:none; font-weight:700;">
-                    <i class="fas fa-user-edit"></i> Editar Datos
+            <nav class="mi-cuenta-acciones" aria-label="Acciones de cuenta">
+                <a href="{{ route('cliente.perfil.editar') }}" class="mi-cuenta-btn mi-cuenta-btn--dark">
+                    <i class="fas fa-user-edit" aria-hidden="true"></i>
+                    <span>Editar Datos</span>
                 </a>
-                <a href="{{ route('cliente.direcciones.index') }}" style="background:#f3f4f6; color:#374151; padding:10px; border-radius:6px; text-decoration:none; font-weight:600;">
-                    <i class="fas fa-map-marker-alt"></i> Mis Direcciones
+                <a href="{{ route('cliente.direcciones.index') }}" class="mi-cuenta-btn mi-cuenta-btn--neutral">
+                    <i class="fas fa-map-marker-alt" aria-hidden="true"></i>
+                    <span>Mis Direcciones</span>
                 </a>
                 @if(!$usuario->esAdmin())
-                    <a href="{{ route('cliente.pedidos.index') }}" style="background:#f3f4f6; color:#374151; padding:10px; border-radius:6px; text-decoration:none; font-weight:600;">
-                        <i class="fas fa-box"></i> Mis Pedidos
+                    <a href="{{ route('cliente.pedidos.index') }}" class="mi-cuenta-btn mi-cuenta-btn--neutral">
+                        <i class="fas fa-box" aria-hidden="true"></i>
+                        <span>Mis Pedidos</span>
                     </a>
                 @else
-                    <a href="{{ route('admin.inicio') }}" style="background:#111111; color:#e4b353; padding:10px; border-radius:6px; text-decoration:none; font-weight:700; border:1px solid #e4b353;">
-                        <i class="fas fa-gauge"></i> Ir al Panel Admin
+                    <a href="{{ route('admin.inicio') }}" class="mi-cuenta-btn mi-cuenta-btn--admin">
+                        <i class="fas fa-gauge" aria-hidden="true"></i>
+                        <span>Ir al Panel Admin</span>
                     </a>
                 @endif
-                <a href="{{ route('cliente.chat.index') }}" style="background:#e4b353; color:#151515; padding:10px; border-radius:6px; text-decoration:none; font-weight:700;">
-                    <i class="fas fa-comments"></i> Chat en Vivo con Soporte
+                <a href="{{ route('cliente.chat.index') }}" class="mi-cuenta-btn mi-cuenta-btn--gold">
+                    <i class="fas fa-comments" aria-hidden="true"></i>
+                    <span>Chat en Vivo con Soporte</span>
                 </a>
-            </div>
-        </div>
+            </nav>
+        </aside>
 
         <!-- Resumen de Actividad -->
-        <div style="background:#fff; border-radius:10px; padding:30px; box-shadow:0 3px 12px rgba(0,0,0,0.06);">
-            <h3 style="color:#151515; margin-top:0; border-bottom:1px solid #eee; padding-bottom:12px;">Información General</h3>
-            
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-bottom:25px;">
-                <div style="background:#fafafa; padding:15px; border-radius:8px;">
-                    <span style="color:#888; font-size:0.85rem; display:block;">Teléfono:</span>
-                    <strong style="color:#151515;">{{ $usuario->telefono ?? 'Sin registrar' }}</strong>
+        <section class="mi-cuenta-resumen-card">
+            <h3 class="mi-cuenta-subtitulo">Información General</h3>
+
+            <div class="mi-cuenta-info-grid">
+                <div class="mi-cuenta-info-item">
+                    <span class="mi-cuenta-info-label">Teléfono:</span>
+                    <strong class="mi-cuenta-info-valor">{{ $usuario->telefono ?? 'Sin registrar' }}</strong>
                 </div>
-                <div style="background:#fafafa; padding:15px; border-radius:8px;">
-                    <span style="color:#888; font-size:0.85rem; display:block;">Fecha de Registro:</span>
-                    <strong style="color:#151515;">{{ $usuario->fecha_registro ? \Carbon\Carbon::parse($usuario->fecha_registro)->format('d/m/Y') : now()->format('d/m/Y') }}</strong>
+                <div class="mi-cuenta-info-item">
+                    <span class="mi-cuenta-info-label">Fecha de Registro:</span>
+                    <strong class="mi-cuenta-info-valor">{{ $usuario->fecha_registro ? \Carbon\Carbon::parse($usuario->fecha_registro)->format('d/m/Y') : now()->format('d/m/Y') }}</strong>
                 </div>
             </div>
 
             @if(!$usuario->esAdmin())
-                <h4 style="color:#151515; margin-bottom:10px;">Últimos Pedidos</h4>
+                <h4 class="mi-cuenta-pedidos-titulo">Últimos Pedidos</h4>
                 @if($usuario->pedidos && $usuario->pedidos->isEmpty())
-                    <p style="color:#777; font-size:0.9rem;">No tienes pedidos recientes.</p>
+                    <p class="mi-cuenta-pedidos-vacio">No tienes pedidos recientes.</p>
                 @elseif($usuario->pedidos)
-                    <ul style="list-style:none; padding:0; margin:0;">
+                    <ul class="mi-cuenta-pedidos-lista">
                         @foreach($usuario->pedidos->take(3) as $ped)
-                            <li style="display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid #f0f0f0; font-size:0.9rem;">
-                                <span>{{ $ped->numero_pedido }}</span>
-                                <span style="font-weight:700;">${{ number_format($ped->total, 0, ',', '.') }}</span>
-                                <span style="color:#0284c7; font-weight:600;">{{ $ped->estado_pedido }}</span>
+                            <li class="mi-cuenta-pedido-item">
+                                <span class="mi-cuenta-pedido-numero">{{ $ped->numero_pedido }}</span>
+                                <span class="mi-cuenta-pedido-total">${{ number_format($ped->total, 0, ',', '.') }}</span>
+                                <span class="mi-cuenta-pedido-estado">{{ $ped->estado_pedido }}</span>
                             </li>
                         @endforeach
                     </ul>
                 @endif
             @else
-                <div style="background:#fdf8f0; border-left:4px solid #e4b353; padding:16px 20px; border-radius:6px; margin-top:10px;">
-                    <h4 style="color:#111111; margin:0 0 6px 0;"><i class="fas fa-user-shield" style="color:#e4b353;"></i> Cuenta de Administrador</h4>
-                    <p style="margin:0; color:#555; font-size:0.88rem; line-height:1.45;">
+                <div class="mi-cuenta-admin-aviso">
+                    <h4><i class="fas fa-user-shield" aria-hidden="true"></i> Cuenta de Administrador</h4>
+                    <p>
                         Esta cuenta posee privilegios administrativos completos en <strong>BIO-GEST</strong>. Las compras comerciales están reservadas a cuentas de clientes para mantener la integridad contable y de inventario de Tenebrios Gold.
                     </p>
                 </div>
             @endif
-        </div>
+        </section>
     </div>
 </div>
 @endsection

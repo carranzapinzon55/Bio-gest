@@ -21,7 +21,7 @@
     </div>
 
     <!-- REJILLA DE 2 COLUMNAS: ROLES FIJOS A LA IZQUIERDA Y POLÍTICAS EDITABLES A LA DERECHA -->
-    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(380px, 1fr)); gap:24px; margin-bottom:28px;">
+    <div class="admin-grid-2-balanced" style="margin-bottom:28px;">
 
         <!-- COLUMNA IZQUIERDA: 2 ROLES FIJOS CON CAPACIDADES DE SOLO LECTURA Y CONTEO REAL -->
         <div class="tg-card" style="display:flex; flex-direction:column; gap:20px;">

@@ -105,9 +105,9 @@
         </div>
     </section>
 
-    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(340px, 1fr)); gap:22px; margin-bottom:22px;">
+    <div class="admin-grid-2-balanced" style="margin-bottom:22px;">
         <!-- TABLA 1: TOTALES AGRUPADOS / RESUMIDOS POR PRODUCTO -->
-        <div class="tg-card" style="grid-column: span 2; margin-bottom:0;">
+        <div class="tg-card admin-grid-span-full" style="margin-bottom:0;">
             <h2 style="margin:0 0 14px 0; font-size:1.15rem; color:#151515;">
                 <i class="fa-solid fa-boxes-stacked" style="color:#e4b353;"></i> Totales Agrupados y Resumidos por Producto
             </h2>

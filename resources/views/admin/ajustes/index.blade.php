@@ -13,14 +13,14 @@
                 Parámetros comerciales, cálculo de envíos, perfil administrativo y copias de seguridad de <strong>TENEBRIOS GOLD</strong>.
             </p>
         </div>
-        <div style="display:flex; gap:10px;">
-            <a href="{{ route('admin.ajustes.respaldo.sql') }}" class="tg-btn-dark" style="background:#0f172a; border-color:#334155;" title="Exportar volcado completo de tablas y registros MySQL">
+        <div class="admin-header-actions" style="display:flex; gap:10px; flex-wrap:wrap;">
+            <a href="{{ route('admin.ajustes.respaldo.sql') }}" class="tg-btn-dark admin-mobile-full-btn" style="background:#0f172a; border-color:#334155;" title="Exportar volcado completo de tablas y registros MySQL">
                 <i class="fa-solid fa-database" style="color:#e6a100;"></i> Descargar respaldo (.sql)
             </a>
         </div>
     </div>
 
-    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(420px, 1fr)); gap:24px;">
+    <div class="admin-grid-2-auto">
 
         <!-- TARJETA 1: PARÁMETROS COMERCIALES Y CÁLCULO DE ENVÍOS -->
         <div class="tg-card">
@@ -41,7 +41,7 @@
                 @csrf
 
                 <!-- Tarifas de Envíos -->
-                <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px;">
+                <div class="admin-form-grid-2" style="margin-bottom:16px;">
                     <div>
                         <label style="display:block; font-weight:700; font-size:0.84rem; color:#111111; margin-bottom:6px;">
                             Costo Envío Bogotá (COP) *
@@ -69,7 +69,7 @@
                     </div>
                 </div>
 
-                <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px;">
+                <div class="admin-form-grid-2" style="margin-bottom:16px;">
                     <div>
                         <label style="display:block; font-weight:700; font-size:0.84rem; color:#111111; margin-bottom:6px;">
                             Monto Mínimo Envío Gratis (COP) *
@@ -126,7 +126,7 @@
                 </div>
 
                 <div style="text-align:right;">
-                    <button type="submit" class="tg-btn-dark" style="padding:10px 22px;">
+                    <button type="submit" class="tg-btn-dark admin-mobile-full-btn" style="padding:10px 22px;">
                         <i class="fa-solid fa-floppy-disk"></i> Guardar Ajustes Comerciales
                     </button>
                 </div>
@@ -134,7 +134,7 @@
         </div>
 
         <!-- TARJETA 2: PERFIL DE ADMINISTRADOR Y RESPALDO BASE DE DATOS -->
-        <div style="display:flex; flex-direction:column; gap:24px;">
+        <div style="display:flex; flex-direction:column; gap:24px; min-width:0;">
 
             <!-- Perfil del Administrador Autenticado -->
             <div class="tg-card">
@@ -147,11 +147,11 @@
                     </span>
                 </div>
 
-                <div style="display:flex; align-items:center; gap:16px; margin-bottom:18px;">
-                    <div style="width:52px; height:52px; border-radius:50%; background:#111111; color:#e6a100; font-size:1.4rem; font-weight:800; display:flex; align-items:center; justify-content:center; box-shadow:0 0 10px rgba(230,161,0,0.3);">
+                <div style="display:flex; align-items:center; gap:16px; flex-wrap:wrap; margin-bottom:18px;">
+                    <div style="width:52px; height:52px; flex-shrink:0; border-radius:50%; background:#111111; color:#e6a100; font-size:1.4rem; font-weight:800; display:flex; align-items:center; justify-content:center; box-shadow:0 0 10px rgba(230,161,0,0.3);">
                         {{ strtoupper(substr($admin->nombre ?? 'A', 0, 1)) }}
                     </div>
-                    <div>
+                    <div style="min-width:0; flex:1; word-break:break-word;">
                         <h3 style="margin:0; font-size:1.08rem; font-weight:800; color:#111111;">
                             {{ $admin->nombre_completo ?? 'Administrador BIO-GEST' }}
                         </h3>
@@ -165,7 +165,7 @@
                 </div>
 
                 <div style="border-top:1px solid #f1f5f9; padding-top:14px;">
-                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; font-size:0.84rem; margin-bottom:14px;">
+                    <div class="admin-form-grid-2-compact" style="font-size:0.84rem; margin-bottom:14px;">
                         <div>
                             <span style="color:#64748b; display:block; font-size:0.75rem;">Teléfono registrado:</span>
                             <strong style="color:#111111;">{{ $admin->telefono ?: 'No registrado' }}</strong>
@@ -198,8 +198,8 @@
 
                 <div style="display:flex; flex-direction:column; gap:12px;">
                     <!-- Botón 1: Verificar estado y limpiar caché -->
-                    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; background:#f8fafc; padding:12px 14px; border-radius:8px; border:1px solid #e2e8f0;">
-                        <div>
+                    <div class="admin-tool-row" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; background:#f8fafc; padding:12px 14px; border-radius:8px; border:1px solid #e2e8f0;">
+                        <div style="min-width:0; flex:1;">
                             <strong style="font-size:0.86rem; color:#111111; display:block;">Verificar estado de la tienda y limpiar caché</strong>
                             <span style="font-size:0.76rem; color:#64748b;">Refresca el catálogo, optimiza las rutas y asegura la carga inmediata de cambios.</span>
                         </div>
@@ -212,8 +212,8 @@
                     </div>
 
                     <!-- Botón 2: Descargar resumen de catálogo y precios -->
-                    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; background:#f8fafc; padding:12px 14px; border-radius:8px; border:1px solid #e2e8f0;">
-                        <div>
+                    <div class="admin-tool-row" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; background:#f8fafc; padding:12px 14px; border-radius:8px; border:1px solid #e2e8f0;">
+                        <div style="min-width:0; flex:1;">
                             <strong style="font-size:0.86rem; color:#111111; display:block;">Descargar resumen general de catálogo y precios</strong>
                             <span style="font-size:0.76rem; color:#64748b;">Exporta la lista de productos vigentes, existencias y precios compatible con Excel.</span>
                         </div>

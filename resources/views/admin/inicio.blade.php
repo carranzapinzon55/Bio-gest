@@ -14,7 +14,7 @@
                 Control integral y monitoreo en tiempo real de <strong>TENEBRIOS GOLD</strong> (Año {{ now()->year }}).
             </p>
         </div>
-        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+        <div class="admin-header-actions" style="display:flex; gap:10px; flex-wrap:wrap;">
             <a href="{{ route('admin.estadisticas') }}" class="tg-btn-gold">
                 <i class="fa-solid fa-chart-line"></i> Estadísticas y Reportes
             </a>

@@ -101,6 +101,9 @@
                     <span class="brand-title">TENEBRIOS GOLD</span>
                     <span class="brand-subtitle">Panel Admin</span>
                 </div>
+                <button type="button" class="sidebar-close-btn" id="adminSidebarClose" aria-label="Cerrar menú lateral">
+                    <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+                </button>
             </div>
 
             <!-- Menú de Navegación con rutas reales -->
@@ -217,13 +220,20 @@
             </div>
         </aside>
 
+        <div class="admin-sidebar-backdrop" id="adminSidebarBackdrop" aria-hidden="true"></div>
+
         <!-- 2. CONTENIDO PRINCIPAL Y TOPBAR -->
         <div class="admin-main">
             <!-- Topbar Blanca Superior -->
             <header class="admin-topbar">
                 <div class="topbar-left">
-                    <button type="button" class="menu-toggle-btn" onclick="document.getElementById('adminSidebar').classList.toggle('open')" aria-label="Abrir Menú">
-                        <i class="fa-solid fa-bars"></i>
+                    <button type="button"
+                            class="menu-toggle-btn"
+                            id="adminMenuToggle"
+                            aria-label="Abrir Menú"
+                            aria-expanded="false"
+                            aria-controls="adminSidebar">
+                        <i class="fa-solid fa-bars" aria-hidden="true"></i>
                     </button>
                     <div class="topbar-title-block">
                         <h1>@yield('header_title', 'TENEBRIOS GOLD · Panel Administrativo')</h1>
@@ -231,23 +241,23 @@
                 </div>
 
                 <div class="topbar-right">
-                    <a href="{{ route('home') }}" target="_blank" class="btn-store-link" title="Abrir tienda de cara al cliente">
-                        <i class="fa-solid fa-store"></i>
-                        <span>Ver Tienda</span>
+                    <a href="{{ route('home') }}" target="_blank" class="btn-store-link" title="Abrir tienda de cara al cliente" aria-label="Ver Tienda">
+                        <i class="fa-solid fa-store" aria-hidden="true"></i>
+                        <span class="topbar-action-label">Ver Tienda</span>
                     </a>
 
-                    <div class="admin-user-pill">
+                    <a href="{{ route('admin.perfil.index') }}" class="admin-user-pill" title="Mi Perfil ({{ auth()->user()->nombre ?? 'Administrador' }})" aria-label="Mi Perfil de {{ auth()->user()->nombre ?? 'Administrador' }}">
                         <span class="avatar">
                             {{ strtoupper(substr(auth()->user()->nombre ?? 'A', 0, 1)) }}
                         </span>
-                        <span>{{ auth()->user()->nombre ?? 'Administrador' }}</span>
-                    </div>
+                        <span class="topbar-user-name">{{ auth()->user()->nombre ?? 'Administrador' }}</span>
+                    </a>
 
                     <form action="{{ route('logout') }}" method="POST" style="margin:0;">
                         @csrf
-                        <button type="submit" class="btn-logout-nav" title="Cerrar sesión">
-                            <i class="fa-solid fa-power-off"></i>
-                            <span class="d-none d-md-inline">Salir</span>
+                        <button type="submit" class="btn-logout-nav" title="Cerrar sesión" aria-label="Cerrar sesión">
+                            <i class="fa-solid fa-power-off" aria-hidden="true"></i>
+                            <span class="topbar-action-label">Salir</span>
                         </button>
                     </form>
                 </div>
@@ -273,6 +283,60 @@
             </main>
         </div>
     </div>
+
+    <!-- Control accesible del sidebar móvil -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const sidebar = document.getElementById('adminSidebar');
+            const toggleBtn = document.getElementById('adminMenuToggle');
+            const closeBtn = document.getElementById('adminSidebarClose');
+            const backdrop = document.getElementById('adminSidebarBackdrop');
+
+            if (!sidebar || !toggleBtn || !backdrop) return;
+
+            const setSidebarOpen = (isOpen) => {
+                sidebar.classList.toggle('open', isOpen);
+                backdrop.classList.toggle('open', isOpen);
+                document.body.classList.toggle('admin-sidebar-open', isOpen);
+                toggleBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+                backdrop.setAttribute('aria-hidden', isOpen ? 'false' : 'true');
+            };
+
+            toggleBtn.addEventListener('click', () => {
+                setSidebarOpen(!sidebar.classList.contains('open'));
+            });
+
+            if (closeBtn) {
+                closeBtn.addEventListener('click', () => {
+                    setSidebarOpen(false);
+                    toggleBtn.focus();
+                });
+            }
+
+            backdrop.addEventListener('click', () => setSidebarOpen(false));
+
+            sidebar.querySelectorAll('.sidebar-menu a').forEach((link) => {
+                link.addEventListener('click', () => {
+                    if (window.innerWidth <= 768) {
+                        setSidebarOpen(false);
+                    }
+                });
+            });
+
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && sidebar.classList.contains('open')) {
+                    setSidebarOpen(false);
+                    toggleBtn.focus();
+                }
+            });
+
+            window.addEventListener('resize', () => {
+                if (window.innerWidth > 768 && sidebar.classList.contains('open')) {
+                    setSidebarOpen(false);
+                }
+            });
+        });
+    </script>
 
     <!-- Scripts adicionales por vista -->
     @stack('scripts')

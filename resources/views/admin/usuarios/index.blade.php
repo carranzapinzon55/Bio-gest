@@ -89,9 +89,14 @@
         }
         .order-summary-strip {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
+            grid-template-columns: repeat(3, minmax(0, 1fr));
             gap: 10px;
             margin-bottom: 12px;
+        }
+        @media (max-width: 540px) {
+            .order-summary-strip {
+                grid-template-columns: 1fr;
+            }
         }
         .order-summary-box {
             background: #fdf8f0;
