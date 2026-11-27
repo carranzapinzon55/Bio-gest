@@ -68,6 +68,37 @@
     </section>
 
     <!-- PRODUCTOS DESTACADOS DESDE BASE DE DATOS -->
+    @if(isset($promocionesActivas) && $promocionesActivas->isNotEmpty())
+    <section style="width:90%; margin:25px auto;">
+        <div style="background:linear-gradient(135deg, #111111 0%, #222222 100%); border:2px solid #e4b353; border-radius:14px; padding:20px 26px; color:#ffffff; box-shadow:0 8px 20px rgba(0,0,0,0.12);">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:15px;">
+                <div>
+                    <span style="background:#e4b353; color:#111111; font-weight:800; font-size:0.75rem; padding:3px 10px; border-radius:999px; text-transform:uppercase;">
+                        <i class="fas fa-tags"></i> Promociones y Cupones Activos
+                    </span>
+                    <h3 style="margin:8px 0 4px 0; font-size:1.3rem; color:#ffffff;">¡Aprovecha nuestros descuentos oficiales en tu compra!</h3>
+                    <p style="margin:0; font-size:0.88rem; color:#cbd5e1;">Usa cualquiera de estos códigos al finalizar tu pedido en el Checkout:</p>
+                </div>
+                <div style="display:flex; gap:12px; flex-wrap:wrap;">
+                    @foreach($promocionesActivas as $promo)
+                        <div style="background:#1a1a1a; border:1px dashed #e4b353; border-radius:10px; padding:10px 16px; text-align:center;">
+                            <div style="font-size:1.05rem; font-weight:800; color:#e4b353; letter-spacing:1px;">
+                                <i class="fas fa-ticket-alt"></i> {{ $promo->codigo_cupon }}
+                            </div>
+                            <div style="font-size:0.85rem; font-weight:700; color:#4ade80; margin-top:2px;">
+                                {{ number_format($promo->descuento_porcentaje, 0) }}% DE DESCUENTO
+                            </div>
+                            <div style="font-size:0.72rem; color:#94a3b8; margin-top:2px;">
+                                Válido hasta {{ optional($promo->fecha_fin)->format('d/m/Y') }}
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+        </div>
+    </section>
+    @endif
+
     <section class="categories">
         <h2>Nuestros Paquetes Destacados</h2>
         <div class="categories-grid">

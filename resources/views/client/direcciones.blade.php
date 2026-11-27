@@ -44,22 +44,22 @@
                 @csrf
                 <div style="margin-bottom:12px;">
                     <label style="display:block; font-weight:700; margin-bottom:4px; font-size:0.9rem; color:#333;">Nombre Ubicación (Ej: Casa, Finca, Trabajo) *</label>
-                    <input type="text" name="nombre_ubicacion" value="{{ old('nombre_ubicacion', 'Casa') }}" required style="width:100%; padding:8px; border:1px solid #ccc; border-radius:4px;">
+                    <input type="text" name="nombre_ubicacion" data-only-letters="true" minlength="2" maxlength="100" pattern="^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ\s'-]+$" title="Solo letras (Ej: Casa, Finca, Oficina)" value="{{ old('nombre_ubicacion', 'Casa') }}" required style="width:100%; padding:8px; border:1px solid #ccc; border-radius:4px;">
                 </div>
 
                 <div style="margin-bottom:12px;">
                     <label style="display:block; font-weight:700; margin-bottom:4px; font-size:0.9rem; color:#333;">Dirección Completa *</label>
-                    <input type="text" name="direccion" required style="width:100%; padding:8px; border:1px solid #ccc; border-radius:4px;">
+                    <input type="text" name="direccion" minlength="5" maxlength="255" placeholder="Ej: Calle 26 # 68-90" required style="width:100%; padding:8px; border:1px solid #ccc; border-radius:4px;">
                 </div>
 
                 <div style="display:flex; gap:10px; margin-bottom:12px;">
                     <div style="flex:1;">
                         <label style="display:block; font-weight:700; margin-bottom:4px; font-size:0.9rem; color:#333;">Ciudad *</label>
-                        <input type="text" name="ciudad" value="Bogotá" required style="width:100%; padding:8px; border:1px solid #ccc; border-radius:4px;">
+                        <input type="text" name="ciudad" data-only-letters="true" minlength="2" maxlength="100" pattern="^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ\s.'-]+$" title="Solo letras" value="Bogotá" required style="width:100%; padding:8px; border:1px solid #ccc; border-radius:4px;">
                     </div>
                     <div style="flex:1;">
                         <label style="display:block; font-weight:700; margin-bottom:4px; font-size:0.9rem; color:#333;">Departamento *</label>
-                        <input type="text" name="departamento" value="Cundinamarca" required style="width:100%; padding:8px; border:1px solid #ccc; border-radius:4px;">
+                        <input type="text" name="departamento" data-only-letters="true" minlength="2" maxlength="100" pattern="^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ\s.'-]+$" title="Solo letras" value="Cundinamarca" required style="width:100%; padding:8px; border:1px solid #ccc; border-radius:4px;">
                     </div>
                 </div>
 

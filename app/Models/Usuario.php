@@ -34,6 +34,11 @@ class Usuario extends Authenticatable
         'remember_token',
     ];
 
+    protected $casts = [
+        'fecha_registro' => 'datetime',
+        'contrasena'     => 'hashed',
+    ];
+
     public function getAuthPassword(): string
     {
         return $this->contrasena;
@@ -57,6 +62,12 @@ class Usuario extends Authenticatable
     public function carrito(): HasOne
     {
         return $this->hasOne(Carrito::class, 'id_usuario', 'id_usuario');
+    }
+
+    public function promocionesRedimidas(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    {
+        return $this->belongsToMany(Promocion::class, 'promocion_usuario', 'id_usuario', 'id_promocion')
+            ->withPivot('id_pedido', 'fecha_uso');
     }
 
     public function esAdmin(): bool

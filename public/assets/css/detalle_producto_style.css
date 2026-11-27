@@ -15,144 +15,8 @@ body {
 }
 
 /* ========================================================
-   HEADER UNIFICADO (ESTILO INDEX)
+   HEADER UNIFICADO (Hereda de index_style.css en layouts/app)
    ======================================================== */
-.main-header {
-    background-color: #ffffff;
-    border-bottom: 1px solid #e5e5e5;
-    width: 100%;
-}
-
-.header-top {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 15px 20px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 30px;
-}
-
-/* Logo, Título y Subtítulo */
-.logo-container .logo-link {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    text-decoration: none;
-    color: #000000;
-}
-
-.logo-img {
-    width: 65px;
-    height: 65px;
-    object-fit: cover;
-    border-radius: 4px;
-}
-
-.logo-text {
-    display: flex;
-    flex-direction: column;
-}
-
-.brand-title {
-    font-weight: 800;
-    font-size: 18px;
-    letter-spacing: 0.5px;
-    color: #111111;
-}
-
-.brand-subtitle {
-    font-size: 12px;
-    color: #666666;
-    margin-top: 2px;
-}
-
-/* Buscador Centrado */
-.search-container {
-    position: relative;
-    flex: 1;
-    max-width: 400px;
-}
-
-.search-container input {
-    width: 100%;
-    padding: 9px 38px 9px 14px;
-    border: 1px solid #aaaaaa;
-    border-radius: 4px;
-    font-size: 14px;
-    outline: none;
-}
-
-.search-btn {
-    position: absolute;
-    right: 10px;
-    top: 50%;
-    transform: translateY(-50%);
-    background: none;
-    border: none;
-    cursor: pointer;
-    font-size: 14px;
-    color: #444444;
-}
-
-/* Acciones de Usuario y Carrito */
-.header-user-actions {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-}
-
-.user-link {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    text-decoration: none;
-    color: #3f51b5;
-    font-size: 14px;
-    font-weight: 500;
-}
-
-.cart-btn {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    border: 1px solid #333333;
-    padding: 6px 14px;
-    border-radius: 4px;
-    text-decoration: none;
-    color: #000000;
-    font-weight: bold;
-    font-size: 14px;
-}
-
-/* Menú de Navegación */
-.main-nav {
-    border-top: 1px solid #f0f0f0;
-    padding: 12px 0;
-}
-
-.main-nav ul {
-    display: flex;
-    justify-content: center;
-    gap: 35px;
-    list-style: none;
-    margin: 0;
-    padding: 0;
-}
-
-.main-nav a {
-    text-decoration: none;
-    color: #333333;
-    font-size: 15px;
-    font-weight: 500;
-    transition: color 0.2s ease;
-}
-
-.main-nav a.active,
-.main-nav a:hover {
-    font-weight: bold;
-    color: #000000;
-}
 
 /* ========================================================
    CONTENEDOR PRINCIPAL Y BREADCRUMBS
@@ -467,9 +331,23 @@ body {
     }
 
     .search-container {
-        max-width: 100%;
-        width: 100%;
-    }
+    display: flex;
+    align-items: center;
+    background: #ffffff;
+    border-radius: 30px;
+    overflow: visible;      /* Antes estaba en hidden y cortaba las sugerencias */
+    position: relative;     /* Necesario para anclar el menú desplegable */
+    width: 100%;
+    max-width: 450px;
+}
+
+.search-container input {
+    border-radius: 30px 0 0 30px;
+}
+
+.search-btn {
+    border-radius: 0 30px 30px 0;
+}
 
     .main-nav ul {
         flex-wrap: wrap;

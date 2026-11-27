@@ -81,17 +81,22 @@ class AuthApiController extends Controller
     public function registro(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'nombre'     => 'required|string|max:100',
-            'apellido'   => 'required|string|max:100',
-            'correo'     => 'required|string|email|max:150|unique:usuario,correo',
-            'contrasena' => 'required|string|min:6',
-            'telefono'   => 'nullable|string|max:20',
-            'perfil_uso' => 'nullable|in:Inicio de criadero,Alimentación continua,Proyecto comercial / Gran escala,Mascota única',
+            'nombre'     => ['required', 'string', 'min:2', 'max:100', 'regex:/^[\pL\s\'-]+$/u'],
+            'apellido'   => ['required', 'string', 'min:2', 'max:100', 'regex:/^[\pL\s\'-]+$/u'],
+            'correo'     => ['required', 'string', 'email', 'max:150', 'unique:usuario,correo'],
+            'contrasena' => ['required', 'string', 'min:6'],
+            'telefono'   => ['nullable', 'string', 'regex:/^[0-9]{7,10}$/'],
+            'perfil_uso' => ['nullable', 'in:Inicio de criadero,Alimentación continua,Proyecto comercial / Gran escala,Mascota única'],
         ], [
             'nombre.required'     => 'El nombre es obligatorio.',
+            'nombre.min'          => 'El nombre debe tener al menos 2 letras.',
+            'nombre.regex'        => 'El nombre solo puede contener letras y espacios (no se permiten números).',
             'apellido.required'   => 'El apellido es obligatorio.',
+            'apellido.min'        => 'El apellido debe tener al menos 2 letras.',
+            'apellido.regex'      => 'El apellido solo puede contener letras y espacios (no se permiten números).',
             'correo.required'     => 'El correo electrónico es obligatorio.',
             'correo.unique'       => 'Este correo ya se encuentra registrado.',
+            'telefono.regex'      => 'El teléfono debe contener únicamente números (entre 7 y 10 dígitos).',
             'contrasena.required' => 'La contraseña es obligatoria.',
             'contrasena.min'      => 'La contraseña debe tener mínimo 6 caracteres.',
         ]);
@@ -110,7 +115,7 @@ class AuthApiController extends Controller
             'apellido'       => $request->apellido,
             'correo'         => $request->correo,
             'telefono'       => $request->telefono,
-            'contrasena'     => Hash::make($request->contrasena),
+            'contrasena'     => $request->contrasena,
             'perfil_uso'     => $request->perfil_uso ?? 'Alimentación continua',
             'estado'         => 'Activo',
             'fecha_registro' => now(),

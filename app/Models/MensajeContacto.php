@@ -15,6 +15,14 @@ class MensajeContacto extends Model
         'correo',
         'asunto',
         'mensaje',
+        'estado',
+        'respuesta_admin',
+        'fecha_atencion',
         'fecha_envio',
+    ];
+
+    protected $casts = [
+        'fecha_envio'    => 'datetime',
+        'fecha_atencion' => 'datetime',
     ];
 }

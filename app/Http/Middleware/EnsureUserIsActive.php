@@ -44,13 +44,16 @@ class EnsureUserIsActive
                         'active'   => false,
                         'success'  => false,
                         'message'  => 'Tu cuenta ha sido desactivada por un administrador. Tu sesión se ha cerrado.',
-                        'redirect' => route('login'),
+                        'redirect' => route('home'),
                     ], 401);
                 }
 
-                return redirect()->route('login')->withErrors([
-                    'correo' => 'Tu cuenta ha sido desactivada por un administrador. Tu sesión fue cerrada.',
-                ]);
+                return redirect()->route('home')->with('error', 'Tu cuenta ha sido desactivada o tu sesión ha expirado.');
+            }
+
+            // Si es administrador activo, registrar marca de tiempo de presencia en línea
+            if ($freshUser->esAdmin()) {
+                \App\Models\Configuracion::set('admin_last_seen', (string) now()->timestamp, 'sistema', 'Última actividad del administrador');
             }
         }
 

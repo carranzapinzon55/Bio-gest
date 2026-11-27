@@ -1,17 +1,22 @@
-@extends('layouts.app')
+@extends('layouts.admin')
 
 @section('title', 'Gestión de Productos | BIO-GEST Tenebrios Gold')
-@section('header_title', 'Gestión de Productos (CRUD)')
+@section('header_title', 'Catálogo de Productos')
 
 @section('content')
     <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:15px; margin-bottom:20px;">
         <div>
-            <h1 style="margin:0; font-size:1.45rem; color:#151515;">Catálogo Administrativo de Productos</h1>
-            <p style="margin:4px 0 0 0; color:#64748b; font-size:0.9rem;">Registra, edita, ajusta precios o desactiva productos de la tienda</p>
+            <h1 style="margin:0; font-size:1.45rem; color:#111111;">Catálogo de Productos</h1>
+            <p style="margin:4px 0 0 0; color:#6b7280; font-size:0.9rem;">
+                Administración oficial del catálogo de <strong>TENEBRIOS GOLD</strong> (Larvas de Tenebrio molitor, Abono Frass y Kits de Cría)
+            </p>
         </div>
         <div style="display:flex; gap:10px; flex-wrap:wrap;">
+            <button type="button" class="tg-btn-outline" onclick="abrirModalCategoria()">
+                <i class="fa-solid fa-folder-plus"></i> Nueva Categoría
+            </button>
             <a href="{{ route('admin.inventario.index') }}" class="tg-btn-gold">
-                <i class="fa-solid fa-warehouse"></i> Ver Inventario y Kardex
+                <i class="fa-solid fa-boxes-stacked"></i> Ver Inventario y Movimientos
             </a>
             <a href="{{ route('admin.productos.create') }}" class="tg-btn-dark">
                 <i class="fa-solid fa-plus"></i> Registrar Producto
@@ -23,12 +28,12 @@
     <div class="tg-card" style="padding:16px 20px;">
         <form action="{{ route('admin.productos.index') }}" method="GET" style="display:flex; flex-wrap:wrap; gap:12px; align-items:flex-end;">
             <div style="flex:1; min-width:200px;">
-                <label style="display:block; font-size:0.8rem; font-weight:700; color:#151515; margin-bottom:4px;">Buscar por nombre</label>
-                <input type="text" name="q" value="{{ request('q') }}" placeholder="Ej. Paquete 1.000 larvas..." style="width:100%; padding:9px 12px; border:1px solid #cbd5e1; border-radius:6px;">
+                <label style="display:block; font-size:0.8rem; font-weight:700; color:#111111; margin-bottom:4px;">Buscar por nombre</label>
+                <input type="text" name="q" value="{{ request('q') }}" placeholder="Ej. Paquete 1.000 larvas, Frass..." style="width:100%; padding:9px 12px; border:1px solid #cbd5e1; border-radius:6px; font-size:0.88rem;">
             </div>
             <div style="min-width:180px;">
-                <label style="display:block; font-size:0.8rem; font-weight:700; color:#151515; margin-bottom:4px;">Categoría</label>
-                <select name="id_categoria" style="width:100%; padding:9px 12px; border:1px solid #cbd5e1; border-radius:6px;">
+                <label style="display:block; font-size:0.8rem; font-weight:700; color:#111111; margin-bottom:4px;">Categoría</label>
+                <select name="id_categoria" style="width:100%; padding:9px 12px; border:1px solid #cbd5e1; border-radius:6px; font-size:0.88rem;">
                     <option value="">Todas las categorías</option>
                     @foreach($categorias as $cat)
                         <option value="{{ $cat->id_categoria }}" {{ (string) request('id_categoria') === (string) $cat->id_categoria ? 'selected' : '' }}>
@@ -38,8 +43,8 @@
                 </select>
             </div>
             <div style="min-width:150px;">
-                <label style="display:block; font-size:0.8rem; font-weight:700; color:#151515; margin-bottom:4px;">Estado</label>
-                <select name="estado" style="width:100%; padding:9px 12px; border:1px solid #cbd5e1; border-radius:6px;">
+                <label style="display:block; font-size:0.8rem; font-weight:700; color:#111111; margin-bottom:4px;">Estado</label>
+                <select name="estado" style="width:100%; padding:9px 12px; border:1px solid #cbd5e1; border-radius:6px; font-size:0.88rem;">
                     <option value="">Todos</option>
                     <option value="Activo" {{ request('estado') === 'Activo' ? 'selected' : '' }}>Activo</option>
                     <option value="Inactivo" {{ request('estado') === 'Inactivo' ? 'selected' : '' }}>Inactivo</option>
@@ -64,11 +69,12 @@
             <table class="custom-table">
                 <thead>
                     <tr>
+                        <th style="width:60px;">Foto</th>
                         <th>Código</th>
                         <th>Producto</th>
                         <th>Categoría</th>
                         <th>Precio (COP)</th>
-                        <th>Existencias</th>
+                        <th>Stock / Mín.</th>
                         <th>Estado</th>
                         <th style="text-align:right;">Acciones</th>
                     </tr>
@@ -76,29 +82,41 @@
                 <tbody>
                     @forelse($productos as $prod)
                         @php
-                            $stockMin = $prod->stock_minimo ?? 10;
+                            $stockMin = (int) ($prod->stock_minimo ?? 10);
+                            $imgSrc = $prod->imagen ? asset('assets/img/' . $prod->imagen) : asset('assets/img/Tenebrios_img.png');
+                            $esAgotado = $prod->stock <= 0;
+                            $esBajo = !$esAgotado && $prod->stock <= $stockMin;
                         @endphp
                         <tr>
-                            <td style="font-weight:700; color:#151515;">PROD-{{ str_pad((string) $prod->id_producto, 3, '0', STR_PAD_LEFT) }}</td>
                             <td>
-                                <div style="font-weight:700; color:#151515;">{{ $prod->nombre_producto }}</div>
+                                <img src="{{ $imgSrc }}" alt="{{ $prod->nombre_producto }}"
+                                     onerror="this.onerror=null; this.src='{{ asset('assets/img/Tenebrios_img.png') }}';"
+                                     style="width:44px; height:44px; object-fit:contain; border-radius:6px; background:#fff; border:1px solid #e5e7eb; padding:2px;">
+                            </td>
+                            <td style="font-weight:700; color:#111111; white-space:nowrap;">
+                                PROD-{{ str_pad((string) $prod->id_producto, 3, '0', STR_PAD_LEFT) }}
+                            </td>
+                            <td>
+                                <div style="font-weight:700; color:#111111;">{{ $prod->nombre_producto }}</div>
                                 @if($prod->especies_recomendadas)
-                                    <div style="font-size:0.78rem; color:#64748b;">
-                                        <i class="fa-solid fa-paw" style="color:#e4b353;"></i> {{ \Illuminate\Support\Str::limit($prod->especies_recomendadas, 50) }}
+                                    <div style="font-size:0.78rem; color:#6b7280;">
+                                        <i class="fa-solid fa-paw" style="color:#e6a100;"></i> {{ \Illuminate\Support\Str::limit($prod->especies_recomendadas, 45) }}
                                     </div>
                                 @endif
                             </td>
                             <td>{{ optional($prod->categoria)->nombre_categoria ?? 'Sin categoría' }}</td>
-                            <td style="font-weight:700; color:#151515;">${{ number_format($prod->precio, 0, ',', '.') }}</td>
+                            <td style="font-weight:700; color:#111111; white-space:nowrap;">${{ number_format($prod->precio, 0, ',', '.') }}</td>
                             <td>
                                 <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
-                                    <span style="font-weight:800; font-size:0.95rem; color:{{ $prod->stock <= $stockMin ? '#b91c1c' : '#151515' }};">
-                                        {{ $prod->stock }} uds.
+                                    <span style="font-weight:800; font-size:0.95rem; color:{{ $esAgotado || $esBajo ? '#dc2626' : '#111111' }};">
+                                        {{ $prod->stock }} / <span style="font-size:0.85rem; color:#6b7280; font-weight:600;">{{ $stockMin }}</span>
                                     </span>
-                                    @if($prod->stock <= 0)
-                                        <span class="badge badge-danger">Agotado</span>
-                                    @elseif($prod->stock <= $stockMin)
-                                        <span class="badge badge-warning">Bajo (mín. {{ $stockMin }})</span>
+                                    @if($esAgotado)
+                                        <span class="badge badge-danger"><i class="fa-solid fa-circle-xmark"></i> Agotado</span>
+                                    @elseif($esBajo)
+                                        <span class="badge badge-warning"><i class="fa-solid fa-triangle-exclamation"></i> Bajo</span>
+                                    @else
+                                        <span class="badge badge-active"><i class="fa-solid fa-circle-check"></i> Óptimo</span>
                                     @endif
                                 </div>
                             </td>
@@ -109,7 +127,7 @@
                             </td>
                             <td style="text-align:right; white-space:nowrap;">
                                 <a href="{{ route('admin.productos.edit', $prod->id_producto) }}"
-                                   style="background:#151515; color:#e4b353; padding:6px 12px; border-radius:6px; text-decoration:none; font-size:0.82rem; font-weight:700; margin-right:6px; display:inline-block;">
+                                   style="background:#111111; color:#e6a100; padding:6px 12px; border-radius:6px; text-decoration:none; font-size:0.82rem; font-weight:700; margin-right:6px; display:inline-block;">
                                     <i class="fa-solid fa-pen-to-square"></i> Editar
                                 </a>
 
@@ -118,12 +136,12 @@
                                     @csrf
                                     @method('DELETE')
                                     @if($prod->estado === 'Activo')
-                                        <button type="submit" style="background:#fee2e2; color:#b91c1c; border:1px solid #fca5a5; padding:6px 12px; border-radius:6px; cursor:pointer; font-size:0.82rem; font-weight:700;">
-                                            <i class="fa-solid fa-ban"></i> Desactivar
+                                        <button type="submit" class="tg-btn-gold" style="padding:6px 10px; font-size:0.82rem; background:#fee2e2; color:#b91c1c; border-color:#fca5a5;" title="Desactivar producto">
+                                            <i class="fa-solid fa-ban"></i>
                                         </button>
                                     @else
-                                        <button type="submit" style="background:#dcfce7; color:#15803d; border:1px solid #86efac; padding:6px 12px; border-radius:6px; cursor:pointer; font-size:0.82rem; font-weight:700;">
-                                            <i class="fa-solid fa-rotate-left"></i> Activar
+                                        <button type="submit" class="tg-btn-gold" style="padding:6px 10px; font-size:0.82rem; background:#d1fae5; color:#065f46; border-color:#a7f3d0;" title="Activar producto">
+                                            <i class="fa-solid fa-check"></i>
                                         </button>
                                     @endif
                                 </form>
@@ -131,8 +149,8 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="7" style="text-align:center; padding:25px; color:#64748b;">
-                                No se encontraron productos registrados con los criterios seleccionados.
+                            <td colspan="8" style="text-align:center; padding:28px; color:#6b7280;">
+                                No se encontraron productos registrados en el catálogo.
                             </td>
                         </tr>
                     @endforelse
@@ -140,4 +158,60 @@
             </table>
         </div>
     </div>
+
+    <!-- MODAL PARA NUEVA CATEGORÍA -->
+    <div id="modalNuevaCategoria" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:9999; align-items:center; justify-content:center;">
+        <div style="background:#ffffff; border-radius:10px; width:100%; max-width:480px; box-shadow:0 20px 25px -5px rgba(0,0,0,0.2); overflow:hidden;">
+            <div style="padding:16px 20px; background:#111111; color:#ffffff; display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid #e6a100;">
+                <div style="display:flex; align-items:center; gap:8px;">
+                    <i class="fa-solid fa-folder-plus" style="color:#e6a100; font-size:1.1rem;"></i>
+                    <h3 style="margin:0; font-size:1rem; font-weight:800;">Crear Nueva Categoría de Productos</h3>
+                </div>
+                <button type="button" onclick="cerrarModalCategoria()" style="background:none; border:none; color:#ffffff; font-size:1.1rem; cursor:pointer;">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <form action="{{ route('admin.categorias.store') }}" method="POST" style="padding:20px;">
+                @csrf
+                <div style="margin-bottom:14px;">
+                    <label style="display:block; font-size:0.82rem; font-weight:700; color:#111111; margin-bottom:5px;">Nombre de la Categoría *</label>
+                    <input type="text" name="nombre_categoria" required minlength="2" maxlength="100" placeholder="Ej. Accesorios, Sustratos, Kits de inicio..."
+                           style="width:100%; padding:9px 12px; border:1px solid #cbd5e1; border-radius:6px; font-size:0.88rem;">
+                </div>
+
+                <div style="margin-bottom:18px;">
+                    <label style="display:block; font-size:0.82rem; font-weight:700; color:#111111; margin-bottom:5px;">Descripción (Opcional)</label>
+                    <textarea name="descripcion" rows="3" placeholder="Breve descripción comercial de la categoría..."
+                              style="width:100%; padding:9px 12px; border:1px solid #cbd5e1; border-radius:6px; font-size:0.88rem;"></textarea>
+                </div>
+
+                <div style="display:flex; justify-content:flex-end; gap:10px; border-top:1px solid #e5e7eb; padding-top:14px;">
+                    <button type="button" onclick="cerrarModalCategoria()" style="padding:9px 16px; border:1px solid #cbd5e1; border-radius:6px; background:#ffffff; color:#4b5563; font-weight:600; cursor:pointer;">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="tg-btn-dark" style="padding:9px 20px;">
+                        <i class="fa-solid fa-floppy-disk"></i> Guardar Categoría
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    @push('scripts')
+    <script>
+        function abrirModalCategoria() {
+            document.getElementById('modalNuevaCategoria').style.display = 'flex';
+        }
+        function cerrarModalCategoria() {
+            document.getElementById('modalNuevaCategoria').style.display = 'none';
+        }
+        window.addEventListener('click', function(e) {
+            const modal = document.getElementById('modalNuevaCategoria');
+            if (e.target === modal) {
+                cerrarModalCategoria();
+            }
+        });
+    </script>
+    @endpush
 @endsection

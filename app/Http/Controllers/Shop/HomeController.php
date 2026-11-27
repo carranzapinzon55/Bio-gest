@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Shop;
 
 use App\Http\Controllers\Controller;
 use App\Models\Producto;
+use App\Models\Promocion;
 use Illuminate\View\View;
 
 class HomeController extends Controller
@@ -15,6 +16,11 @@ class HomeController extends Controller
             ->take(5)
             ->get();
 
-        return view('shop.index', compact('productosDestacados'));
+        $promocionesActivas = Promocion::where('estado', 'Activo')
+            ->where('fecha_fin', '>=', now()->subDay())
+            ->orderByDesc('id_promocion')
+            ->get();
+
+        return view('shop.index', compact('productosDestacados', 'promocionesActivas'));
     }
 }

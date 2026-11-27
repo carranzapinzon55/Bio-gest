@@ -1,142 +1,9 @@
-/* RESET Y BASE */
-* {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-}
+/* ==========================================================================
+   ESTILOS DE VISTA DE CHECKOUT / FINALIZAR COMPRA - TENEBRIOS GOLD (BIO-GEST)
+   Hereda el <header class="main-header"> (#111111), <nav class="main-nav">
+   y <footer class="main-footer"> desde index_style.css y layouts/app.blade.php
+   ========================================================================== */
 
-body {
-    font-family: Arial, sans-serif;
-    color: #333333;
-    background-color: #ffffff;
-}
-
-/* HEADER UNIFICADO */
-.main-header {
-    background-color: #ffffff;
-    border-bottom: 1px solid #e5e5e5;
-    width: 100%;
-}
-
-.header-top {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 15px 20px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 30px;
-}
-
-.logo-container .logo-link {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    text-decoration: none;
-    color: #000;
-}
-
-.logo-img {
-    width: 65px;
-    height: 65px;
-    object-fit: cover;
-    border-radius: 4px;
-}
-
-.logo-text {
-    display: flex;
-    flex-direction: column;
-}
-
-.brand-title {
-    font-weight: 800;
-    font-size: 18px;
-    color: #111;
-}
-
-.brand-subtitle {
-    font-size: 12px;
-    color: #666;
-    margin-top: 2px;
-}
-
-.search-container {
-    position: relative;
-    flex: 1;
-    max-width: 400px;
-}
-
-.search-container input {
-    width: 100%;
-    padding: 9px 38px 9px 14px;
-    border: 1px solid #aaa;
-    border-radius: 4px;
-    font-size: 14px;
-    outline: none;
-}
-
-.search-btn {
-    position: absolute;
-    right: 10px;
-    top: 50%;
-    transform: translateY(-50%);
-    background: none;
-    border: none;
-    cursor: pointer;
-    font-size: 14px;
-}
-
-.header-user-actions {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-}
-
-.user-link {
-    text-decoration: none;
-    color: #3f51b5;
-    font-size: 14px;
-    font-weight: 500;
-}
-
-.cart-btn {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    border: 1px solid #333;
-    padding: 6px 14px;
-    border-radius: 4px;
-    text-decoration: none;
-    color: #000;
-    font-weight: bold;
-    font-size: 14px;
-}
-
-.main-nav {
-    border-top: 1px solid #f0f0f0;
-    padding: 12px 0;
-}
-
-.main-nav ul {
-    display: flex;
-    justify-content: center;
-    gap: 30px;
-    list-style: none;
-}
-
-.main-nav a {
-    text-decoration: none;
-    color: #333;
-    font-size: 14px;
-    font-weight: 500;
-}
-
-.main-nav a:hover {
-    font-weight: bold;
-    color: #000;
-}
-
-/* ESTRUCTURA PRINCIPAL CHECKOUT */
 .contenedor-principal {
     max-width: 1100px;
     margin: 30px auto 60px auto;
@@ -147,7 +14,7 @@ body {
     font-size: 26px;
     font-weight: bold;
     margin-bottom: 20px;
-    color: #111;
+    color: #111111;
 }
 
 /* PASOS DEL PROCESO (STEPPER) */
@@ -163,11 +30,11 @@ body {
     align-items: center;
     gap: 8px;
     font-size: 14px;
-    color: #888;
+    color: #888888;
 }
 
 .paso.activo {
-    color: #111;
+    color: #111111;
     font-weight: bold;
 }
 
@@ -176,7 +43,7 @@ body {
     height: 26px;
     border-radius: 50%;
     background-color: #e0e0e0;
-    color: #666;
+    color: #666666;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -189,7 +56,7 @@ body {
 }
 
 .separador-paso {
-    color: #aaa;
+    color: #aaaaaa;
     font-size: 14px;
 }
 
@@ -206,7 +73,7 @@ body {
     font-size: 18px;
     font-weight: bold;
     margin-bottom: 20px;
-    color: #111;
+    color: #111111;
 }
 
 .campo-grupo {
@@ -218,14 +85,14 @@ body {
 
 .campo-grupo label {
     font-size: 13px;
-    color: #444;
+    color: #444444;
     font-weight: 500;
 }
 
 .campo-grupo input {
     width: 100%;
     padding: 10px 12px;
-    border: 1px solid #ccc;
+    border: 1px solid #cccccc;
     border-radius: 4px;
     font-size: 14px;
     outline: none;
@@ -233,7 +100,7 @@ body {
 }
 
 .campo-grupo input:focus {
-    border-color: #222;
+    border-color: #222222;
 }
 
 .campo-grupo input.error {
@@ -259,7 +126,7 @@ body {
     font-size: 18px;
     font-weight: bold;
     margin-bottom: 25px;
-    color: #111;
+    color: #111111;
 }
 
 .lista-items-resumen {
@@ -273,17 +140,17 @@ body {
     display: flex;
     justify-content: space-between;
     font-size: 14px;
-    color: #444;
+    color: #444444;
 }
 
 .precio-item {
     font-weight: bold;
-    color: #111;
+    color: #111111;
 }
 
 .divisor-resumen {
     border: none;
-    border-top: 1px solid #eee;
+    border-top: 1px solid #eeeeee;
     margin: 15px 0 20px 0;
 }
 
@@ -292,15 +159,15 @@ body {
     justify-content: space-between;
     font-size: 18px;
     font-weight: bold;
-    color: #111;
+    color: #111111;
     margin-bottom: 25px;
 }
 
 .btn-continuar-pago {
     width: 100%;
     padding: 14px;
-    background-color: #222222;
-    color: #ffffff;
+    background-color: #111111;
+    color: #e4b353;
     border: none;
     border-radius: 4px;
     font-size: 15px;
@@ -313,56 +180,8 @@ body {
     background-color: #000000;
 }
 
-/* FOOTER */
-.main-footer {
-    background-color: var(--dark-bg);
-    display: flex;
-    justify-content: space-between;
-    padding: 40px 5%;
-    color: var(--text-light);
-    border-top: 1px solid #2a2a2a;
+@media (max-width: 850px) {
+    .checkout-grid {
+        grid-template-columns: 1fr;
+    }
 }
-.brand-col {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-}
-.footer-logo-placeholder {
-    background-color: transparent !important;
-    border: none !important;
-}
-.brand-col h4 {
-    color: var(--text-light);
-    margin-bottom: 5px;
-}
-.brand-col p {
-    font-size: 0.85rem;
-    color: var(--primary-gold);
-    font-weight: bold;
-}
-.info-col h4, .social-col h4 {
-    margin-bottom: 15px;
-    color: var(--text-light);
-}
-.info-col ul {
-    list-style: none;
-}
-.info-col a {
-    color: #b0b0b0;
-    line-height: 2;
-    transition: color 0.2s ease;
-}
-.info-col a:hover { color: var(--primary-gold); }
-.social-col { text-align: center; }
-.social-icons {
-    display: flex;
-    gap: 15px;
-    font-size: 1.5rem;
-    color: var(--text-light);
-    justify-content: center;
-}
-.social-icons i {
-    cursor: pointer;
-    transition: color 0.2s ease;
-}
-.social-icons i:hover { color: var(--primary-gold); }

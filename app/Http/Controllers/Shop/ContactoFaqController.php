@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Shop;
 
 use App\Http\Controllers\Controller;
+use App\Models\Configuracion;
 use App\Models\Faq;
 use App\Models\MensajeContacto;
 use Illuminate\Http\JsonResponse;
@@ -39,20 +40,55 @@ class ContactoFaqController extends Controller
 
     public function contactoForm(): View
     {
-        return view('shop.contacto');
+        $whatsappRaw = Configuracion::get('whatsapp_soporte', '+57 310 000 0000');
+        $whatsappDigits = preg_replace('/\D+/', '', $whatsappRaw);
+        if (!str_starts_with($whatsappDigits, '57') && strlen($whatsappDigits) === 10) {
+            $whatsappDigits = '57' . $whatsappDigits;
+        }
+        $whatsappUrl = 'https://wa.me/' . ($whatsappDigits ?: '573100000000');
+
+        $misMensajes = collect();
+        if (auth()->check()) {
+            $misMensajes = MensajeContacto::where('correo', auth()->user()->correo)
+                ->orderByDesc('fecha_envio')
+                ->get();
+        }
+
+        return view('shop.contacto', compact('whatsappRaw', 'whatsappUrl', 'misMensajes'));
     }
 
+    /**
+     * Solo usuarios registrados y autenticados pueden enviar mensajes al administrador.
+     */
     public function enviarContacto(Request $request): RedirectResponse
     {
+        if (!auth()->check()) {
+            return redirect()->route('login')
+                ->withErrors(['correo' => 'Debes iniciar sesión o registrarte para poder enviar mensajes al administrador.']);
+        }
+
+        $user = auth()->user();
+
         $datos = $request->validate([
-            'nombre'  => ['required', 'string', 'max:100'],
-            'correo'  => ['required', 'email', 'max:150'],
-            'asunto'  => ['nullable', 'string', 'max:150'],
-            'mensaje' => ['required', 'string', 'max:2000'],
+            'asunto'  => ['required', 'string', 'min:3', 'max:150', 'regex:/[a-zA-ZÁÉÍÓÚÜÑáéíóúüñ]/u'],
+            'mensaje' => ['required', 'string', 'min:5', 'max:2000', 'regex:/[a-zA-ZÁÉÍÓÚÜÑáéíóúüñ]/u'],
+        ], [
+            'asunto.required'  => 'El asunto es obligatorio.',
+            'asunto.regex'     => 'El asunto debe contener texto válido y no solo números.',
+            'mensaje.required' => 'El mensaje es obligatorio.',
+            'mensaje.min'      => 'El mensaje debe contener al menos 5 caracteres.',
+            'mensaje.regex'    => 'El mensaje debe contener texto descriptivo válido.',
         ]);
 
-        MensajeContacto::create($datos);
+        MensajeContacto::create([
+            'nombre'      => $user->nombre_completo,
+            'correo'      => $user->correo,
+            'asunto'      => trim($datos['asunto']),
+            'mensaje'     => trim($datos['mensaje']),
+            'estado'      => 'Pendiente',
+            'fecha_envio' => now(),
+        ]);
 
-        return back()->with('success', 'Hemos recibido tu mensaje. Te responderemos pronto.');
+        return back()->with('success', '¡Hemos recibido tu mensaje correctamente! El administrador te responderá a la brevedad y podrás ver su respuesta en esta misma página o por el Chat en Vivo.');
     }
 }

@@ -116,4 +116,29 @@ class InventarioAdminController extends Controller
         return redirect()->route('admin.inventario.index')
             ->with('success', "Movimiento de {$datos['tipo_movimiento']} ({$datos['cantidad']} uds.) registrado en '{$producto->nombre_producto}'. Stock actualizado a {$producto->fresh()->stock} unidades.");
     }
+
+    /**
+     * Módulo específico de Alertas de Stock Bajo y Reabastecimiento Crítico.
+     */
+    public function alertasStock(): View
+    {
+        $productosCriticos = Producto::with('categoria')
+            ->whereColumn('stock', '<=', 'stock_minimo')
+            ->orderBy('stock')
+            ->get();
+
+        $todosProductos = Producto::with('categoria')
+            ->orderBy('stock')
+            ->get();
+
+        $conteoCriticos = $productosCriticos->count();
+        $conteoTotal = $todosProductos->count();
+
+        return view('admin.inventario.alertas', compact(
+            'productosCriticos',
+            'todosProductos',
+            'conteoCriticos',
+            'conteoTotal'
+        ));
+    }
 }

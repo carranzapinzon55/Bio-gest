@@ -58,7 +58,7 @@ class ProductoAdminController extends Controller
     {
         $datos = $request->validate([
             'id_categoria'               => ['required', 'integer', 'exists:categoria,id_categoria'],
-            'nombre_producto'            => ['required', 'string', 'min:3', 'max:150'],
+            'nombre_producto'            => ['required', 'string', 'min:3', 'max:150', 'regex:/[a-zA-ZÁÉÍÓÚÜÑáéíóúüñ]{2,}/u'],
             'descripcion'                => ['nullable', 'string', 'max:2000'],
             'beneficios'                 => ['nullable', 'string', 'max:2000'],
             'instrucciones_conservacion' => ['nullable', 'string', 'max:1000'],
@@ -67,13 +67,13 @@ class ProductoAdminController extends Controller
             'precio'                     => ['required', 'numeric', 'gt:0'],
             'stock'                      => ['required', 'integer', 'gte:0'],
             'stock_minimo'               => ['nullable', 'integer', 'gte:0'],
-            'imagen'                     => ['nullable', 'string', 'max:255'],
-            'imagen_archivo'             => ['nullable', 'image', 'mimes:jpg,jpeg,png', 'max:5120'],
+            'imagen'                     => ['nullable'],
             'estado'                     => ['required', 'in:Activo,Inactivo'],
         ], [
             'id_categoria.required'    => 'La categoría del producto es obligatoria.',
             'id_categoria.exists'      => 'La categoría seleccionada no es válida.',
             'nombre_producto.required' => 'El nombre del producto es obligatorio.',
+            'nombre_producto.regex'    => 'El nombre del producto debe contener texto descriptivo (no puede ser solo números).',
             'precio.required'          => 'El precio es obligatorio.',
             'precio.gt'                => 'El precio debe ser estrictamente mayor a 0.',
             'stock.required'           => 'El stock inicial es obligatorio.',
@@ -82,10 +82,19 @@ class ProductoAdminController extends Controller
         ]);
 
         $datos['stock_minimo'] = $datos['stock_minimo'] ?? 10;
-        unset($datos['imagen_archivo']);
-        if ($request->hasFile('imagen_archivo')) {
+
+        if ($request->hasFile('imagen')) {
+            $request->validate([
+                'imagen' => ['file', 'image', 'mimes:png,jpg,jpeg,webp', 'max:5120'],
+            ], [
+                'imagen.image' => 'El archivo seleccionado debe ser una imagen válida.',
+                'imagen.mimes' => 'Formatos permitidos: PNG, JPG, JPEG o WEBP.',
+                'imagen.max'   => 'El tamaño máximo de la imagen es 5MB.',
+            ]);
+            $datos['imagen'] = $this->storeProductImage($request->file('imagen'));
+        } elseif ($request->hasFile('imagen_archivo')) {
             $datos['imagen'] = $this->storeProductImage($request->file('imagen_archivo'));
-        } elseif (empty($datos['imagen'])) {
+        } elseif (empty($datos['imagen']) || !is_string($datos['imagen'])) {
             $datos['imagen'] = 'Tenebrios_img.png';
         }
 
@@ -140,7 +149,7 @@ class ProductoAdminController extends Controller
 
         $datos = $request->validate([
             'id_categoria'               => ['required', 'integer', 'exists:categoria,id_categoria'],
-            'nombre_producto'            => ['required', 'string', 'min:3', 'max:150'],
+            'nombre_producto'            => ['required', 'string', 'min:3', 'max:150', 'regex:/[a-zA-ZÁÉÍÓÚÜÑáéíóúüñ]{2,}/u'],
             'descripcion'                => ['nullable', 'string', 'max:2000'],
             'beneficios'                 => ['nullable', 'string', 'max:2000'],
             'instrucciones_conservacion' => ['nullable', 'string', 'max:1000'],
@@ -149,18 +158,30 @@ class ProductoAdminController extends Controller
             'precio'                     => ['required', 'numeric', 'gt:0'],
             'stock'                      => ['required', 'integer', 'gte:0'],
             'stock_minimo'               => ['nullable', 'integer', 'gte:0'],
-            'imagen'                     => ['nullable', 'string', 'max:255'],
-            'imagen_archivo'             => ['nullable', 'image', 'mimes:jpg,jpeg,png', 'max:5120'],
+            'imagen'                     => ['nullable'],
             'estado'                     => ['required', 'in:Activo,Inactivo'],
         ], [
-            'precio.gt'  => 'El precio debe ser estrictamente mayor a 0.',
-            'stock.gte'  => 'El stock debe ser mayor o igual a 0.',
+            'nombre_producto.regex' => 'El nombre del producto debe contener letras válidas (no puede ser solo números).',
+            'precio.gt'             => 'El precio debe ser estrictamente mayor a 0.',
+            'stock.gte'             => 'El stock debe ser mayor o igual a 0.',
         ]);
 
         $datos['stock_minimo'] = $datos['stock_minimo'] ?? $productoModel->stock_minimo ?? 10;
-        unset($datos['imagen_archivo']);
-        if ($request->hasFile('imagen_archivo')) {
+
+        if ($request->hasFile('imagen')) {
+            $request->validate([
+                'imagen' => ['file', 'image', 'mimes:png,jpg,jpeg,webp', 'max:5120'],
+            ], [
+                'imagen.image' => 'El archivo seleccionado debe ser una imagen válida.',
+                'imagen.mimes' => 'Formatos permitidos: PNG, JPG, JPEG o WEBP.',
+                'imagen.max'   => 'El tamaño máximo de la imagen es 5MB.',
+            ]);
+            $datos['imagen'] = $this->storeProductImage($request->file('imagen'));
+        } elseif ($request->hasFile('imagen_archivo')) {
             $datos['imagen'] = $this->storeProductImage($request->file('imagen_archivo'));
+        } else {
+            // Mantener imagen anterior si no se subió una nueva
+            unset($datos['imagen']);
         }
 
         DB::transaction(function () use ($productoModel, $datos) {
@@ -267,6 +288,35 @@ class ProductoAdminController extends Controller
         });
 
         return back()->with('success', "Movimiento de {$datos['tipo_movimiento']} aplicado. Nuevo stock de '{$producto->nombre_producto}': {$producto->fresh()->stock} unidades.");
+    }
+
+    /**
+     * Crear una nueva categoría directamente desde el catálogo de productos.
+     */
+    public function storeCategoria(Request $request): RedirectResponse|JsonResponse
+    {
+        $datos = $request->validate([
+            'nombre_categoria' => ['required', 'string', 'min:2', 'max:100', 'unique:categoria,nombre_categoria'],
+            'descripcion'      => ['nullable', 'string', 'max:255'],
+        ], [
+            'nombre_categoria.required' => 'El nombre de la categoría es obligatorio.',
+            'nombre_categoria.unique'   => 'Ya existe una categoría con este nombre.',
+        ]);
+
+        $categoria = Categoria::create([
+            'nombre_categoria' => trim($datos['nombre_categoria']),
+            'descripcion'      => !empty($datos['descripcion']) ? trim($datos['descripcion']) : null,
+        ]);
+
+        if ($request->expectsJson() || $request->wantsJson() || $request->ajax()) {
+            return response()->json([
+                'success'   => true,
+                'message'   => "Categoría '{$categoria->nombre_categoria}' creada exitosamente.",
+                'categoria' => $categoria,
+            ], 201);
+        }
+
+        return back()->with('success', "Categoría '{$categoria->nombre_categoria}' creada con éxito.");
     }
 
     private function storeProductImage(UploadedFile $image): string

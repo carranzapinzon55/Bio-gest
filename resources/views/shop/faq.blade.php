@@ -5,7 +5,7 @@
 @section('content')
 <div style="max-width:900px; margin:40px auto; padding:0 20px;">
     <h1 style="color:#151515; border-bottom:3px solid #e4b353; padding-bottom:12px; margin-bottom:25px;">
-        <i class="fas fa-question-circle" style="color:#e4b353;"></i> Preguntas Frecuentes (FAQ)
+        <i class="fas fa-question-circle" style="color:#e4b353;"></i> Preguntas Frecuentes
     </h1>
 
     <!-- Buscador / Asistente Rápido conectado a GET /api/chatbot-faq -->
