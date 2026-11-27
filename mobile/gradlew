@@ -117,6 +117,10 @@ esac
 CLASSPATH="\\\"\\\""
 
 
+if [ -z "$JAVA_HOME" ] && [ -d "/usr/lib/jvm/java-25-openjdk" ]; then
+    export JAVA_HOME="/usr/lib/jvm/java-25-openjdk"
+fi
+
 # Determine the Java command to use to start the JVM.
 if [ -n "$JAVA_HOME" ] ; then
     if [ -x "$JAVA_HOME/jre/sh/java" ] ; then

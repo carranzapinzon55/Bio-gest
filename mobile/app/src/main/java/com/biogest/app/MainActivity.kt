@@ -4,8 +4,10 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
@@ -19,17 +21,22 @@ import com.biogest.app.ui.theme.BioGestTheme
 import com.biogest.app.viewmodel.BioGestViewModel
 
 /**
- * Actividad Principal de BIO-GEST.
- * Punto de entrada de la aplicación Android. Controla el flujo de navegación
- * mediante un patrón de estado simple con "when" en Compose, sin librerías externas.
+ * Actividad Principal de BIO-GEST (Tenebrios Gold).
+ * Punto de entrada de la aplicación Android.
+ *
+ * Configuración de Pantalla y UX Móvil:
+ * - [enableEdgeToEdge]: Activa el modo de borde a borde para que la interfaz aproveche toda la pantalla
+ *   (detrás de la barra de estado y de navegación).
+ * - [Scaffold] con [innerPadding]: Respeta las áreas seguras del sistema (insets: notch, status bar, navigation bar).
+ * - [consumeWindowInsets]: Evita doble padding en pantallas hijas que tengan su propio Scaffold o manejo de insets.
  */
 class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // Activa la experiencia moderna Edge-to-Edge recomendada por Android
         enableEdgeToEdge()
 
-        // Gestor de persistencia local con SharedPreferences
         val tokenStorage = TokenStorage(applicationContext)
 
         setContent {
@@ -50,15 +57,20 @@ class MainActivity : ComponentActivity() {
                     }
                 }
 
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    // Enrutador de pantallas basado en estado reactivo
+                Scaffold(
+                    modifier = Modifier.fillMaxSize(),
+                    containerColor = MaterialTheme.colorScheme.background
+                ) { innerPadding ->
+                    // Enrutador de pantallas basado en estado reactivo del ViewModel
                     when (vm.pantalla) {
                         "login" -> LoginScreen(
                             viewModel = vm,
                             onLoginSuccess = { token, nombre ->
                                 tokenStorage.guardar(token, nombre)
                             },
-                            modifier = Modifier.padding(innerPadding)
+                            modifier = Modifier
+                                .padding(innerPadding)
+                                .consumeWindowInsets(innerPadding)
                         )
 
                         "lista" -> ListaScreen(
@@ -66,7 +78,9 @@ class MainActivity : ComponentActivity() {
                             onLogout = {
                                 tokenStorage.limpiar()
                             },
-                            modifier = Modifier.padding(innerPadding)
+                            modifier = Modifier
+                                .padding(innerPadding)
+                                .consumeWindowInsets(innerPadding)
                         )
 
                         "formulario" -> FormularioScreen(
@@ -74,7 +88,9 @@ class MainActivity : ComponentActivity() {
                             onLogout = {
                                 tokenStorage.limpiar()
                             },
-                            modifier = Modifier.padding(innerPadding)
+                            modifier = Modifier
+                                .padding(innerPadding)
+                                .consumeWindowInsets(innerPadding)
                         )
                     }
                 }
